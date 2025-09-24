@@ -1,0 +1,4 @@
+• création virtualenv : virtualenv ~/venv
+• lancement venv : source ~/venv/bin/activate
+• installation de requirements : pip install -r requirements.txt
+

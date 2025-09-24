@@ -1,0 +1,6 @@
+asgiref==3.9.1
+Django==5.2.5
+sqlparse==0.5.3
+pytest
+flake8
+pytest-cov
