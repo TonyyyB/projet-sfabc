@@ -1,6 +1,6 @@
 asgiref==3.9.1
 Django==5.2.5
 sqlparse==0.5.3
-unittest
+unittest2
 flake8
 pytest-cov
