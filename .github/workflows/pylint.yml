@@ -3,6 +3,40 @@ name: Pylint
 on: [push]
 
 jobs:
+  linter:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip' # caching pip dependencies
+    - run: pip install -r requirements.txt
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v4.6.2
+      with:
+        name: rapport test2
+        path: coverage_html_report/
+    - name: Analysing the code with pylint
+      run: |
+        flake8 $(git ls-files '*.py')
+  build_package:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build package
+      run: |
+        pip install -r requirements.txt
+        pip install whl/*.whl
+        python -m build    
+    - uses: actions/upload-artifact@v4.6.2
+      with:
+        name: whl
+        path: dist/*.whl
   build:
     runs-on: ubuntu-latest
     strategy:
