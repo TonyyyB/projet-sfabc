@@ -1,0 +1,67 @@
+{% load static %}
+{% block header %}
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark border-bottom" style="background-color: rgb(var(--bs-dark-rgb));">
+      <div class="container-fluid">
+        <!-- Logo -->
+        <a href="#" style="position: absolute; top: 1rem; left: 1rem; z-index: 2;">
+        <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 100px; display: block;">
+      </a>
+
+        <!-- Barre de recherche -->
+        <form class="d-flex ms-auto me-3" role="search">
+          <div class="input-group">
+            <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" />
+            <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+          </div>
+        </form>
+
+        <!-- Liens -->
+        <ul class="navbar-nav flex-row mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link px-2" href="">Services</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="">À propos</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link px-2" href="">Contact</a>
+          </li>
+        </ul>
+
+        <!-- Boutton hamburger -->
+        <button class="btn ms-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu"><span class="navbar-toggler-icon"></span></button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Menu Offcanvas -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel" style="background-color: var(--bs-body-bg); border-left: 5px solid rgb(var(--bs-dark-rgb));">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+      {% for menu, submenus in menus.items %}
+        <div class="mb-2">
+          <!-- Bouton des menus avec fleche -->
+          <button class="btn w-100 d-flex justify-content-between align-items-center text-start" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter }}" aria-expanded="false">
+            {{ menu }}
+            <i class="bi bi-chevron-right"></i>
+          </button>
+
+          <!-- Sous-menus -->
+          <div class="collapse mt-1" id="collapse-{{ forloop.counter }}">
+            <ul class="list-group list-group-flush">
+              {% for sub, url_name in submenus.items %}
+                <li class="list-group-item ms-3" style="background-color: var(--bs-body-bg); border: none;">
+                  <a href="" class="text-decoration-none" style="color: var(--bs-dark);">{{ sub }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
