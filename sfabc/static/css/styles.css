@@ -1,0 +1,23 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  flex: 1;
+}
+
+:root {
+    --bs-body-bg: #F6F2E8 !important;
+    --bs-dark-rgb: 184, 166, 126 !important;
+}
+
+.ms-n5 {
+    margin-left: -40px;
+}
