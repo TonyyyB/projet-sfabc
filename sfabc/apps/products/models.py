@@ -20,5 +20,3 @@ class Produit(models.Model):
     # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)→
     famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="produits",null=True, blank=True)
     
-
-class 
