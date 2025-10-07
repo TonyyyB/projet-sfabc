@@ -1,4 +1,5 @@
 from django.db import models
+from sfabc.apps.core.models import Image
 
 # Create your models here.
 class Famille(models.Model):
@@ -18,3 +19,6 @@ class Produit(models.Model):
     description_produit = models.TextField()
     # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)→
     famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="produits",null=True, blank=True)
+    
+
+class 
