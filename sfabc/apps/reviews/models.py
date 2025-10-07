@@ -12,7 +12,7 @@ NOTES = {
 class Note(models.Model):
     id_note = models.AutoField(primary_key=True)
     pseudonyme = models.CharField(max_length=100)
-    valeur = models.IntegerField(max_length=1, choices=NOTES)
+    valeur = models.IntegerField(choices=NOTES)
     message = models.CharField()
 
     def __str__(self):
