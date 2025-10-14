@@ -1,4 +1,5 @@
 from django.db import models
+from colorfield.fields import ColorField
 
 # Create your models here.
 class A_Propos(models.Model):
@@ -13,15 +14,25 @@ class A_Propos(models.Model):
 class Image(models.Model):
     id_image = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to="images")
-    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images_ap", null=True, blank=True)
 
     def __str__(self):
         return self.image
 
 
+class Image_AP(models.Model):
+    images = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="images")
+    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
+
+    class Meta:
+        unique_together = ('images', 'page_ap')
+
+    def __str__(self):
+        return f"page a propos {self.page_ap} avec des {self.images}"
+
+
 class Site(models.Model):
     id = models.AutoField(primary_key=True)
-    couleur = models.CharField(max_length=7) # exemple #000000
+    couleur = ColorField(default="#B8A67E")
     police = models.CharField(max_length=200)
     logo = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="image_site")
 
