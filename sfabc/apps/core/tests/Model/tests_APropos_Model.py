@@ -1,7 +1,7 @@
 from django.test import TestCase
 from apps.core.models import A_Propos
 
-class CategorieModelTest(TestCase):
+class AProposModelTest(TestCase):
     def setUp(self):
         self.ap = A_Propos.objects.create(titre_ap="titre test a propos", description_ap="description test a propos")
 
