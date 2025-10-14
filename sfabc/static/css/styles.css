@@ -10,6 +10,8 @@ body {
   flex-direction: column;
 }
 main {
+  position: relative;
+  bottom: 90px;
   flex: 1;
 }
 
