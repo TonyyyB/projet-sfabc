@@ -16,7 +16,7 @@ class Image(models.Model):
     image = models.ImageField(upload_to="images")
 
     def __str__(self):
-        return self.image
+        return self.image.name
 
 
 class Image_AP(models.Model):
