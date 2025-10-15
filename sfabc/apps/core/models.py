@@ -33,7 +33,8 @@ class Image_AP(models.Model):
 
 class Site(models.Model):
     id = models.AutoField(primary_key=True)
-    couleur = ColorField(default="#B8A67E")
+    background = ColorField(default="#F6F2E8")
+    foreground = ColorField(default="#B8A67E")
     police = models.CharField(max_length=200)
     logo = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="image_site")
 
