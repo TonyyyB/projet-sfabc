@@ -4,6 +4,7 @@ from colorfield.fields import ColorField
 # Create your models here.
 class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
+    ordre_ap = models.IntegerField()
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.CharField()
 
