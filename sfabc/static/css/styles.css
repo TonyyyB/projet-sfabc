@@ -16,7 +16,6 @@ main {
 }
 
 :root {
-  --bs-body-bg: #f6f2e8 !important;
   --bs-dark-rgb: 184, 166, 126 !important;
 }
 
@@ -33,7 +32,7 @@ main {
   text-shadow: 1px 0 0 currentColor;
 }
 
-@media (max-width: 991px) {
+@media (max-width: 751px) {
   .container-fluid {
     position: relative;
     display: flex;
@@ -73,12 +72,17 @@ main {
   }
 
   .navbar-nav {
+    display: inline-block !important;
     flex-direction: row !important;
     gap: 1rem;
   }
+
+  .nav-item{
+    display: inline-block;
+  }
 }
 
-@media (min-width: 992px) {
+@media (min-width: 750px) {
   .container-fluid {
     justify-content: end !important;
   }
@@ -105,8 +109,13 @@ main {
   }
 
   .navbar-nav {
+    display: inline-block !important;
     flex-direction: row;
     gap: 1rem;
+  }
+
+  .nav-item{
+    display: inline-block;
   }
 }
 
