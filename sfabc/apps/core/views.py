@@ -55,3 +55,4 @@ class ContactView(FormView):
         ),
         return super().form_valid(form)
     
+
