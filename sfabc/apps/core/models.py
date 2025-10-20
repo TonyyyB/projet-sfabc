@@ -7,6 +7,7 @@ class A_Propos(models.Model):
     ordre_ap = models.IntegerField()
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
+    images = models.ManyToManyField("Image", through="Image_AP")
 
     def __str__(self):
         return self.titre_ap
@@ -20,24 +21,24 @@ class Image(models.Model):
         return self.image.name
 
 
-EMPLACEMENT = {
-    "right": "Droite",
-    "center": "Centre",
-    "left": "Gauche"
-}
+EMPLACEMENT = [
+    ("right", "Droite"),
+    ("center", "Centre"),
+    ("left", "Gauche")
+]
 
 
 class Image_AP(models.Model):
-    images = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="images")
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="images")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
     titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
-        unique_together = ('images', 'page_ap')
+        unique_together = ('image', 'page_ap')
 
     def __str__(self):
-        return f"page a propos {self.page_ap} avec des {self.images}"
+        return f"page a propos {self.page_ap} avec des {self.image}"
 
 
 class Site(models.Model):
