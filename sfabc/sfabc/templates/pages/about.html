@@ -1,7 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
+
 {% for info in infos %}
-    <h1>{{ info.titre_ap }}</h1>
-    <p>{{ info.description_ap }}</p>
+    <section>
+        <h1>{{ info.titre_ap }}</h1>
+        <p>{{ info.description_ap }}</p>
+    </section>
 {% endfor %}
+
 {% endblock %}
