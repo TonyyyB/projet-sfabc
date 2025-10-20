@@ -4,8 +4,7 @@ sqlparse==0.5.3
 unittest2
 flake8
 pytest-cov
-<<<<<<< HEAD
 Pillow
-=======
-Pillow==10.4.0
->>>>>>> 007a8b8 (coorection de problemes)
+django-bootstrap5
+django-colorfield
+

@@ -37,12 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-<<<<<<< HEAD
     "django_bootstrap5",
     "colorfield",
-    
-=======
->>>>>>> 007a8b8 (coorection de problemes)
     "apps.core",
     "apps.products",
     "apps.reviews",
