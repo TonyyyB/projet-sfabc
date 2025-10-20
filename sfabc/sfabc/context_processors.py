@@ -6,7 +6,7 @@ def style_processor(request):
     body_fg = "#B8A67E"
     police = "Liberation Sans"
     logo = static("images/logo.png")
-    bandeau = static("image/bois.jpg")
+    bandeau = static("images/bois.jpg")
     hauteur_bandeau = 140
     if site is not None:
         body_bg = site.background
