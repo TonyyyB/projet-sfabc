@@ -7,7 +7,7 @@ class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
     ordre_ap = models.IntegerField()
     titre_ap = models.CharField(max_length=1000)
-    description_ap = models.CharField()
+    description_ap = models.TextField()
 
     def __str__(self):
         return self.titre_ap
@@ -21,9 +21,18 @@ class Image(models.Model):
         return self.image.name
 
 
+EMPLACEMENT = {
+    "right": "Droite",
+    "center": "Centre",
+    "left": "Gauche"
+}
+
+
 class Image_AP(models.Model):
     images = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="images")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
+    titre_image = models.CharField(max_length=100)
+    position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
         unique_together = ('images', 'page_ap')
