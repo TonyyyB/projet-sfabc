@@ -7,3 +7,4 @@ class HomeView(TemplateView):
 
     def post(self, request, **kwargs):
         return render(request, self.template_name)
+
