@@ -5,6 +5,5 @@ unittest2
 flake8
 pytest-cov
 Pillow
-django-bootstrap5
-django-colorfield
-
+django_bootstrap5
+django-cleanup

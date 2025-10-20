@@ -1,7 +1,6 @@
 from django.db import models
 from colorfield.fields import ColorField
 
-
 # Create your models here.
 class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
@@ -45,8 +44,10 @@ class Site(models.Model):
     id = models.AutoField(primary_key=True)
     background = ColorField(default="#F6F2E8")
     foreground = ColorField(default="#B8A67E")
-    police = models.CharField(max_length=200)
-    logo = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="image_site")
+    police = models.CharField(max_length=200, default="Liberation Sans")
+    bandeau_hauteur = models.IntegerField(default=140)
+    logo = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="logo_site")
+    bandeau = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="bandeau_site")
 
     def __str__(self):
-        return f"<Site {self.couleur}, {self.police}>"
+        return f"<Site background: {self.background}, foreground: {self.foreground}, police: {self.police}>"

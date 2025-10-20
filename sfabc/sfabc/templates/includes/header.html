@@ -1,38 +1,45 @@
 {% load static %}
 {% block header %}
   <header>
-    <nav class="navbar navbar-expand-lg navbar-dark border-bottom" style="background-color: rgb(var(--bs-dark-rgb));">
-      <div class="container-fluid">
-        <!-- Logo -->
-        <a href="#" style="position: absolute; top: 1rem; left: 1rem; z-index: 2;">
-        <img src="{% static 'images/logo.png' %}" alt="Logo" style="height: 100px; display: block;">
-      </a>
+    <nav class="navbar navbar-dark border-bottom" style="background-color: rgb(var(--bs-dark-rgb));">
+      <div class="container-fluid p-0">
+        <div></div>
 
-        <!-- Barre de recherche -->
-        <form class="d-flex ms-auto me-3" role="search">
-          <div class="input-group">
-            <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" />
-            <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
-          </div>
-        </form>
+        <!-- Top section -->
+        <div class="top-section">
+          <!-- Barre de recherche -->
+          <form class="search-form" role="search">
+            <div class="input-group">
+              <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" />
+              <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+          </form>
+        </div>
 
-        <!-- Liens -->
-        <ul class="navbar-nav flex-row mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link px-2" href="">Services</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link px-2" href="">À propos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link px-2" href="">Contact</a>
-          </li>
-        </ul>
-
-        <!-- Boutton hamburger -->
-        <button class="btn ms-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu"><span class="navbar-toggler-icon"></span></button>
+        <!-- Bottom section -->
+        <div class="bottom-section">
+          <!-- Liens -->
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="">À propos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="">Contact</a>
+            </li>
+          </ul>
+          <!-- Boutton hamburger -->
+          <button class="btn ms-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu"><span class="navbar-toggler-icon"></span></button>
+        </div>
       </div>
     </nav>
+    <!-- Logo -->
+    <div class="logo-container">
+      <a href="#"><img src="{{ site_logo }}" alt="Logo" class="logo-img" /></a>
+    </div>
+    <img src="{{ site_bandeau }}" alt="Background" class="background-img" />
   </header>
 
   <!-- Menu Offcanvas -->
