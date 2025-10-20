@@ -13,8 +13,7 @@ class A_Propos(models.Model):
 class Image(models.Model):
     id_image = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to="images")
-    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images_ap", null=True, blank=True)
-    produit = models.ForeignKey('products.Produit', on_delete=models.CASCADE, related_name="images_produit", null=True, blank=True)
+
 
     def __str__(self):
         return self.image
