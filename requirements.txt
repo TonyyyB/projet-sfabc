@@ -4,3 +4,4 @@ sqlparse==0.5.3
 unittest2
 flake8
 pytest-cov
+Pillow
