@@ -19,5 +19,13 @@ class Produit(models.Model):
     description_produit = models.TextField()
     is_produit_du_moment = models.BooleanField(default=False)
     # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)→
-    famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="produits",null=True, blank=True)
+
+class Image_Produit(models.Model):
     
+    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="image_produit")
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images_produit")
+    
+    class Meta:
+        unique_together = ('image', 'produit')
+    def __str__(self):
+        return f"Image of {self.produit.nom_produit}"    
