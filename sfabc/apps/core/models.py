@@ -1,6 +1,7 @@
 from django.db import models
 from colorfield.fields import ColorField
 
+
 # Create your models here.
 class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
