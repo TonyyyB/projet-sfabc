@@ -1,5 +1,6 @@
 from django.db import models
 
+
 # Create your models here.
 class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
@@ -27,3 +28,4 @@ class Site(models.Model):
 
     def __str__(self):
         return f"<Site {self.couleur}, {self.police}>"
+
