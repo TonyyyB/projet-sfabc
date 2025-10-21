@@ -3,26 +3,29 @@
 
 
 {% block content %}
-<div class="d-flex flex-column align-items-center color-text-contact m-3">
+<div class="d-flex flex-column align-items-center m-3">
     <form method="post" action="" class="w-25">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        <p>Les champs marqués d’un * sont obligatoires.</p>
         <div class="mb-5">
-            <input type="text" name="name" placeholder="Vos nom et prénom*" value="{{ form.name.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-text-contact">
-            {{ form.name.errors }}
+            
+            <input type="text" name="name" placeholder="Vos nom et prénom"  value="{{ form.name.value|default_if_none:'' }}" class="form-control border border-3 border-dark color-border-contact  color-text-contact">
+            {{ form.Nom.errors }}
         </div>
         <div class="my-5">
-            <input type="email" name="email" placeholder="Votre adresse email*" value="{{ form.email.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-text-contact">
-            {{ form.email.errors }}
+            
+            <input type="email" name="email" placeholder="Votre adresse email" value="{{ form.email.value|default_if_none:'' }}" class="form-control border border-3 border-dark color-border-contact  color-text-contact">
+            {{ form.Email.errors }}
         </div>
         <div class="my-5">
-            <input type="text" name="subject" placeholder="Sujet*"  value="{{ form.subject.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-text-contact">
-            {{ form.subject.errors }}
+            
+            <input type="text" name="subject" placeholder="Sujet"  value="{{ form.subject.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact border-dark  color-text-contact">
+            {{ form.Sujet.errors }}
         </div>
         <div class="my-5">
-            <textarea name="message" rows="5" class="form-control border border-3 color-border-contact  color-text-contact" placeholder="Votre message*" value="{{ form.subject.value|default_if_none:'' }}"></textarea>
-            {{ form.message.errors }}
+            
+            <textarea name="message" rows="5" class="form-control border border-3 color-border-contact border-dark  color-text-contact" placeholder="Votre message" value="{{ form.subject.value|default_if_none:'' }}"></textarea>
+            {{ form.Message.errors }}
         </div>
 
         <div class="my-5  d-flex align-items-center justify-content-center">
