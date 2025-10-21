@@ -4,7 +4,7 @@ def style_processor(request):
     site = Site.objects.first()
     body_bg = "#f6f2e8"
     body_fg = "#B8A67E"
-    police = "Liberation Sans"
+    police = "Alata"
     logo = static("images/logo.png")
     bandeau = static("images/bois.jpg")
     hauteur_bandeau = 140
@@ -24,6 +24,9 @@ def style_processor(request):
     style += "}\n"
     style += ".background-img {\n"
     style += f"\theight: {hauteur_bandeau}px;\n"
+    style += "}\n"
+    style += ".title {\n"
+    style += f"\tbottom: calc(90px + {hauteur_bandeau/2}px + 0.5em);\n"
     style += "}\n"
     
     menus = {
