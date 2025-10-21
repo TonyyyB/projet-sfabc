@@ -175,3 +175,11 @@ hr {
   color: #EEE7D8 !important;
   background-color: #5A4328 !important;
 }
+
+.color-text-contact {
+  color: #B8A67E !important;
+}
+
+.color-border-contact {
+  border-color: #B8A67E !important;
+}
