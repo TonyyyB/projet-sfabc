@@ -4,9 +4,6 @@ from apps.products.models import *
 from django.db.models import Prefetch
 
 # Create your views here.
-def home(request):
-    return render(request, 'pages/home.html')
-
 class Home(ListView):
     model = Produit
     template_name = "sfabc/templates/pages/home.html"
