@@ -32,6 +32,11 @@ class ContactView(FormView):
     form_class = ContactForm
     success_url = '/email-sent/'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Contactez-moi !"
+        return context
+
     def form_valid(self, form):
         send_mail(
             subject=f"{form.cleaned_data['name'] } vous contacte pour: {form.cleaned_data['subject']}",
