@@ -3,11 +3,8 @@ from django.views.generic import *
 from apps.core.models import A_Propos, Image_AP
 
 # Create your views here.
-class HomeView(TemplateView):
-    template_name = "base.html"
-
-    def post(self, request, **kwargs):
-        return render(request, self.template_name)
+def home(request):
+    return render(request, 'pages/home.html', {"title":"Coucou"})
 
 
 class AProposView(ListView):

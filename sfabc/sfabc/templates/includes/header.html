@@ -1,7 +1,7 @@
 {% load static %}
 {% block header %}
   <header>
-    <nav class="navbar navbar-expand-lg navbar-dark border-bottom" style="background-color: rgb(var(--bs-dark-rgb));">
+    <nav class="navbar navbar-dark border-bottom" style="background-color: rgb(var(--bs-dark-rgb));">
       <div class="container-fluid p-0">
         <div></div>
 
@@ -37,9 +37,10 @@
     </nav>
     <!-- Logo -->
     <div class="logo-container">
-      <a href="#"><img src="{% static 'images/logo.png' %}" alt="Logo" class="logo-img" /></a>
+      <a href="#"><img src="{{ site_logo }}" alt="Logo" class="logo-img" /></a>
     </div>
-    <img src="{% static 'images/bois.jpg' %}" alt="Background" class="background-img" />
+    <img src="{{ site_bandeau }}" alt="Background" class="background-img" />
+    <h1 class="title">{{ title }}</h1>
   </header>
 
   <!-- Menu Offcanvas -->
