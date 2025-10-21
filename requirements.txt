@@ -6,3 +6,4 @@ flake8
 pytest-cov
 Pillow
 django_bootstrap5
+django-cleanup
