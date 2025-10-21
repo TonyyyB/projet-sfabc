@@ -2,7 +2,7 @@ from django import forms
 from .models import *
 
 class ContactForm(forms.Form):
-    Nom = forms.CharField(required=True)
-    Email = forms.EmailField(required=True)
-    Sujet = forms.CharField(max_length=200,required=True)
-    Message = forms.CharField(max_length=1000)
+    name = forms.CharField(required=True)
+    email = forms.EmailField(required=True)
+    subject = forms.CharField(max_length=200,required=True)
+    message = forms.CharField(max_length=1000)
