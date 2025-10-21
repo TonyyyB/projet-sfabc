@@ -44,7 +44,7 @@ class Site(models.Model):
     id = models.AutoField(primary_key=True)
     background = ColorField(default="#F6F2E8")
     foreground = ColorField(default="#B8A67E")
-    police = models.CharField(max_length=200, default="Liberation Sans")
+    police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
     logo = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="logo_site")
     bandeau = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="bandeau_site")
