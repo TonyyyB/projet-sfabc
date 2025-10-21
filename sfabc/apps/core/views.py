@@ -19,4 +19,5 @@ class AProposView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(AProposView, self).get_context_data(**kwargs)
+        context["title"] = "À propos"
         return context
