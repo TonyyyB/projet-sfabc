@@ -157,3 +157,11 @@ main {
 *:not(input) {
     caret-color: transparent;
 }
+<<<<<<< HEAD
+=======
+
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
+>>>>>>> 2d225db (creation de contact part 1)
