@@ -34,5 +34,5 @@ class Home(ListView):
     
     def get_context_data(self, **kwargs):
         context = super(Home, self).get_context_data(**kwargs)
-        context['titre'] = "Découvrez mes produits"
+        context['title'] = "Découvrez mes produits"
         return context
