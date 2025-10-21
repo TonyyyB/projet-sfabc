@@ -10,6 +10,7 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 main {
   position: relative;
   bottom: 90px;
@@ -217,9 +218,24 @@ hr {
   justify-content: center;
 }
 
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
+
+.color-text-contact {
+  color: #B8A67E !important;
+}
+
+.color-placeholder-contact::placeholder {
+  opacity: 1 !important;
+  color: #B8A67E !important;
+}
+
 .color-border-contact {
   border-color: #B8A67E !important;
 }
+
 .title {
   position: relative;
   width: 100%;
@@ -264,4 +280,8 @@ hr {
 .sep {
   display: flex;
   justify-content: center;
+}
+
+.color-border-contact {
+  border-color: #B8A67E !important;
 }
