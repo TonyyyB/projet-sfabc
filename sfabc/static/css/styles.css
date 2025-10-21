@@ -141,6 +141,7 @@ main {
   object-fit: cover;
   z-index: -1;
 }
+.title {
 
 .title {
   position: relative;
@@ -191,7 +192,19 @@ hr {
   justify-content: center;
 }
 
+position: relative;
 
+
+  width: 100%;
+
+
+  text-align: center;
+
+
+  color: white;
+
+
+}
 .btn-contact {
   color: #EEE7D8 !important;
   background-color: #5A4328 !important;
@@ -214,11 +227,4 @@ hr {
 *:not(input) {
     caret-color: transparent;
 }
-<<<<<<< HEAD
-=======
 
-.btn-contact {
-  color: #EEE7D8 !important;
-  background-color: #5A4328 !important;
-}
->>>>>>> 2d225db (creation de contact part 1)
