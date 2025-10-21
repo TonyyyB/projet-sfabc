@@ -4,10 +4,9 @@ from apps.core.models import A_Propos, Image_AP
 from apps.products.models import *
 from django.db.models import Prefetch
 
-# Create your views here.
-def home(request):
-    return render(request, 'pages/home.html', {"title":"Coucou"})
-
+from .forms import ContactForm
+from django.core.mail import send_mail
+from django.shortcuts import redirect
 
 class AProposView(ListView):
     model = A_Propos
@@ -36,3 +35,18 @@ class Home(ListView):
         context = super(Home, self).get_context_data(**kwargs)
         context['title'] = "Découvrez mes produits"
         return context
+
+class ContactView(FormView):
+    template_name = 'pages/contact.html'
+    form_class = ContactForm
+    success_url = '/email-sent/'
+
+    def form_valid(self, form):
+        send_mail(
+            subject=f"{form.cleaned_data['name'] } vous contacte pour: {form.cleaned_data['subject']}",
+            message=form.cleaned_data['message'],
+            from_email=form.cleaned_data['email'],
+            recipient_list=['']
+        ),
+        return super().form_valid(form)
+    
