@@ -9,7 +9,7 @@ body {
   display: flex;
   flex-direction: column;
 }
-main { 
+main {
   position: relative;
   bottom: 90px;
   flex: 1;
@@ -22,7 +22,6 @@ main {
 .nav-link {
   white-space: nowrap;
   padding-left: 0.5em !important;
-  
 }
 
 .nav-link:hover {
@@ -74,7 +73,7 @@ main {
     gap: 1rem;
   }
 
-  .nav-item{
+  .nav-item {
     display: inline-block;
   }
 }
@@ -111,7 +110,7 @@ main {
     gap: 1rem;
   }
 
-  .nav-item{
+  .nav-item {
     display: inline-block;
   }
 }
@@ -122,4 +121,15 @@ main {
   width: 100%;
   object-fit: cover;
   z-index: -1;
+}
+
+.title {
+  position: relative;
+  width: 100%;
+  text-align: center;
+  color: white;
+}
+
+*:not(input) {
+    caret-color: transparent;
 }
