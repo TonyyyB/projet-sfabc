@@ -8,17 +8,21 @@ class Famille(models.Model):
     nom_famille = models.CharField(max_length=100)
     
     def __str__(self):
-        return self.nomFamille
+        return self.nom_famille
     
 
 class Produit(models.Model):
     
     id_produit = models.AutoField(primary_key=True)
     nom_produit = models.CharField(max_length=200)
-    prix_produit = models.DecimalField(max_digits=10, decimal_places=2)
+    prix_produit = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     description_produit = models.TextField()
     is_produit_du_moment = models.BooleanField(default=False)
-    # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)→
+    famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="famille")
+    # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)
+
+    def __str__(self):
+        return self.nom_produit
 
 class Image_Produit(models.Model):
     
