@@ -243,6 +243,9 @@ hr {
   color: white;
 }
 
+*:not(input) {
+  caret-color: transparent;
+}
 
 .product-image-container {
   border: 2.5px solid #b8a67e;
