@@ -183,3 +183,7 @@ hr {
 .color-border-contact {
   border-color: #B8A67E !important;
 }
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
