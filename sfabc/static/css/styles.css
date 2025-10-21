@@ -123,13 +123,6 @@ main {
   z-index: -1;
 }
 
-.title {
-  position: relative;
-  width: 100%;
-  text-align: center;
-  color: white;
-}
-
 *:not(input) {
     caret-color: transparent;
 }
