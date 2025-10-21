@@ -143,6 +143,7 @@ main {
   object-fit: cover;
   z-index: -1;
 }
+.title {
 
 .title {
   position: relative;
