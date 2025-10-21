@@ -196,7 +196,7 @@ hr {
   background-color: #5A4328 !important;
 }
 
-.color-text-contact {
+.color-text-contact ::placeholder {
   color: #B8A67E !important;
 }
 
