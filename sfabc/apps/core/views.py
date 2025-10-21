@@ -7,9 +7,6 @@ from .forms import ContactForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect
 
-from .forms import ContactForm
-from django.core.mail import send_mail
-from django.shortcuts import redirect
 
 # Create your views here.
 class ContactView(FormView):
