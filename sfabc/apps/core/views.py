@@ -1,6 +1,10 @@
 from django.shortcuts import render
 from django.views.generic import *
 
+from .forms import ContactForm
+from django.core.mail import send_mail
+from django.shortcuts import redirect
+
 # Create your views here.
 def home(request):
     return render(request, 'pages/home.html', {'menus': {
@@ -21,3 +25,19 @@ def home(request):
         'Meubles de salle de bain': {'Meuble sous lavabo': 'bathroom_vanity', 'Armoire de salle de bain': 'bathroom_cabinet'}, 
         'Meubles multifonctions': {'Canapé-lit': 'sofa_bed', 'Table extensible': 'extendable_table'}, 
         'Meubles sur mesure': {'Meuble TV sur mesure': 'custom_tv_stand', 'Bibliothèque sur mesure': 'custom_bookcase'}}})
+
+
+class ContactView(FormView):
+    template_name = 'pages/contact.html'
+    form_class = ContactForm
+    success_url = '/email-sent/'
+
+    def form_valid(self, form):
+        send_mail(
+            subject=f"{form.cleaned_data['name'] } vous contacte pour: {form.cleaned_data['subject']}",
+            message=form.cleaned_data['message'],
+            from_email=form.cleaned_data['email'],
+            recipient_list=['']
+        ),
+        return super().form_valid(form)
+    

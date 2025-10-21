@@ -123,3 +123,9 @@ main {
   object-fit: cover;
   z-index: -1;
 }
+
+
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
