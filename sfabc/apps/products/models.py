@@ -22,9 +22,6 @@ class Produit(models.Model):
     # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)
 
     def __str__(self):
-        return self.nom_produit
-
-    def __str__(self):
         return f"Produit: {self.nom_produit}"
 
 class Image_Produit(models.Model):
