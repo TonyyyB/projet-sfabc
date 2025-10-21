@@ -19,6 +19,7 @@ class Produit(models.Model):
     description_produit = models.TextField()
     is_produit_du_moment = models.BooleanField(default=False)
     famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="famille")
+    images = models.ManyToManyField("Image", through="Image_Produit")
     # Relation CIF : chaque produit appartient à 1 famille (0,N côté famille 1,1 côté produit)
 
     def __str__(self):
