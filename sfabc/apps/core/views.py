@@ -22,9 +22,9 @@ class ContactView(FormView):
 
     def form_valid(self, form):
         send_mail(
-            subject=f"{form.cleaned_data['name'] } vous contacte pour: {form.cleaned_data['subject']}",
-            message=form.cleaned_data['message'],
-            from_email=form.cleaned_data['email'],
+            subject=f"{form.cleaned_data['Nom'] } vous contacte pour: {form.cleaned_data['Sujet']}",
+            message=form.cleaned_data['Message'],
+            from_email=form.cleaned_data['Email'],
             recipient_list=['']
         ),
         return super().form_valid(form)
