@@ -9,7 +9,7 @@ from django.shortcuts import redirect
 
 # Create your views here.
 def home(request):
-    return render(request, 'pages/home.html')
+    return render(request, 'pages/home.html', {"title":"Coucou"})
 
 
 class ContactView(FormView):
@@ -32,3 +32,4 @@ class ContactView(FormView):
         return super().form_valid(form)
     
 
+    
