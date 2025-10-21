@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-<<<<<<< HEAD
+
 
 {% block content %}
 <div class="d-flex flex-column align-items-center color-contact m-3">
@@ -24,36 +24,9 @@
             <textarea name="message" rows="5" class="form-control border border-3" placeholder="Votre message*" value="{{ form.subject.value|default_if_none:'' }}"></textarea>
             {{ form.message.errors }}
         </div>
+
         <div class="my-5  d-flex align-items-center justify-content-center">
-=======
-{% block content %}
-<div class="d-flex flex-column align-items-center ">
-    <h1>Contactez-moi !</h1>
-    <form method="post" action="" class="w-25">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        <div class="my-3">
-            {{ form.name.label_tag }}<br>
-            <input type="text" name="name" placeholder="Vos nom et prénom*" value="{{ form.name.value|default_if_none:'' }}" class="form-control">
-            {{ form.name.errors }}
-        </div>
-        <div class="my-3">
-            {{ form.email.label_tag }}<br>
-            <input type="email" name="email" placeholder="Votre adresse email*" value="{{ form.email.value|default_if_none:'' }}" class="form-control">
-            {{ form.email.errors }}
-        </div>
-        <div class="my-3">
-            {{ form.subject.label_tag }}<br>
-            <input type="text" name="subject" placeholder="Sujet*"  value="{{ form.subject.value|default_if_none:'' }}" class="form-control">
-            {{ form.subject.errors }}
-        </div>
-        <div class="my-3">
-            {{ form.message.label_tag }}<br>
-            <textarea name="message" rows="5" class="form-control" placeholder="Votre message*" value="{{ form.subject.value|default_if_none:'' }}"></textarea>
-            {{ form.message.errors }}
-        </div>
-        <div class="my-3  d-flex align-items-center justify-content-center">
->>>>>>> 2d225db (creation de contact part 1)
+
             <button type="submit" class="btn btn-contact w-50">Envoyer</button> 
         </div>
         
