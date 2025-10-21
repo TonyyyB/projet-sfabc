@@ -29,6 +29,10 @@ main {
   text-shadow: 1px 0 0 currentColor;
 }
 
+.titre-img {
+  color: #b8a67e;
+}
+
 .img-position-right {
   align-items: flex-end;
   text-align: right;
