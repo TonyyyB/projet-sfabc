@@ -171,3 +171,7 @@ hr {
   display: flex;
   justify-content: center;
 }
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
