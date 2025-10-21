@@ -122,7 +122,26 @@ main {
   object-fit: cover;
   z-index: -1;
 }
-.title {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .title {
   position: relative;
@@ -135,19 +154,6 @@ main {
     caret-color: transparent;
 }
 
-position: relative;
-
-
-  width: 100%;
-
-
-  text-align: center;
-
-
-  color: white;
-
-
-}
 .btn-contact {
   color: #EEE7D8 !important;
   background-color: #5A4328 !important;
