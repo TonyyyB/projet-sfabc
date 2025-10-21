@@ -24,8 +24,9 @@ class Image_Produit(models.Model):
     
     image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="image_produit")
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images_produit")
+    is_produit_du_moment = models.BooleanField(default=False)
     
     class Meta:
         unique_together = ('image', 'produit')
     def __str__(self):
-        return f"Image of {self.produit.nom_produit}"    
+        return f"Image of {self.produit.nom_produit}"  
