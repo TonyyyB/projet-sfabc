@@ -132,6 +132,7 @@ main {
   color: white;
 }
 
+
 .btn-contact {
   color: #EEE7D8 !important;
   background-color: #5A4328 !important;
@@ -149,7 +150,6 @@ main {
 .color-border-contact {
   border-color: #B8A67E !important;
 }
-
 .title {
   position: relative;
   width: 100%;
