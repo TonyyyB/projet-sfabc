@@ -1,4 +1,5 @@
 from django.db import models
+from apps.products.models import Produit
 
 # Create your models here.
 NOTES = {
@@ -14,6 +15,8 @@ class Note(models.Model):
     pseudonyme = models.CharField(max_length=100)
     valeur = models.IntegerField(choices=NOTES)
     message = models.CharField()
+    date = models.DateField(auto_now_add=True)
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="reviewed_product")
 
     def __str__(self):
         return f"{self.pseudonyme} : {self.valeur}"

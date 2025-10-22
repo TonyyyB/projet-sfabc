@@ -7,3 +7,4 @@ pytest-cov
 Pillow
 django_bootstrap5
 django-cleanup
+django_sortable_listview
