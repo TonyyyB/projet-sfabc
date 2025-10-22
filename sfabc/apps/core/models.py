@@ -1,5 +1,6 @@
 from django.db import models
 from colorfield.fields import ColorField
+from django.utils.html import mark_safe
 
 # Create your models here.
 class A_Propos(models.Model):
@@ -12,10 +13,15 @@ class A_Propos(models.Model):
         return self.titre_ap
 
 
-class Image(models.Model):
+class Image_Site(models.Model):
     id_image = models.AutoField(primary_key=True)
-    image = models.ImageField(upload_to="images")
+    image = models.ImageField(upload_to="images/site")
+    
+    def image_tag(self):
+        return mark_safe('<img src="/directory/%s" width="150" height="150" />' % (self.image))
 
+    image_tag.short_description = "Image du site"
+    
     def __str__(self):
         return self.image.name
 
@@ -27,8 +33,8 @@ EMPLACEMENT = {
 }
 
 
-class Image_AP(models.Model):
-    images = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="images")
+class Image_A_Propos(models.Model):
+    images = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
     titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
@@ -46,8 +52,8 @@ class Site(models.Model):
     foreground = ColorField(default="#B8A67E")
     police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
-    logo = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="logo_site")
-    bandeau = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="bandeau_site")
+    logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site")
+    bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site")
 
     def __str__(self):
         return f"<Site background: {self.background}, foreground: {self.foreground}, police: {self.police}>"
