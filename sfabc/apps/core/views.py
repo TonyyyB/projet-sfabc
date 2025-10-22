@@ -27,7 +27,8 @@ class ContactView(FormView):
             subject=f"{form.cleaned_data['Nom'] } vous contacte pour: {form.cleaned_data['Sujet']}",
             message=form.cleaned_data['Message'],
             from_email=form.cleaned_data['Email'],
-            recipient_list=['']
+            recipient_list=[''], # <-- Add your email here
+            fail_silently=False,
         ),
         return super().form_valid(form)
     
