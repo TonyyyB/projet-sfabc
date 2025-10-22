@@ -124,13 +124,9 @@ main {
 }
 
 .title {
-
   position: relative;
-
   width: 100%;
-
   text-align: center;
-
   color: white;
 
 }
@@ -151,14 +147,8 @@ main {
 .color-border-contact {
   border-color: #B8A67E !important;
 }
-.title {
-  position: relative;
-  width: 100%;
-  text-align: center;
-  color: white;
-}
 
 *:not(input) {
     caret-color: transparent;
-}
 
+}
