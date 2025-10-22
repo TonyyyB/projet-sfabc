@@ -128,6 +128,7 @@ main {
   width: 100%;
   text-align: center;
   color: white;
+
 }
 
 *:not(input) {
@@ -170,4 +171,24 @@ hr {
 .sep {
   display: flex;
   justify-content: center;
+
+
 }
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
+
+.color-text-contact {
+  color: #B8A67E !important;
+}
+
+.color-placeholder-contact::placeholder{
+  opacity: 1 !important;
+  color: #B8A67E !important;
+}
+
+.color-border-contact {
+  border-color: #B8A67E !important;
+}
+
