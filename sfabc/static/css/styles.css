@@ -45,7 +45,7 @@ main {
   }
 
   .logo-img {
-    height: 100px;
+    height: 150px;
   }
 
   .top-section {
@@ -99,7 +99,7 @@ main {
   }
 
   .logo-img {
-    height: 100px;
+    height: 150px;
   }
 
   .search-form {
@@ -119,7 +119,7 @@ main {
 
 .background-img {
   position: relative;
-  bottom: 90px;
+  bottom: 160px;
   width: 100%;
   object-fit: cover;
   z-index: -1;
