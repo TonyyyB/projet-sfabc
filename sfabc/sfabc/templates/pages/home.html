@@ -1,4 +1,29 @@
 {% extends 'base.html' %}
 {% block content %}
-
+{% for prdt in produits_moment %}
+    <div class="product-container">
+        {% if forloop.counter|divisibleby:2 %}
+        <div class="product-even">
+            <h3>{{ prdt.nom_produit }}</h3>
+            <p>{{ prdt.description_produit }}</p>
+        </div>
+        <div class="product-image-container product-even">
+        <img src="{{ prdt.images_list.0.image.image.url }}" class="product-image">
+        </div>
+        {% else %}
+        <div class="product-image-container product-odd">
+        <img src="{{ prdt.images_list.0.image.image.url }}" class="product-image">
+        </div>
+        <div class="product-odd">
+            <h3>{{ prdt.nom_produit }}</h3>
+            <p>{{ prdt.description_produit }}</p>
+        </div>
+        {% endif %}
+    </div>
+    {% if not forloop.last %}
+    <div class="sep">
+    <hr/>
+    </div>
+    {% endif %}
+{% endfor %}      
 {% endblock %}

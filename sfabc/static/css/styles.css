@@ -130,6 +130,50 @@ main {
   color: white;
 
 }
+
+*:not(input) {
+  caret-color: transparent;
+}
+
+.product-image-container {
+  border: 2.5px solid #b8a67e;
+  border-radius: 16px;
+  padding: 10px;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 4px #00000040;
+}
+
+.product-image {
+  width: min(25vw, 25rem);
+}
+
+.product-container {
+  display: flex;
+  justify-content: center;
+  margin: 56px;
+}
+
+.product-even {
+  margin-left: 48px;
+  text-align: right;
+}
+
+.product-odd {
+  margin-right: 48px;
+}
+
+hr {
+  border-top: 1px solid #000000 !important;
+  width: 80%;
+  height: 10%;
+}
+
+.sep {
+  display: flex;
+  justify-content: center;
+
+
+}
 .btn-contact {
   color: #EEE7D8 !important;
   background-color: #5A4328 !important;
@@ -148,7 +192,3 @@ main {
   border-color: #B8A67E !important;
 }
 
-*:not(input) {
-    caret-color: transparent;
-
-}
