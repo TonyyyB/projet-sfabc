@@ -7,5 +7,5 @@ pytest-cov
 Pillow
 django_bootstrap5
 django-cleanup
-django_sortable_listview
 django-colorfield
+django_sortable_listview
