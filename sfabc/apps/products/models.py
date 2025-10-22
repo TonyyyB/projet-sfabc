@@ -16,14 +16,13 @@ class Produit(models.Model):
     description_produit = models.TextField()
     is_produit_du_moment = models.BooleanField(default=False)
     famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="famille")
-
+    
     def __str__(self):
-        return f"Produit: {self.nom_produit}"
+        return f"{self.nom_produit}, famille {self.famille}: {self.prix_produit}€"
 
 class Image_Produit(models.Model):
-    
-    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="image_produit")
-    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images_produit")
+    image = models.ImageField(upload_to="images/produits")
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images")
     is_produit_du_moment = models.BooleanField(default=False)
     
     class Meta:
