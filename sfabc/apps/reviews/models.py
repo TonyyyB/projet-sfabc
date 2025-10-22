@@ -10,13 +10,12 @@ NOTES = {
     5 : "5"
 }
 
-class Note(models.Model):
+class Avis(models.Model):
     id_note = models.AutoField(primary_key=True)
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="avis")
     pseudonyme = models.CharField(max_length=100)
     valeur = models.IntegerField(choices=NOTES)
-    message = models.CharField()
-    date = models.DateField(auto_now_add=True)
-    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="reviewed_product")
+    message = models.TextField()
 
     def __str__(self):
-        return f"{self.pseudonyme} : {self.valeur}"
+        return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
