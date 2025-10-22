@@ -1,4 +1,13 @@
 {% extends 'base.html' %}
 {% block content %}
-
+{% for prdt in produits_moment %}
+    <div>
+        <img src="{{ prdt.images_list.0.image.image.url }}">
+        <div>
+            <h3>{{ prdt.nom_produit }}</h3>
+            <p>{{ prdt.description_produit }}</p>
+        </div>
+    </div>
+    <hr class="hr hr-blurry"/>
+{% endfor %}      
 {% endblock %}
