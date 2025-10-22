@@ -26,7 +26,7 @@ def style_processor(request):
     style += f"\theight: {hauteur_bandeau}px;\n"
     style += "}\n"
     style += ".title {\n"
-    style += f"\tbottom: calc(90px + {hauteur_bandeau/2}px + 0.5em);\n"
+    style += f"\tbottom: calc(160px + {hauteur_bandeau/2}px + 0.5em);\n"
     style += "}\n"
     
     menus = {
