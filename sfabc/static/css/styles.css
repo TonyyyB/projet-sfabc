@@ -196,7 +196,12 @@ hr {
   background-color: #5A4328 !important;
 }
 
-.color-text-contact ::placeholder {
+.color-text-contact {
+  color: #B8A67E !important;
+}
+
+.color-placeholder-contact::placeholder{
+  opacity: 1 !important;
   color: #B8A67E !important;
 }
 
