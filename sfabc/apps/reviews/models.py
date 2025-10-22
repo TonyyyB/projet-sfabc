@@ -14,6 +14,7 @@ class Avis(models.Model):
     id_note = models.AutoField(primary_key=True)
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="avis")
     pseudonyme = models.CharField(max_length=100)
+    date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
     message = models.TextField()
 
