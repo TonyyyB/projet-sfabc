@@ -17,8 +17,6 @@ class Avis(models.Model):
     date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
     message = models.CharField()
-    date = models.DateField(auto_now_add=True)
-    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="reviewed_product")
 
     def __str__(self):
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
