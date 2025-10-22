@@ -23,6 +23,7 @@ class Produit(models.Model):
 class Image_Produit(models.Model):
     image = models.ImageField(upload_to="images/produits")
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images")
+    is_produit_du_moment = models.BooleanField(default=False)
 
     def __str__(self):
         return f"Image {self.image.name} associée à {self.produit.nom_produit}"   
