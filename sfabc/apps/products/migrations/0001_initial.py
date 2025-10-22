@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('core', '0002_alter_site_police'),
+        ('core', '0001_initial'),
     ]
 
     operations = [
