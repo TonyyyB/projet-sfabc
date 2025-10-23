@@ -28,6 +28,25 @@ main {
   text-shadow: 1px 0 0 currentColor;
 }
 
+.titre {
+  color: #b8a67e;
+}
+
+.img-position-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.img-position-center {
+  align-items: center;
+  text-align: center;
+}
+
+.img-position-left {
+  align-items: flex-start;
+  text-align: left;
+}
+
 @media (max-width: 751px) {
   .container-fluid {
     position: relative;

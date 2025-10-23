@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
-from apps.core.models import A_Propos, Image_Site, Image_A_Propos, Site
+from apps.core.models import A_Propos, Image_Site, Image_AP, Site
 
 # Register your models here.
 admin.site.register(A_Propos)
@@ -28,7 +28,7 @@ class ImageAdmin(admin.ModelAdmin):
             ))
         return "Pas d'image"
 
-@admin.register(Image_A_Propos)
+@admin.register(Image_AP)
 class ImageAdmin(admin.ModelAdmin):
     readonly_fields = ["image_preview"]
     list_display = ["image_list"]
