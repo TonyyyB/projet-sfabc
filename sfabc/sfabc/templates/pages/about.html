@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+
+{% for info in infos %}
+    <section class="about" id="{{ info.id_ap }}">
+        <h2 class="titre">{{ info.titre_ap }}</h2>
+        <div class="images">
+            {% for img_ap in info.page_ap.all %}
+            <div class="img-position-{{ img_ap.position }}">
+                <p class="titre">{{ img_ap.titre_image }}</p>
+                <img src="{{ img_ap.image.image.url }}" alt="{{ img_ap.titre_image }}">
+            </div>
+            {% endfor %}
+        </div>
+        <p>{{ info.description_ap | linebreaks }}</p>
+    </section>
+{% endfor %}
+
+{% endblock %}
