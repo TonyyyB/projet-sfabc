@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<section>
+    <h2>
+        {% if search %}
+        Résultat de la recherche - {{ search }}
+        {% else %}
+        Tout les articles
+        {% endif %}
+    </h2>
+    <div class="produits">
+    {% for produit in produits %}
+        <a href="{% url 'products:detail_produit' produit.id_produit %}"  class="produit" id="produit{{ produit.id_produit }}">
+            <div class="img-container">
+                {% if produit.img_affichage != None %}
+                    <img src="{{ produit.img_affichage.image.image.url }}" alt="image du produit {{ produit.id_produit }}">
+                {% else %}
+                {% endif %}
+            </div>
+            <p>{{ produit.nom_produit }}</p>
+            <p class="prix-prod">{{ produit.prix_produit }} €</p>
+        </a>
+    {% endfor %}
+    </div>
+</section>
+
+{% endblock %}
