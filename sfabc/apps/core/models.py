@@ -13,6 +13,16 @@ class A_Propos(models.Model):
     def __str__(self):
         return self.titre_ap
 
+class Service(models.Model):
+    id_service = models.AutoField(primary_key=True)
+    titre_service = models.CharField(max_length=200)
+    description_service = models.TextField()
+    ordre_service = models.IntegerField()
+    image = models.ManyToManyField("Image_Site",through="Image_Service")
+
+    def __str__(self):
+        return self.titre_service
+
 
 class Image_Site(models.Model):
     id_image = models.AutoField(primary_key=True)
@@ -35,6 +45,7 @@ EMPLACEMENT = [
 
 
 
+
 class Image_AP(models.Model):
     image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
@@ -47,6 +58,17 @@ class Image_AP(models.Model):
     def __str__(self):
         return f"page a propos {self.page_ap} avec des {self.image}"
 
+class Image_Service(models.Model):
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service")
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
+    titre_image = models.CharField(max_length=100)
+    position = models.CharField(choices=EMPLACEMENT)
+
+    class Meta:
+        unique_together = ('image', 'service')
+
+    def __str__(self):
+        return f"service {self.service} avec des {self.image}"
 
 class Site(models.Model):
     id = models.AutoField(primary_key=True)
