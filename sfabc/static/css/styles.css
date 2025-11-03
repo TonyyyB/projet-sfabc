@@ -192,3 +192,17 @@ hr {
 .color-border-contact {
   border-color: #B8A67E !important;
 }
+
+.carousel {
+  display: flex;
+  width: 40vw;
+  height: 40vh;
+  margin: 20px;
+  background-color: white;
+  align-items: center;
+}
+
+.carousel-inner img {
+  max-height: 250px;
+  object-fit: contain;
+}
