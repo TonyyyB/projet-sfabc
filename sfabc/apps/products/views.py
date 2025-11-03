@@ -13,8 +13,8 @@ class ProduitListView(ListView):
     def get_queryset(self):
         query = self.request.GET.get('search')
         if query:
-            return Produit.objects.filter(nom_produit__icontains=query).select_related('famille').prefetch_related(Prefetch("images_produit", queryset=Image_Produit.objects.select_related("image"), to_attr="images_list"))
-        return Produit.objects.select_related('famille').prefetch_related(Prefetch("images_produit", queryset=Image_Produit.objects.select_related("image"), to_attr="images_list")).order_by("famille")
+            return Produit.objects.filter(nom_produit__icontains=query).select_related('famille').prefetch_related("images").order_by("famille")
+        return Produit.objects.select_related('famille').prefetch_related("images").order_by("famille")
 
 
     def get_context_data(self, **kwargs):
@@ -22,8 +22,8 @@ class ProduitListView(ListView):
         context["title"] = "Les produits"
         context["search"] = self.request.GET.get('search')
         for p in context["produits"]:
-            if len(p.images_list) != 0:
-                p.img_affichage = p.images_list[0]
+            if p.images.all().exists():
+                p.img_affichage = p.images.all()[0]
             else:
                 p.img_affichage = None
         return context
