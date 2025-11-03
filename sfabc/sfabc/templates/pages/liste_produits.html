@@ -14,12 +14,17 @@
         <a href="{% url 'products:detail_produit' produit.id_produit %}"  class="produit" id="produit{{ produit.id_produit }}">
             <div class="img-container">
                 {% if produit.img_affichage != None %}
-                    <img src="{{ produit.img_affichage.image.image.url }}" alt="image du produit {{ produit.id_produit }}">
+                    <img src="{{ produit.img_affichage.image.url }}" alt="image du produit {{ produit.id_produit }}">
                 {% else %}
                 {% endif %}
             </div>
             <p>{{ produit.nom_produit }}</p>
-            <p class="prix-prod">{{ produit.prix_produit }} €</p>
+            {% if produit.prix_produit != None %}
+                <p class="prix-prod">{{ produit.prix_produit }} €</p>
+            {% else %}
+                <p class="prix-prod">Aucun prix assigné</p>
+            {% endif %}
+            
         </a>
     {% endfor %}
     </div>
