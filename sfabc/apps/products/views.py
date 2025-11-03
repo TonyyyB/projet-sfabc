@@ -10,12 +10,11 @@ class DetailProduitView(DetailView):
     context_object_name = "produit"
     
     def get_queryset(self):
-        return Produit.objects.prefetch_related(Prefetch("images_produit", queryset=Image_Produit.objects.select_related("image"), to_attr="images_list"))
+        return Produit.objects.prefetch_related('images')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        for image in context["produit"].images_list:
-            print(image.image.image.url)
+        context["images"] = context["produit"].images.all()
         context["title"] = self.object.nom_produit
         return context
     
