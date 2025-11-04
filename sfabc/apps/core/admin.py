@@ -59,9 +59,9 @@ class ImageAdmin(admin.ModelAdmin):
     def image_preview(self, obj):
         if obj.image:
             return mark_safe('<img src="{url}" width="{width}" height={height} />'.format(
-                url = obj.image.url,
-                width=obj.image.width,
-                height=obj.image.height,
+                url = obj.image.image.url,
+                width=obj.image.image.width,
+                height=obj.image.image.height,
             ))
         return "Pas d'image"
     image_preview.short_description = 'Preview'
@@ -69,6 +69,6 @@ class ImageAdmin(admin.ModelAdmin):
     def image_list(self, obj):
         if obj.image:
             return mark_safe('<img src="{url}" style="max-width:200px; max-height:200px;" />'.format(
-                url = obj.image.url,
+                url = obj.image.image.url,
             ))
         return "Pas d'image"
