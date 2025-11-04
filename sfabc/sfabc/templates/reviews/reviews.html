@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
-    {% include 'sortable_listview/sort_links.html' %}
         {% for rev in reviews %}
             <div class="panel panel-success">
                 <div class="panel-heading">{{ rev.pseudonyme }} {{ rev.valeur }}</div>

@@ -1,19 +1,18 @@
 from django.shortcuts import render
 from django.db.models import Count
-from apps.reviews.models import Note
+from apps.reviews.models import Avis
 from sortable_listview import SortableListView
 
 # Create your views here.
 class ReviewListView(SortableListView):
-    model = Note
+    model = Avis
     template_name = "reviews/reviews.html"
     context_object_name = "reviews"
-    allowed_sort_fields = {'note': {'default_direction': '','verbose_name': 'Note'},'published_date': {'default_direction': '-','verbose_name': 'Publié le'}}
-    default_sort_field = 'published_date'
-    template_name = 'list.html'
+    allowed_sort_fields = {'note': {'default_direction': '','verbose_name': 'Note'},'date': {'default_direction': '-','verbose_name': 'Publié le'}}
+    default_sort_field = 'date'
 
     def get_queryset(self):
-        return Note.objects.filter(produit__icontains=self.kwargs['pk']).annotate(nb_produits=Count('produits_categorie'))
+        return Avis.objects.filter(produit__id_produit=self.kwargs['pk'])
     
     def get_context_data(self, **kwargs):
         context = super(ReviewListView, self).get_context_data(**kwargs)
