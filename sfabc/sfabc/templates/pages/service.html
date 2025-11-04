@@ -5,11 +5,11 @@
     <section class="service" id="service-{{ service.id_service }}">
         <h2 class="titre">{{ service.titre_service }}</h2>
         <div class="images">
-            {% for img_service in service.page_service.all %}
-            <div class="img-position-{{ img_service.position }}">
-                <p class="titre">{{ img_service.titre_image }}</p>
-                <img src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}">
-            </div>
+            {% for img_service in service.service.all %}
+                <div class="img-position-{{ img_service.position }}">
+                    <p class="titre">{{ img_service.titre_image }}</p>
+                    <img src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}">
+                </div>
             {% endfor %}
         </div>
         <p>{{ service.description_service | linebreaks }}</p>
