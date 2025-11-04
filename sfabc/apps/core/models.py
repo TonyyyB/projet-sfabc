@@ -1,7 +1,6 @@
 from django.db import models
 from colorfield.fields import ColorField
 from django.utils.html import mark_safe
-from apps.core.models import Image
 
 # Create your models here.
 class A_Propos(models.Model):
@@ -9,7 +8,7 @@ class A_Propos(models.Model):
     ordre_ap = models.IntegerField()
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
-    images = models.ManyToManyField("Image", through="Image_AP")
+    images = models.ManyToManyField("Image_Site", through="Image_AP")
 
     def __str__(self):
         return self.titre_ap
@@ -36,7 +35,7 @@ EMPLACEMENT = [
 
 
 class Image_AP(models.Model):
-    image = models.ForeignKey(Image, on_delete=models.CASCADE, related_name="images")
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
     titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
