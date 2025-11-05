@@ -2,10 +2,10 @@
 {% block content %}
 {% include 'includes/sortable_listview.html' %}
     {% for rev in reviews %}
-        <div class="panel panel-success">
-            <div class="panel-heading">{{ rev.pseudonyme }} {{ rev.valeur }}</div>
-            <p>{{ rev.message }}</p>
-            <div class="panel-footer">Publié le : {{ rev.date }}</div>
+        <div class="card">
+            <div class="card-header bg-transparent">{{ rev.pseudonyme }} {{ rev.valeur }}</div>
+            <div class="card-body">{{ rev.message }}</div>
+            <div class="card-footer text-body-secondary">Publié le : {{ rev.date }}</div>
         </div>
     {% endfor %}
 {% include 'includes/pagination.html' %}
