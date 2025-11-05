@@ -1,10 +1,12 @@
 {% extends 'base.html' %}
 {% block content %}
-        {% for rev in reviews %}
-            <div class="panel panel-success">
-                <div class="panel-heading">{{ rev.pseudonyme }} {{ rev.valeur }}</div>
-                <p>{{ rev.message }}</p>
-                <div class="panel-footer">Publié le : {{ rev.date }}</div>
-            </div>
-        {% endfor %}
+{% include 'includes/sortable_listview.html' %}
+    {% for rev in reviews %}
+        <div class="panel panel-success">
+            <div class="panel-heading">{{ rev.pseudonyme }} {{ rev.valeur }}</div>
+            <p>{{ rev.message }}</p>
+            <div class="panel-footer">Publié le : {{ rev.date }}</div>
+        </div>
+    {% endfor %}
+{% include 'includes/pagination.html' %}
 {% endblock %}

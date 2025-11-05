@@ -1,5 +1,3 @@
-from django.shortcuts import render
-from django.db.models import Count
 from apps.reviews.models import Avis
 from sortable_listview import SortableListView
 
@@ -8,13 +6,6 @@ class ReviewListView(SortableListView):
     model = Avis
     template_name = "reviews/reviews.html"
     context_object_name = "reviews"
-    allowed_sort_fields = {'note': {'default_direction': '','verbose_name': 'Note'},'date': {'default_direction': '-','verbose_name': 'Publié le'}}
+    allowed_sort_fields = {'valeur': {'default_direction': '-','verbose_name': 'Note'},'date': {'default_direction': '-','verbose_name': 'Publié le'}}
     default_sort_field = 'date'
-
-    def get_queryset(self):
-        return Avis.objects.filter(produit__id_produit=self.kwargs['pk'])
-    
-    def get_context_data(self, **kwargs):
-        context = super(ReviewListView, self).get_context_data(**kwargs)
-        context['title'] = "Avis"
-        return context
+    paginate_by = 5
