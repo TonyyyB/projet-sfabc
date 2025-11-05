@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import *
 from apps.products.models import *
 from django.db.models import Prefetch
-from apps.core.models import A_Propos, Image_AP
+from apps.core.models import A_Propos, Image_AP, Image_Site
 from .forms import ContactForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect
@@ -58,7 +58,13 @@ class AProposView(ListView):
 
 
     def get_queryset(self):
-        return A_Propos.objects.order_by("ordre_ap").prefetch_related("page_ap__image")
+        return A_Propos.objects.order_by("ordre_ap").prefetch_related(
+            Prefetch(
+                "images",
+                queryset=Image_AP.objects.select_related("image"),
+                to_attr="image_list"
+            )
+        )
 
 
     def get_context_data(self, **kwargs):
