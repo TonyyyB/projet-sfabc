@@ -16,7 +16,7 @@ class Avis(models.Model):
     pseudonyme = models.CharField(max_length=100)
     date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
-    message = models.TextField()
+    message = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
