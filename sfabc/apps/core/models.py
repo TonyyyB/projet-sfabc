@@ -8,10 +8,12 @@ class A_Propos(models.Model):
     ordre_ap = models.IntegerField()
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
-    images = models.ManyToManyField("Image", through="Image_AP")
 
     def __str__(self):
         return self.titre_ap
+    
+    class Meta:
+        verbose_name_plural = "A propos"
 
 
 class Image_Site(models.Model):
@@ -25,6 +27,9 @@ class Image_Site(models.Model):
     
     def __str__(self):
         return self.image.name
+    
+    class Meta:
+        verbose_name_plural = "Images du site"
 
 
 EMPLACEMENT = [
@@ -35,13 +40,14 @@ EMPLACEMENT = [
 
 
 class Image_AP(models.Model):
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images")
-    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_ap")
+    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
     titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
         unique_together = ('image', 'page_ap')
+        verbose_name_plural = "Images à propos"
 
     def __str__(self):
         return f"page a propos {self.page_ap} avec des {self.image}"
@@ -55,6 +61,18 @@ class Site(models.Model):
     bandeau_hauteur = models.IntegerField(default=140)
     logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site")
     bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site")
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    class Meta:
+        verbose_name_plural = "Site"
 
     def __str__(self):
         return f"<Site background: {self.background}, foreground: {self.foreground}, police: {self.police}>"

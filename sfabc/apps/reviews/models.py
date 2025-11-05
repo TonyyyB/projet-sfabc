@@ -17,6 +17,9 @@ class Avis(models.Model):
     date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
     message = models.TextField()
+    
+    class Meta:
+        verbose_name_plural = "Avis"
 
     def __str__(self):
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
