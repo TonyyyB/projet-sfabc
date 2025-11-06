@@ -3,7 +3,10 @@
 {% include 'includes/sortable_listview.html' %}
     {% for rev in reviews %}
         <div class="card">
-            <div class="card-header bg-transparent">{{ rev.pseudonyme }} {{ rev.valeur }}</div>
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                <p>{{ rev.pseudonyme }}</p>
+                <p>{{ rev.stars }}</p>
+            </div>
             <div class="card-body">{{ rev.message }}</div>
             <div class="card-footer text-body-secondary">Publié le : {{ rev.date }}</div>
         </div>
