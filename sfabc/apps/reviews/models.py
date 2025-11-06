@@ -20,3 +20,11 @@ class Avis(models.Model):
 
     def __str__(self):
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
+    
+    def stars(self) :
+        rate = ""
+        for _ in range(self.valeur):
+            rate += "★"
+        for _ in range(5-self.valeur):
+            rate += "☆"
+        return rate
