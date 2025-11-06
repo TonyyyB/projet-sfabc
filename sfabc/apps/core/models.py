@@ -60,7 +60,7 @@ class Image_AP(models.Model):
 
 class Image_Service(models.Model):
     image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service")
-    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service", null=True, blank=True)
     titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
 

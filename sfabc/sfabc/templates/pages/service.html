@@ -3,29 +3,31 @@
 
 {% for service in services %}
     <section class="service p-2 border-bottom border-1 border-black d-flex  " id="service-{{ service.id_service }}">
-        <div id="carouselService" class="carousel slide w-50" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                {% for img_service in service.service.all %}
-                    <div class="img-position-{{ img_service.position }} w-100  carousel-item {% if forloop.first %}active{% endif %}">
-                        <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}">
-                        <p class="titre">{{ img_service.titre_image }}</p>
-                    </div>
-                {% endfor %}
+        {% if service.service.count > 0 %}
+            <div id="carouselService" class="carousel slide w-50" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    {% for img_service in service.service.all %}
+                        <div class="img-position-{{ img_service.position }} w-100  carousel-item {% if forloop.first %}active{% endif %}">
+                            <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}">
+                            <p class="titre">{{ img_service.titre_image }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% if service.service.count > 1 %}
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselService" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselService" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                {% endif %}
             </div>
-            {% if service.service.count > 1 %}
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselService" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselService" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </button>
-            {% endif %}
-        </div>
+        {% endif %}
 
 
-        <div class="w-50 p-5">
+        <div class="w-75 p-5">
             <h2 class="titre">{{ service.titre_service }}</h2>
             <p>{{ service.description_service | linebreaks }}</p>
         </div>
