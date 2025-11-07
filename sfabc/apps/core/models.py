@@ -62,7 +62,6 @@ class Image_Service(models.Model):
     image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service")
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
     titre_image = models.CharField(max_length=100, null=True, blank=True)
-    position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
         unique_together = ('image', 'service')
