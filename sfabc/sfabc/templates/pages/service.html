@@ -8,10 +8,12 @@
             <div id="carouselService" class="carousel slide w-50" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     {% for img_service in service.service.all %}
-                        <div class="img-position-{{ img_service.position }} w-100  carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="w-100  carousel-item {% if forloop.first %}active{% endif %}">
                             <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}">
                             {% if img_service.titre_image %}
+                            <div>
                                 <p class="titre">{{ img_service.titre_image }}</p>
+                            </div>
                             {% endif %}
                         </div>
                     {% endfor %}
