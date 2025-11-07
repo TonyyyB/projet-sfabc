@@ -36,23 +36,23 @@
         <div class="d-flex justify-content-center flex-row">
             <div class="btn-group" id="pagination-produits" role="group" aria-label="Item pagination">
                 {% if items_page.has_previous %}
-                    <a href="?page={{ items_page.previous_page_number }}" class="btn btn-outline-primary">&laquo;</a>
+                    <a href="?page={{ items_page.previous_page_number }}" class="btn btn-outline-primary btn-pagination">&laquo;</a>
                 {% endif %}
 
                 {% for page_number in items_page.paginator.page_range %}
                     {% if items_page.number == page_number %}
-                        <button class="btn btn-outline-primary active">
+                        <button class="btn btn-outline-primary btn-pagination active">
                             <span>{{ page_number }}</span>
                         </button>
                     {% else %}
-                        <a href="?page={{ page_number }}" class="btn btn-outline-primary">
+                        <a href="?page={{ page_number }}" class="btn btn-outline-primary btn-pagination">
                             {{ page_number }}
                         </a>
                     {% endif %}
                 {% endfor %}
 
                 {% if items_page.has_next %}
-                    <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary">&raquo;</a>
+                    <a href="?page={{ items_page.next_page_number }}" class="btn btn-outline-primary btn-pagination">&raquo;</a>
                 {% endif %}
             </div>
         </div>
