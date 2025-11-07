@@ -1,6 +1,6 @@
 from django.contrib import admin
-from apps.products.models import *
 from django.utils.html import mark_safe
+from apps.products.models import * 
 
 # Register your models here.
 admin.site.register(Famille)
@@ -30,4 +30,3 @@ class ImageAdmin(admin.ModelAdmin):
     
     def desc_produit(self, obj):
         return str(obj.produit)
-
