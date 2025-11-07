@@ -47,13 +47,10 @@ class ContactView(FormView):
             fail_silently=False,
         ),
         return super().form_valid(form)
-    
-
-    
 
 class AProposView(ListView):
     model = A_Propos
-    context_object_name = "infos"
+    context_object_name = "sections_ap"
     template_name = "pages/about.html"
 
 
@@ -61,8 +58,18 @@ class AProposView(ListView):
         return A_Propos.objects.order_by("ordre_ap").prefetch_related(
             Prefetch(
                 "images",
-                queryset=Image_AP.objects.select_related("image"),
-                to_attr="image_list"
+                queryset=Image_AP.objects.select_related("image").filter(position="left"),
+                to_attr="images_left"
+            ),
+            Prefetch(
+                "images", 
+                queryset=Image_AP.objects.select_related("image").filter(position="center"),
+                to_attr="images_center"
+            ),
+            Prefetch(
+                "images",
+                queryset=Image_AP.objects.select_related("image").filter(position="right"), 
+                to_attr="images_right"
             )
         )
 
@@ -70,6 +77,7 @@ class AProposView(ListView):
     def get_context_data(self, **kwargs):
         context = super(AProposView, self).get_context_data(**kwargs)
         context["title"] = "À propos"
+        print(vars(context["sections_ap"][0]))
         return context
 
 class ServiceView(ListView):

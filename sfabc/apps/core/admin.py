@@ -24,7 +24,8 @@ class ImageAdmin(admin.ModelAdmin):
     
     def image_list(self, obj):
         if obj.image:
-            return mark_safe('<img src="{url}" style="max-width:200px; max-height:200px;" />'.format(
+            return mark_safe('{string}<img src="{url}" style="max-width:200px; max-height:200px;" />'.format(
+                string = str(obj),
                 url = obj.image.url,
             ))
         return "Pas d'image"
@@ -46,7 +47,8 @@ class ImageAdmin(admin.ModelAdmin):
     
     def image_list(self, obj):
         if obj.image:
-            return mark_safe('<img src="{url}" style="max-width:200px; max-height:200px;" />'.format(
+            return mark_safe('{string}<img src="{url}" style="max-width:200px; max-height:200px;" />'.format(
+                string = str(obj),
                 url = obj.image.image.url,
             ))
         return "Pas d'image"
