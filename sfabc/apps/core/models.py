@@ -1,6 +1,7 @@
 from django.db import models
 from colorfield.fields import ColorField
 from django.utils.html import mark_safe
+import os
 
 # Create your models here.
 class A_Propos(models.Model):
@@ -26,7 +27,7 @@ class Image_Site(models.Model):
     image_tag.short_description = "Image du site"
     
     def __str__(self):
-        return self.image.name
+        return os.path.basename(self.image.name)
     
     class Meta:
         verbose_name_plural = "Images du site"
@@ -42,7 +43,7 @@ EMPLACEMENT = [
 class Image_AP(models.Model):
     image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_ap")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
-    titre_image = models.CharField(max_length=100)
+    titre_image = models.CharField(max_length=100, null=True, blank=True)
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
@@ -50,7 +51,7 @@ class Image_AP(models.Model):
         verbose_name_plural = "Images à propos"
 
     def __str__(self):
-        return f"page a propos {self.page_ap} avec des {self.image}"
+        return f"{self.page_ap} - {self.titre_image if self.titre_image else self.image.image.name}"
 
 
 class Site(models.Model):
