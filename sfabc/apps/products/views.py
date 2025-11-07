@@ -5,7 +5,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import *
 
 
-
 # Create your views here.
 class ProduitListView(ListView):
     model = Produit
