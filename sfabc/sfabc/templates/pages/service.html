@@ -9,7 +9,7 @@
                 <div class="carousel-inner">
                     {% for img_service in service.service.all %}
                         <div class="w-100  carousel-item {% if forloop.first %}active{% endif %}">
-                            <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}">
+                            <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}" loading="lazy">
                             {% if img_service.titre_image %}
                             <div>
                                 <p class="titre">{{ img_service.titre_image }}</p>
