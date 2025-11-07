@@ -15,7 +15,7 @@
             <a href="{% url 'products:detail_produit' produit.id_produit %}"  class="produit" id="produit{{ produit.id_produit }}">
                 <div class="img-container">
                     {% if produit.img_affichage != None %}
-                        <img src="{{ produit.img_affichage.image.url }}" alt="image du produit {{ produit.id_produit }}">
+                        <img src="{{  produit.img_affichage.image.url }}" alt="image du produit {{ produit.id_produit }}" loading="lazy">
                     {% else %}
                     {% endif %}
                 </div>
