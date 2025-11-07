@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import *
 from apps.products.models import *
 from django.db.models import Prefetch
-from apps.core.models import A_Propos, Image_AP, Image_Site
+from apps.core.models import A_Propos, Image_AP, Service, Image_Site
 from .forms import ContactForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect
@@ -72,3 +72,17 @@ class AProposView(ListView):
         context["title"] = "À propos"
         return context
 
+class ServiceView(ListView):
+    model = Service
+    context_object_name = "services"
+    template_name = "pages/service.html"
+
+
+    def get_queryset(self):
+        return Service.objects.order_by("ordre_service").prefetch_related("image")
+
+
+    def get_context_data(self, **kwargs):
+        context = super(ServiceView, self).get_context_data(**kwargs)
+        context["title"] = "Services"
+        return context
