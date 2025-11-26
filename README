@@ -1,4 +1,17 @@
-• création virtualenv : virtualenv ~/venv
-• lancement venv : source ~/venv/bin/activate
-• installation de requirements : pip install -r requirements.txt
+Création virtualenv : 
+  virtualenv ~/venv
+  
+Lancement venv : 
+  source ~/venv/bin/activate
 
+Installation de requirements :
+  pip install -r requirements.txt
+
+Creer la base de données et lancer le serveur :
+  python3 manage.py makemigrations
+
+Appliquzez les migrations :
+  python3 manage.py migrate
+
+Lancer le serveur de développement :
+  python3 manage.py runserver

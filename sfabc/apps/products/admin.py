@@ -1,6 +1,6 @@
 from django.contrib import admin
-from apps.products.models import *
 from django.utils.html import mark_safe
+from apps.products.models import * 
 
 # Register your models here.
 admin.site.register(Famille)
