@@ -9,9 +9,10 @@ body {
   display: flex;
   flex-direction: column;
 }
+
 main {
   position: relative;
-  bottom: 90px;
+  bottom: 150px;
   flex: 1;
 }
 
@@ -26,6 +27,93 @@ main {
 
 .nav-link:hover {
   text-shadow: 1px 0 0 currentColor;
+}
+
+.produits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2rem;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.produits a {
+  color: #000000;
+  text-decoration: none;
+}
+
+.produit {
+  background-color: white;
+  border: 2px solid #b8a67e;
+  border-radius: 10px;
+  width: 15%;
+  height: 5%;
+  padding: 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.img-container {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 5%;
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 0 4px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.produit img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.prix-prod {
+  color: #b8a67e;
+}
+
+.btn-outline-primary.btn-pagination {
+  --bs-btn-color: #B8A67E;
+  --bs-btn-border-color: #B8A67E;
+  --bs-btn-hover-color: #F6F2E8;
+  --bs-btn-hover-bg: #B8A67E;
+  --bs-btn-hover-border-color: #B8A67E;
+  --bs-btn-focus-shadow-rgb: 13,110,253;
+  --bs-btn-active-color: #F6F2E8;
+  --bs-btn-active-bg: #B8A67E;
+  --bs-btn-active-border-color: #B8A67E;
+  --bs-btn-active-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
+  --bs-btn-disabled-color: #0d6efd;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: #0d6efd;
+  --bs-gradient: none;
+}
+
+.titre {
+  color: #b8a67e;
+}
+
+.img-position-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.img-position-center {
+  align-items: center;
+  text-align: center;
+}
+
+.img-position-left {
+  align-items: flex-start;
+  text-align: left;
 }
 
 @media (max-width: 751px) {
@@ -44,7 +132,7 @@ main {
   }
 
   .logo-img {
-    height: 100px;
+    height: 150px;
   }
 
   .top-section {
@@ -76,6 +164,38 @@ main {
   .nav-item {
     display: inline-block;
   }
+
+  .produits a {
+    color: #000000;
+    text-decoration: none;
+  }
+
+  .produit {
+    background-color: white;
+    border: 2px solid #b8a67e;
+    border-radius: 10px;
+    width: 25%;
+    height: 5%;
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .img-container {
+    width: 100%;
+    height: 50px;
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: 0 0 4px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
 }
 
 @media (min-width: 750px) {
@@ -97,7 +217,7 @@ main {
   }
 
   .logo-img {
-    height: 100px;
+    height: 150px;
   }
 
   .search-form {
@@ -117,7 +237,7 @@ main {
 
 .background-img {
   position: relative;
-  bottom: 90px;
+  bottom: 160px;
   width: 100%;
   object-fit: cover;
   z-index: -1;
@@ -128,8 +248,66 @@ main {
   width: 100%;
   text-align: center;
   color: white;
+
 }
 
 *:not(input) {
-    caret-color: transparent;
+  caret-color: transparent;
 }
+
+.product-image-container {
+  border: 2.5px solid #b8a67e;
+  border-radius: 16px;
+  padding: 10px;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 4px #00000040;
+}
+
+.product-image {
+  width: min(25vw, 25rem);
+}
+
+.product-container {
+  display: flex;
+  justify-content: center;
+  margin: 56px;
+}
+
+.product-even {
+  margin-left: 48px;
+  text-align: right;
+}
+
+.product-odd {
+  margin-right: 48px;
+}
+
+hr {
+  border-top: 1px solid #000000 !important;
+  width: 80%;
+  height: 10%;
+}
+
+.sep {
+  display: flex;
+  justify-content: center;
+}
+
+.btn-contact {
+  color: #EEE7D8 !important;
+  background-color: #5A4328 !important;
+}
+
+.color-text-contact {
+  color: #B8A67E !important;
+}
+
+.color-placeholder-contact::placeholder{
+  opacity: 1 !important;
+  color: #B8A67E !important;
+}
+
+.color-border-contact {
+  border-color: #B8A67E !important;
+}
+

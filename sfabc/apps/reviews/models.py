@@ -1,4 +1,5 @@
 from django.db import models
+from apps.products.models import Produit
 
 # Create your models here.
 NOTES = {
@@ -9,11 +10,16 @@ NOTES = {
     5 : "5"
 }
 
-class Note(models.Model):
+class Avis(models.Model):
     id_note = models.AutoField(primary_key=True)
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="avis")
     pseudonyme = models.CharField(max_length=100)
+    date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
-    message = models.CharField()
+    message = models.TextField()
+    
+    class Meta:
+        verbose_name_plural = "Avis"
 
     def __str__(self):
-        return f"{self.pseudonyme} : {self.valeur}"
+        return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
