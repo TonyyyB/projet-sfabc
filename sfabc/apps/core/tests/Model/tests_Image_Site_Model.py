@@ -4,7 +4,7 @@ from apps.core.models import Image_Site
 from sfabc.settings import BASE_DIR
 import os
 
-class ImageModelTest(TestCase):
+class ImageSiteModelTest(TestCase):
     def setUp(self):
         self.image = Image_Site.objects.create(image=None)
 
