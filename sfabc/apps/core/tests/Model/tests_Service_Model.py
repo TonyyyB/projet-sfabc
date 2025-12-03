@@ -10,7 +10,7 @@ class ServiceModelTest(TestCase):
         self.service.image.add(self.image_site)
 
 
-    def test_categorie_create(self):
+    def test_service_create(self):
         self.assertEqual(self.service.titre_service, "titre test service")
         self.assertEqual(self.service.description_service, "description test service")
         self.assertEqual(self.service.ordre_service, 1)
@@ -21,7 +21,7 @@ class ServiceModelTest(TestCase):
         self.assertEqual(str(self.service), "titre test service")
 
 
-    def test_categorie_update(self):
+    def test_service_update(self):
         self.service.titre_service = "titre2 test service"
         self.service.description_service = "description2 test service"
         self.service.ordre_service = 2
@@ -33,7 +33,7 @@ class ServiceModelTest(TestCase):
         self.assertEqual(update_service.ordre_service, 2)
 
 
-    def test_categorie_delete(self):
+    def test_service_delete(self):
         self.image_site.delete()
         self.service.delete()
         self.assertEqual(Service.objects.count(), 0)
