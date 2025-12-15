@@ -77,7 +77,6 @@ class AProposView(ListView):
     def get_context_data(self, **kwargs):
         context = super(AProposView, self).get_context_data(**kwargs)
         context["title"] = "À propos"
-        print(vars(context["sections_ap"][0]))
         return context
 
 class ServiceView(ListView):
