@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.urls import reverse, resolve
-from django.contrib.auth.models import User
 from apps.core.views import Home, ContactView, AProposView, ServiceView
 
 
