@@ -6,6 +6,7 @@ class FamilleModelTest(TestCase):
     def setUp(self):
         self.famille = Famille.objects.create(nom_famille="nom test famille")
 
+
     def test_famille_create(self):
         self.assertEqual(self.famille.nom_famille, "nom test famille")
 
@@ -15,11 +16,11 @@ class FamilleModelTest(TestCase):
 
 
     def test_famille_update(self):
-        self.famille.nom_famille = "nom test famille"
+        self.famille.nom_famille = "nom test famille2"
         self.famille.save()
 
-        update_categ = Famille.objects.get(id_famille=self.famille.id_famille)
-        self.assertEqual(update_categ.nom_famille, "nom test famille")
+        update_famille = Famille.objects.get(id_famille=self.famille.id_famille)
+        self.assertEqual(update_famille.nom_famille, "nom test famille")
 
 
     def test_famille_delete(self):
