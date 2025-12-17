@@ -1,6 +1,7 @@
 from django.db import models
 from colorfield.fields import ColorField
 from django.utils.html import mark_safe
+import os
 
 # Create your models here.
 class A_Propos(models.Model):
@@ -12,6 +13,19 @@ class A_Propos(models.Model):
 
     def __str__(self):
         return self.titre_ap
+    
+    class Meta:
+        verbose_name_plural = "A propos"
+
+class Service(models.Model):
+    id_service = models.AutoField(primary_key=True)
+    titre_service = models.CharField(max_length=200)
+    description_service = models.TextField()
+    ordre_service = models.IntegerField()
+    image = models.ManyToManyField("Image_Site",through="Image_Service")
+
+    def __str__(self):
+        return self.titre_service
 
 
 class Image_Site(models.Model):
@@ -24,7 +38,10 @@ class Image_Site(models.Model):
     image_tag.short_description = "Image du site"
     
     def __str__(self):
-        return self.image.name
+        return os.path.basename(self.image.name)
+    
+    class Meta:
+        verbose_name_plural = "Images du site"
 
 
 EMPLACEMENT = [
@@ -33,19 +50,29 @@ EMPLACEMENT = [
     ("left", "Gauche")
 ]
 
-
-class Image_AP(models.Model):
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images")
-    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="page_ap")
+class Image_A_Propos(models.Model):
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_A_Propos")
+    page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
     titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
         unique_together = ('image', 'page_ap')
+        verbose_name_plural = "Images à propos"
 
     def __str__(self):
-        return f"page a propos {self.page_ap} avec des {self.image}"
+        return f"{self.page_ap} - {self.titre_image if self.titre_image else self.image.image.name}"
 
+class Image_Service(models.Model):
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service")
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
+    titre_image = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('image', 'service')
+
+    def __str__(self):
+        return f"service {self.service} avec des {self.image}"
 
 class Site(models.Model):
     id = models.AutoField(primary_key=True)
@@ -55,6 +82,18 @@ class Site(models.Model):
     bandeau_hauteur = models.IntegerField(default=140)
     logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site")
     bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site")
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj
+
+    class Meta:
+        verbose_name_plural = "Site"
 
     def __str__(self):
         return f"<Site background: {self.background}, foreground: {self.foreground}, police: {self.police}>"
