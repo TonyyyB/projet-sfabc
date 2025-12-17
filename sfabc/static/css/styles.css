@@ -287,3 +287,53 @@ hr {
 .color-border-contact {
   border-color: #B8A67E !important;
 }
+
+.review{
+  margin: 25px;
+  border: solid 1px !important;
+  border-color: #5A4328 !important;
+  background-color: #ffffff !important;
+  box-shadow: inset 0 2px 4px #5a432842;
+}
+
+.rev-stars{
+  font-size: large;
+  color: #5A4328;
+}
+
+.rev-title{
+  font-size: large;
+}
+
+.rev-title::first-letter{
+  text-transform : capitalize;
+}
+
+.rev-footer{
+  font-size: small;
+  border-top: none !important;
+  background-color: white !important;
+}
+
+.rev-header{
+  border-bottom-color: #5a432875 !important;
+}
+
+.sortable-links{
+  display: flex;
+  flex-wrap: nowrap;
+}
+
+.sortable-label{
+  margin-right: 15px;
+  margin-bottom: 0px;
+}
+
+.sort-btn{
+  font-size: 28px;
+}
+
+.sort-btn-box{
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+}
