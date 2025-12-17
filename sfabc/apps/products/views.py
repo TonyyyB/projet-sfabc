@@ -93,7 +93,3 @@ class ProduitListView(ListView):
         context["items_page"] = items_page
 
         return context
-
-
-class ProduitDetailView(DetailView):
-    model=Produit
