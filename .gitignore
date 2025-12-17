@@ -296,5 +296,4 @@ pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,django,virtualenv,python
 .vscode/settings.json
-
 migrations/
