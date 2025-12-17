@@ -16,11 +16,11 @@ class FamilleModelTest(TestCase):
 
 
     def test_famille_update(self):
-        self.famille.nom_famille = "nom test famille2"
+        self.famille.nom_famille = "nom test famille 2"
         self.famille.save()
 
         update_famille = Famille.objects.get(id_famille=self.famille.id_famille)
-        self.assertEqual(update_famille.nom_famille, "nom test famille")
+        self.assertEqual(update_famille.nom_famille, "nom test famille 2")
 
 
     def test_famille_delete(self):
