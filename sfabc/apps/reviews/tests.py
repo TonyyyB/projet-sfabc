@@ -8,8 +8,8 @@ class NoteModelTest(TestCase):
     
     def test_note_creation(self):
         self.assertEqual(self.note.pseudonyme, "test1")
-        self.assertEqual(self.note.valeur,     2)
-        self.assertEqual(self.note.message,    "message test 1")
+        self.assertEqual(self.note.valeur, 2)
+        self.assertEqual(self.note.message, "message test 1")
     
     def test_string_repr(self):
         self.assertEqual(str(self.note), "test1 : 2")

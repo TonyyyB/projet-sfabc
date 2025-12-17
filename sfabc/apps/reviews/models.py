@@ -28,3 +28,6 @@ class Avis(models.Model):
         for _ in range(5-self.valeur):
             rate += "☆"
         return rate
+    
+    def get_nom_produit(self):
+        return self.produit.nom_produit
