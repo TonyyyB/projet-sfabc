@@ -27,11 +27,11 @@ class ProduitModelTest(TestCase):
         self.produit.is_produit_du_moment = True
         self.produit.save()
 
-        update_categ = Produit.objects.get(id_produit=self.produit.id_produit)
-        self.assertEqual(update_categ.nom_produit, "nom test produit2")
-        self.assertEqual(update_categ.prix_produit, 45.25)
-        self.assertEqual(update_categ.description_produit, "description test produit2")
-        self.assertEqual(update_categ.is_produit_du_moment, True)
+        update_produit = Produit.objects.get(id_produit=self.produit.id_produit)
+        self.assertEqual(update_produit.nom_produit, "nom test produit2")
+        self.assertEqual(update_produit.prix_produit, 45.25)
+        self.assertEqual(update_produit.description_produit, "description test produit2")
+        self.assertEqual(update_produit.is_produit_du_moment, True)
 
 
     def test_produit_delete(self):
