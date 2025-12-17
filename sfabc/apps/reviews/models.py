@@ -16,10 +16,18 @@ class Avis(models.Model):
     pseudonyme = models.CharField(max_length=100)
     date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
-    message = models.TextField()
-    
-    class Meta:
-        verbose_name_plural = "Avis"
+    message = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
+    
+    def stars(self) :
+        rate = ""
+        for _ in range(self.valeur):
+            rate += "★"
+        for _ in range(5-self.valeur):
+            rate += "☆"
+        return rate
+    
+    def get_nom_produit(self):
+        return self.produit.nom_produit
