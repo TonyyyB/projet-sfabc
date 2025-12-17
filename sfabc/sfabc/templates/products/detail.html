@@ -31,7 +31,27 @@
       {% endif %}
     </div>
     <div class="product-details">
-      <h3>Caractéristiques:</h3>
+      <div class="product-caracteristics">
+        <h3>Caractéristiques:</h3>
+        <p>{{ produit.description_produit }}</p>
+      </div>
+      <div class="product-price">
+        <h4>Prix: {{ produit.prix_produit }}€</h4>
+        <div class="stars-container">
+          {% for masque in etoiles %}
+            <div class="star-wrapper">
+              <svg class="star-empty" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <svg class="star-filled" viewBox="0 0 24 24" style="clip-path: inset(0 {{ masque }}% 0 0);">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+          {% endfor %}
+          <p>- {{ moyenne_avis }}</p>
+        </div>
+        <p>Voir les avis ({{ nombre_avis }})</p>
+      </div>
     </div>
   </div>
 {% endblock %}
