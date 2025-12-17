@@ -9,7 +9,7 @@ class A_Propos(models.Model):
     ordre_ap = models.IntegerField()
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
-    images = models.ManyToManyField("Image_Site", through="Image_AP")
+    
 
     def __str__(self):
         return self.titre_ap
