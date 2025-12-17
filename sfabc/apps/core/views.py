@@ -7,6 +7,10 @@ from .forms import ContactForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect
 
+from .forms import ContactForm
+from django.core.mail import send_mail
+from django.shortcuts import redirect
+
 # Create your views here.
 
 class Home(ListView):
@@ -23,8 +27,8 @@ class Home(ListView):
             )
         )
     def get_context_data(self, **kwargs):
-        context = super(Home, self).get_context_data(**kwargs)
-        context['title'] = "Découvrez mes produits"
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Contactez-moi !"
         return context
 
 
