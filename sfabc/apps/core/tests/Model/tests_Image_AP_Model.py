@@ -1,12 +1,18 @@
 from django.test import TestCase
-from apps.core.models import Image_AP, Image_Site, A_Propos
+from apps.core.models import Image_A_Propos, Image_Site, A_Propos
 from django.core.files.uploadedfile import SimpleUploadedFile
+import os
 
 class ImageAPModelTest(TestCase):
     def setUp(self):
         self.image = Image_Site.objects.create(image=SimpleUploadedFile(name="image_test1.png", content=b'', content_type="image/png"))
         self.ap = A_Propos.objects.create(titre_ap="titre test a propos", description_ap="description test a propos", ordre_ap=1)
-        self.image_ap = Image_AP.objects.create(image=self.image, page_ap=self.ap, titre_image="titre test image a propos", position="Droite")
+        self.image_ap = Image_A_Propos.objects.create(image=self.image, page_ap=self.ap, titre_image="titre test image a propos", position="Droite")
+    
+
+    def tearDown(self):
+        if self.image.image:
+            os.remove(self.image.image.path)
 
 
     def test_categorie_create(self):
@@ -25,7 +31,7 @@ class ImageAPModelTest(TestCase):
         self.image_ap.position = "Gauche"
         self.image_ap.save()
 
-        update_image_ap = Image_AP.objects.get(image=self.image, page_ap=self.ap)
+        update_image_ap = Image_A_Propos.objects.get(image=self.image, page_ap=self.ap)
         self.assertEqual(update_image_ap.titre_image, "titre2 test image a propos")
         self.assertEqual(update_image_ap.position, "Gauche")
 
@@ -34,4 +40,4 @@ class ImageAPModelTest(TestCase):
         self.image_ap.delete()
         self.image.delete()
         self.ap.delete()
-        self.assertEqual(Image_AP.objects.count(), 0)
+        self.assertEqual(Image_A_Propos.objects.count(), 0)
