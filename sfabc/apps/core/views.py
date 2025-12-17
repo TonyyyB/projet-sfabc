@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views.generic import *
 from apps.products.models import *
 from django.db.models import Prefetch
-from apps.core.models import A_Propos, Image_AP, Service, Image_Site
+from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site
 from .forms import ContactForm
 from django.core.mail import send_mail
 from django.shortcuts import redirect
@@ -28,7 +28,6 @@ class Home(ListView):
         )
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["title"] = "Contactez-moi !"
         return context
 
 
@@ -62,17 +61,17 @@ class AProposView(ListView):
         return A_Propos.objects.order_by("ordre_ap").prefetch_related(
             Prefetch(
                 "images",
-                queryset=Image_AP.objects.select_related("image").filter(position="left"),
+                queryset=Image_A_Propos.objects.select_related("image").filter(position="left"),
                 to_attr="images_left"
             ),
             Prefetch(
                 "images", 
-                queryset=Image_AP.objects.select_related("image").filter(position="center"),
+                queryset=Image_A_Propos.objects.select_related("image").filter(position="center"),
                 to_attr="images_center"
             ),
             Prefetch(
                 "images",
-                queryset=Image_AP.objects.select_related("image").filter(position="right"), 
+                queryset=Image_A_Propos.objects.select_related("image").filter(position="right"), 
                 to_attr="images_right"
             )
         )
@@ -81,7 +80,6 @@ class AProposView(ListView):
     def get_context_data(self, **kwargs):
         context = super(AProposView, self).get_context_data(**kwargs)
         context["title"] = "À propos"
-        print(vars(context["sections_ap"][0]))
         return context
 
 class ServiceView(ListView):
