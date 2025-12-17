@@ -1,17 +1,5 @@
 {% extends 'base.html' %}
 {% block content %}
-<!-- <section class="about" id="{{ info.id_ap }}">
-        <h2 class="titre">{{ info.titre_ap }}</h2>
-        <div class="images">
-            {% for img_ap in info.image_list %}
-            <div class="img-position-{{ img_ap.position }}">
-                <p class="titre">{{ img_ap.titre_image }}</p>
-                <img src="{{ img_ap.image.image.url }}" alt="{{ img_ap.titre_image }}">
-            </div>
-            {% endfor %}
-        </div>
-        <p>{{ info.description_ap | linebreaks }}</p>
-    </section> -->
 {% for section_ap in sections_ap %}
     <style>.about { display: flex; gap: 2rem; }</style>
     <div class="container-fluid">

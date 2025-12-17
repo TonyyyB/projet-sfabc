@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.html import mark_safe
-from apps.core.models import A_Propos, Image_Site, Image_AP, Site,Service, Image_Service
+from apps.core.models import A_Propos, Image_Site, Image_A_Propos, Site,Service, Image_Service
 
 # Register your models here.
 admin.site.register(A_Propos)
@@ -30,7 +30,7 @@ class ImageAdmin(admin.ModelAdmin):
             ))
         return "Pas d'image"
 
-@admin.register(Image_AP)
+@admin.register(Image_A_Propos)
 class ImageAdmin(admin.ModelAdmin):
     readonly_fields = ["image_preview"]
     list_display = ["image_list"]
@@ -38,9 +38,9 @@ class ImageAdmin(admin.ModelAdmin):
     def image_preview(self, obj):
         if obj.image:
             return mark_safe('<img src="{url}" width="{width}" height={height} />'.format(
-                url = obj.image.image.url,
-                width=obj.image.image.width,
-                height=obj.image.image.height,
+                url = obj.image.url,
+                width=obj.image.width,
+                height=obj.image.height,
             ))
         return "Pas d'image"
     image_preview.short_description = 'Preview'
@@ -61,9 +61,9 @@ class ImageAdmin(admin.ModelAdmin):
     def image_preview(self, obj):
         if obj.image:
             return mark_safe('<img src="{url}" width="{width}" height={height} />'.format(
-                url = obj.image.image.url,
-                width=obj.image.image.width,
-                height=obj.image.image.height,
+                url = obj.image.url,
+                width=obj.image.width,
+                height=obj.image.height,
             ))
         return "Pas d'image"
     image_preview.short_description = 'Preview'
