@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block script %}
+
+{% endblock %}
+{% block content %}
+  <div class="product-detail">
+    <div class="carousel-layout">
+      {% if images|length > 1 %}
+        <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+          <span class="material-symbols-outlined">arrow_back_ios_new</span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+      {% endif %}
+
+      <div class="carousel slide carousel-dark carousel-container" id="carousel" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for image in images %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <img src="{{ image.image.url }}" alt="Image de {{ produit.nom_produit }}" class="carousel-img" />
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if images|length > 1 %}
+        <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="next">
+          <span class="material-symbols-outlined">chevron_forward</span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      {% endif %}
+    </div>
+    <div class="product-details">
+      <div class="product-caracteristics">
+        <h3>Caractéristiques:</h3>
+        <p>{{ produit.description_produit }}</p>
+      </div>
+      <div class="product-price">
+        <h4>Prix: {{ produit.prix_produit }}€</h4>
+        <div class="stars-container">
+          {% for masque in etoiles %}
+            <div class="star-wrapper">
+              <svg class="star-empty" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <svg class="star-filled" viewBox="0 0 24 24" style="clip-path: inset(0 {{ masque }}% 0 0);">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+          {% endfor %}
+          <p>- {{ moyenne_avis }}</p>
+        </div>
+        <p>Voir les avis ({{ nombre_avis }})</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

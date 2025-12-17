@@ -52,10 +52,10 @@ EMPLACEMENT = [
 
 
 
-class Image_AP(models.Model):
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_ap")
+class Image_A_Propos(models.Model):
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_A_Propos")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
-    titre_image = models.CharField(max_length=100, null=True, blank=True)
+    titre_image = models.CharField(max_length=100)
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
