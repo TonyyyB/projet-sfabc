@@ -1,32 +1,37 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block script %}
-{% endblock script %}
-{% block content %}
-<div class="product-detail">
-    <div class="carousel slide carousel-dark" id="carousel" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            {% for image in images %}
-                {% if forloop.first %}
-                <div class="carousel-item active">
-                {% else %}
-                <div class="carousel-item">
-                {% endif %}
-                    <img src="{{ image.image.url }}" alt="Image de {{ produit.nom_produit }}" class="d-block w-100">
-                </div>
-            {% endfor %}
-                </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#carousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#carousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-    </div>
-    <div class="detail">
 
+{% endblock %}
+{% block content %}
+  <div class="product-detail">
+    <div class="carousel-layout">
+      {% if images|length > 1 %}
+        <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+          <span class="material-symbols-outlined">arrow_back_ios_new</span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+      {% endif %}
+
+      <div class="carousel slide carousel-dark carousel-container" id="carousel" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          {% for image in images %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+              <img src="{{ image.image.url }}" alt="Image de {{ produit.nom_produit }}" class="carousel-img" />
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if images|length > 1 %}
+        <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="next">
+          <span class="material-symbols-outlined">chevron_forward</span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      {% endif %}
     </div>
-</div>
+    <div class="product-details">
+      <h3>Caractéristiques:</h3>
+    </div>
+  </div>
 {% endblock %}
