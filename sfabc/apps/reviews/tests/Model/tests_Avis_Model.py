@@ -27,6 +27,10 @@ class AvisModelTest(TestCase):
         self.assertEqual(self.avis.stars(), "★★☆☆☆")
 
 
+    def test_avis_nom_produit(self):
+        self.assertEqual(self.avis.get_nom_produit(), "nom test produit")
+
+
     def test_avis_updating(self):
         self.avis.pseudonyme = "test pseudonyme avis 2"
         self.avis.valeur = 4
