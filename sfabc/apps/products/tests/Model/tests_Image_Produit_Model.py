@@ -1,9 +1,14 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from apps.products.models import Image_Produit, Produit, Famille
-import os
+import tempfile
+import shutil
 
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class ImageProduitModelTest(TestCase):
     def setUp(self):
         self.famille = Famille.objects.create(nom_famille="nom test famille")
@@ -12,8 +17,8 @@ class ImageProduitModelTest(TestCase):
 
 
     def tearDown(self):
-        if self.image_produit.image:
-            os.remove(self.image_produit.image.path)
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
 
     def test_image_produit_create(self):

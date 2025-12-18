@@ -1,13 +1,25 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from apps.core.models import Service, Image_Site
 from django.core.files.uploadedfile import SimpleUploadedFile
+import tempfile
+import shutil
 
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class ServiceModelTest(TestCase):
     def setUp(self):
         self.image_site = Image_Site.objects.create(image=SimpleUploadedFile(name="image_test1.png", content=b'', content_type="image/png"))
         self.service = Service.objects.create(titre_service="titre test service", description_service="description test service", ordre_service=1)
 
         self.service.image.add(self.image_site)
+
+
+    def tearDown(self):
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
 
     def test_service_create(self):

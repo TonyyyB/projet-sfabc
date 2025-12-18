@@ -1,17 +1,23 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from apps.core.models import Image_Site
 from sfabc.settings import BASE_DIR
-import os
+import tempfile
+import shutil
 
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class ImageSiteModelTest(TestCase):
     def setUp(self):
         self.image = Image_Site.objects.create(image=None)
 
 
     def tearDown(self):
-        if self.image.image:
-            os.remove(self.image.image.path)
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
 
     def test_image_site_update(self):

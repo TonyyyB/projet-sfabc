@@ -1,9 +1,22 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from apps.core.models import A_Propos
+import tempfile
+import shutil
 
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class AProposModelTest(TestCase):
     def setUp(self):
         self.ap = A_Propos.objects.create(titre_ap="titre test a propos", description_ap="description test a propos", ordre_ap=1)
+
+
+    def tearDown(self):
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
 
     def test_ap_create(self):
         self.assertEqual(self.ap.titre_ap, "titre test a propos")

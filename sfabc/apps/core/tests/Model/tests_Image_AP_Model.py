@@ -1,8 +1,14 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from apps.core.models import Image_A_Propos, Image_Site, A_Propos
 from django.core.files.uploadedfile import SimpleUploadedFile
-import os
+import tempfile
+import shutil
 
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class ImageAPModelTest(TestCase):
     def setUp(self):
         self.image = Image_Site.objects.create(image=SimpleUploadedFile(name="image_test1.png", content=b'', content_type="image/png"))
@@ -11,8 +17,8 @@ class ImageAPModelTest(TestCase):
     
 
     def tearDown(self):
-        if self.image.image:
-            os.remove(self.image.image.path)
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
 
     def test_categorie_create(self):

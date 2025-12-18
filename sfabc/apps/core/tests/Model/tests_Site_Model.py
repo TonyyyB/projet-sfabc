@@ -1,11 +1,24 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from apps.core.models import Site, Image_Site
 from django.core.files.uploadedfile import SimpleUploadedFile
+import tempfile
+import shutil
 
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class SiteModelTest(TestCase):
     def setUp(self):
         self.image = Image_Site.objects.create(image=SimpleUploadedFile(name="image_test1.png", content=b'', content_type="image/png"))
         self.site = Site.objects.create(background="#FFFFFF", foreground="#FFFFFF", police="Bookman", bandeau_hauteur=150, logo=self.image, bandeau=self.image)
+
+
+    def tearDown(self):
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
 
     def test_site_create(self):
         self.assertEqual(self.site.background, "#FFFFFF")
