@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Éditer À propos</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+    <a href="{% url 'core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+
+    <div class="container">
+      <header>
+        <h1>
+          {% if page %}
+            Modifier
+          {% else %}
+            Créer
+          {% endif %}une section
+        </h1>
+      </header>
+
+      {% if messages %}
+        <div class="section-card">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="section-card">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <h2 class="section-title">
+          <span class="material-symbols-outlined">image</span>
+          Images
+        </h2>
+
+        <div class="sections" style="grid-template-columns: repeat(1, 1fr);">
+          {% for pos, sf in slot_forms %}
+            <div class="section-card">
+              <h3 style="text-align:center;">{{ pos|capfirst }}</h3>
+
+              {% if sf.non_field_errors %}
+                <div class="stats">{{ sf.non_field_errors }}</div>
+              {% endif %}
+
+              <div class="stats">
+                <label>Image existante</label><br />
+                {{ sf.image }}
+              </div>
+
+              <div class="stats">
+                <label>Ou importer une nouvelle image</label><br />
+                {{ sf.upload }}
+              </div>
+
+              <div class="stats">
+                <label>Titre de l’image</label><br />
+                {{ sf.titre_image }}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <span class="material-symbols-outlined">save</span>
+          Enregistrer
+        </button>
+      </form>
+    </div>
+  </body>
+</html>

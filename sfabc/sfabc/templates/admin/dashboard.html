@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Administration - Tableau de bord</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+    <a href="" class="logout-btn">Déconnexion</a>
+
+    <div class="container">
+      <header>
+        <h1>Tableau de bord SFABC</h1>
+      </header>
+
+      <div class="sections">
+        <!-- Section CORE -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <span class="material-symbols-outlined">web</span>
+            </div>
+            <h2 class="section-title">Site Internet</h2>
+          </div>
+
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Pages "À propos"</span>
+              <span class="stat-value">{{ nb_pages_apropos }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Services</span>
+              <span class="stat-value">{{ nb_services }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Images du site</span>
+              <span class="stat-value">{{ nb_images_site }}</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a href="{% url 'core:admin_site_edit' %}" class="btn btn-primary"><span class="material-symbols-outlined">settings</span> Apparence du site</a>
+            <a href="{% url 'core:admin_apropos_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">description</span> Gérer "À propos"</a>
+            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">build</span> Gérer les services</a>
+            <a href="" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Bibliothèque d'images</a>
+          </div>
+        </div>
+
+        <!-- Section PRODUCTS -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <span class="material-symbols-outlined">shelves</span>
+            </div>
+            <h2 class="section-title">Produits</h2>
+          </div>
+
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Familles de produits</span>
+              <span class="stat-value">{{ nb_familles }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Produits</span>
+              <span class="stat-value">{{ nb_produits }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Produits du moment</span>
+              <span class="stat-value">{{ nb_produits_du_moment }}</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">folder</span> Gérer les familles</a>
+            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">label</span> Gérer les produits</a>
+          </div>
+        </div>
+
+        <!-- Section REVIEWS -->
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <span class="material-symbols-outlined">star_half</span>
+            </div>
+            <h2 class="section-title">Avis</h2>
+          </div>
+
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Total des avis</span>
+              <span class="stat-value">{{ nb_avis }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Avis récents</span>
+              <span class="stat-value">{{ nb_avis_recents }}</span>
+            </div>
+          </div>
+
+          <div class="actions">
+            <a href="" class="btn btn-danger"><span class="material-symbols-outlined">delete</span> Gérer les avis</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
