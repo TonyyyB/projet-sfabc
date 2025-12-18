@@ -546,3 +546,17 @@ span.page-link{
   fill: rgb(var(--bs-dark-rgb));
   stroke: none;
 }
+
+.lien-produit {
+    color: inherit;
+    text-decoration: none;
+    padding: 5px;
+    border-radius: 8px;
+    transition: background-color 0.3s, text-decoration 0.3s;
+}
+
+.lien-produit:hover {
+    text-decoration: underline;
+}
+
+
