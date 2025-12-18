@@ -6,7 +6,7 @@ import os
 # Create your models here.
 class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
-    ordre_ap = models.IntegerField()
+    ordre_ap = models.PositiveIntegerField(unique=True)
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
 
@@ -49,9 +49,6 @@ EMPLACEMENT = [
     ("left", "Gauche")
 ]
 
-
-
-
 class Image_A_Propos(models.Model):
     image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_A_Propos")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
@@ -59,7 +56,7 @@ class Image_A_Propos(models.Model):
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
-        unique_together = ('image', 'page_ap')
+        unique_together = ('position', 'page_ap')
         verbose_name_plural = "Images à propos"
 
     def __str__(self):

@@ -1,16 +1,15 @@
 from django.shortcuts import render
 from django.views.generic import *
 from apps.products.models import *
-from django.db.models import Prefetch
-from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site
-from .forms import ContactForm
+from django.db.models import Prefetch, Max
+from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site, Site
+from apps.reviews.models import Avis
+from django.contrib.auth.decorators import login_required
+from .forms import ContactForm, ImageSlotForm, SiteForm, ImageSiteForm, AProposForm
+from django.contrib import messages
 from django.core.mail import send_mail
-from django.shortcuts import redirect
-
-from .forms import ContactForm
-from django.core.mail import send_mail
-from django.shortcuts import redirect
-
+from django.shortcuts import redirect, get_object_or_404
+from django.db import transaction
 # Create your views here.
 
 class Home(ListView):
@@ -96,3 +95,177 @@ class ServiceView(ListView):
         context = super(ServiceView, self).get_context_data(**kwargs)
         context["title"] = "Services"
         return context
+
+@login_required
+def admin_dashboard(request):
+    """
+    Vue pour la page d'accueil de l'administration
+    Affiche un résumé des contenus et des liens vers les pages de gestion
+    """
+    
+    # Récupération des statistiques pour affichage
+    context = {
+        # Core
+        'nb_pages_apropos': A_Propos.objects.count(),
+        'nb_services': Service.objects.count(),
+        'nb_images_site': Image_Site.objects.count(),
+        'site_config': Site.load(),
+        
+        # Products
+        'nb_familles': Famille.objects.count(),
+        'nb_produits': Produit.objects.count(),
+        'nb_produits_du_moment': Produit.objects.filter(is_produit_du_moment=True).count(),
+        
+        # Reviews
+        'nb_avis': Avis.objects.count(),
+        'nb_avis_recents': Avis.objects.order_by('-date')[:5].count(),
+    }
+    
+    return render(request, 'admin/dashboard.html', context)
+
+@login_required
+def edit_site(request):
+    site = Site.load()
+
+    if request.method == "POST":
+        form = SiteForm(request.POST, request.FILES, instance=site)
+        image_form = ImageSiteForm(request.POST, request.FILES)
+
+        if "add_image" in request.POST and image_form.is_valid():
+            image_form.save()
+            messages.success(request, "Image ajoutée avec succès.")
+            return redirect("core:admin_site_edit")
+
+        if "save_site" in request.POST and form.is_valid():
+            form.save()
+            messages.success(request, "Apparence du site mise à jour.")
+            return redirect("core:admin_site_edit")
+    else:
+        form = SiteForm(instance=site)
+        image_form = ImageSiteForm()
+
+    return render(request, "admin/core/site_edit.html", {
+        "form": form,
+        "image_form": image_form,
+        "site": site,
+    })
+
+@login_required
+def apropos_list(request):
+    pages = A_Propos.objects.order_by("ordre_ap")
+    return render(request, "admin/core/apropos/apropos_list.html", {"pages": pages})
+
+@login_required
+@transaction.atomic
+def apropos_move(request, pk, direction):
+    page = get_object_or_404(A_Propos, pk=pk)
+
+    if direction == "up":
+        swap = (
+            A_Propos.objects
+            .filter(ordre_ap__lt=page.ordre_ap)
+            .order_by("-ordre_ap")
+            .first()
+        )
+    else:  # down
+        swap = (
+            A_Propos.objects
+            .filter(ordre_ap__gt=page.ordre_ap)
+            .order_by("ordre_ap")
+            .first()
+        )
+
+    if swap:
+        page.ordre_ap, swap.ordre_ap = swap.ordre_ap, page.ordre_ap
+        page.save()
+        swap.save()
+
+    return redirect("core:admin_apropos_list")
+
+@login_required
+def apropos_edit(request, pk=None):
+    page = get_object_or_404(A_Propos, pk=pk) if pk else None
+
+    positions = ["left", "center", "right"]
+    existing = {p: None for p in positions}
+
+    if page:
+        for img in page.images.all():
+            existing[img.position] = img
+
+    if request.method == "POST":
+        form = AProposForm(request.POST, instance=page)
+
+        slot_forms = [
+            (pos, ImageSlotForm(request.POST, request.FILES, prefix=pos))
+            for pos in positions
+        ]
+
+        valid = form.is_valid() and all(sf.is_valid() for _, sf in slot_forms)
+
+        if valid:
+            page = form.save(commit=False)
+            
+            if page.pk is None:
+                max_ordre = A_Propos.objects.aggregate(
+                    max_ordre=Max("ordre_ap")
+                )["max_ordre"] or 0
+                page.ordre_ap = max_ordre + 1
+            page.save()
+            for pos, sf in slot_forms:
+                Image_A_Propos.objects.filter(page_ap=page, position=pos).delete()
+
+                image = sf.cleaned_data["image"]
+                upload = sf.cleaned_data["upload"]
+                titre = sf.cleaned_data["titre_image"]
+
+                if upload:
+                    image = Image_Site.objects.create(image=upload)
+
+                if image:
+                    Image_A_Propos.objects.create(
+                        page_ap=page,
+                        image=image,
+                        position=pos,
+                        titre_image=titre,
+                    )
+
+            messages.success(request, "Section « À propos » enregistrée.")
+            return redirect("core:admin_apropos_edit", pk=page.pk)
+        else:
+            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    else:
+        form = AProposForm(instance=page)
+        slot_forms = [
+            (
+                pos,
+                ImageSlotForm(
+                    prefix=pos,
+                    initial={
+                        "image": existing[pos].image if existing[pos] else None,
+                        "titre_image": existing[pos].titre_image if existing[pos] else "",
+                    },
+                ),
+            )
+            for pos in positions
+        ]
+    print(slot_forms)
+    return render(request, "admin/core/apropos/apropos_edit.html", {
+        "form": form,
+        "slot_forms": slot_forms,
+        "page": page,
+    })
+
+@login_required
+def apropos_delete(request, pk):
+    page = get_object_or_404(A_Propos, pk=pk)
+    deleted_order = page.ordre_ap
+    page.delete()
+
+    # Réajuster les ordres pour garder 1..N
+    A_Propos.objects.filter(
+        ordre_ap__gt=deleted_order
+    ).update(ordre_ap=models.F("ordre_ap") - 1)
+
+    messages.success(request, "Section « À propos » supprimée.")
+    return redirect("core:admin_apropos_list")

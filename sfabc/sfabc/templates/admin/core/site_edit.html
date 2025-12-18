@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Apparence du site</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  {{ form.media }}
+</head>
+<body>
+
+<a href="{% url 'core:admin_dashboard' %}" class="logout-btn">
+  Retour
+</a>
+
+<div class="container">
+  <header>
+    <h1>Apparence du site</h1>
+    <p class="subtitle">Configuration globale</p>
+  </header>
+
+  {% if messages %}
+    <div class="section-card">
+      {% for message in messages %}
+        <strong>{{ message }}</strong>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
+
+    <h2 class="section-title">
+      <span class="material-symbols-outlined">palette</span>
+      Couleurs
+    </h2>
+    <div class="stats">
+      {{ form.background.label_tag }}<br>
+      {{ form.background }}<br><br>
+      {{ form.foreground.label_tag }}<br>
+      {{ form.foreground }}
+    </div>
+
+    <h2 class="section-title">
+      <span class="material-symbols-outlined">text_fields</span>
+      Typographie
+    </h2>
+    <div class="stats">
+      {{ form.police.label_tag }}<br>
+      {{ form.police }}
+    </div>
+
+    <h2 class="section-title">
+      <span class="material-symbols-outlined">height</span>
+      Bandeau
+    </h2>
+    <div class="stats">
+      {{ form.bandeau_hauteur.label_tag }}<br>
+      {{ form.bandeau_hauteur }}
+    </div>
+
+    <h2 class="section-title">
+      <span class="material-symbols-outlined">image</span>
+      Images du site
+    </h2>
+
+    <div class="stats">
+      <strong>Logo actuel</strong><br>
+      {% if site.logo %}
+        <img src="{{ site.logo.image.url }}" height="80"><br>
+      {% endif %}
+      {{ form.logo }}
+    </div>
+
+    <div class="stats">
+      <strong>Bandeau actuel</strong><br>
+      {% if site.bandeau %}
+        <img src="{{ site.bandeau.image.url }}" height="100"><br>
+      {% endif %}
+      {{ form.bandeau }}
+    </div>
+
+    <button type="submit" name="save_site" class="btn btn-primary">
+      <span class="material-symbols-outlined">save</span>
+      Enregistrer
+    </button>
+  </form>
+
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
+    <h2 class="section-title">
+      <span class="material-symbols-outlined">add_photo_alternate</span>
+      Ajouter une image au site
+    </h2>
+    <div class="stats">
+      {{ image_form.image }}
+    </div>
+    <button type="submit" name="add_image" class="btn btn-secondary">
+      <span class="material-symbols-outlined">upload</span>
+      Ajouter l’image
+    </button>
+  </form>
+</div>
+
+</body>
+</html>
