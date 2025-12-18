@@ -21,6 +21,10 @@ class AvisModelTest(TestCase):
 
     def test_string_repr(self):
         self.assertEqual(str(self.avis), "test pseudonyme avis sur nom test produit, famille nom test famille: 3.99€ : 2/5")
+    
+
+    def test_avis_stars(self):
+        self.assertEqual(self.avis.stars(), "★★☆☆☆")
 
 
     def test_avis_updating(self):
