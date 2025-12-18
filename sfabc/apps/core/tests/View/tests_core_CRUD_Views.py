@@ -1,7 +1,12 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from apps.core.models import A_Propos, Service, Image_Site
 from django.core.files.uploadedfile import SimpleUploadedFile
+import tempfile
+import shutil
+
+
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
 
 
 class HomeViewTest(TestCase):
@@ -35,12 +40,18 @@ class AProposViewTest(TestCase):
         self.ap.delete()
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class ServiceViewTest(TestCase):
     def setUp(self):
         self.image_site = Image_Site.objects.create(image=SimpleUploadedFile(name="image_test1.png", content=b'', content_type="image/png"))
         self.service = Service.objects.create(titre_service="test titre service", description_service="test description service", ordre_service=1)
 
         self.service.image.add(self.image_site)
+    
+
+    def tearDown(self):
+        super().tearDown()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
 
 
     def test_service_view(self):

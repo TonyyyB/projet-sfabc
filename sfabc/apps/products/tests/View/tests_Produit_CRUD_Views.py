@@ -1,7 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
 from apps.products.models import Produit, Famille
-from django.core.files.uploadedfile import SimpleUploadedFile
 
 
 class ProduitDetailViewTest(TestCase):
