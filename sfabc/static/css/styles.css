@@ -43,7 +43,6 @@ main {
 
 .produit {
   background-color: white;
-  border: 2px solid #b8a67e;
   border-radius: 10px;
   width: 15%;
   height: 5%;
@@ -75,36 +74,13 @@ main {
   object-fit: contain;
 }
 
-.prix-prod {
-  color: #b8a67e;
-}
-
 .btn-outline-primary.btn-pagination {
-  color: #B8A67E;                 /* texte */
-  border-color: #B8A67E;          /* bordure */
-  background-color: transparent;  /* fond par défaut */
-}
-
-.btn-outline-primary.btn-pagination:hover {
-  color: #F6F2E8;
-  background-color: #B8A67E;
-  border-color: #B8A67E;
-}
-
-.btn-outline-primary.btn-pagination.active {
-  color: #F6F2E8;
-  background-color: #B8A67E;
-  border-color: #B8A67E;
+  background-color: transparent;
 }
 
 .btn-outline-primary.btn-pagination:disabled {
-  color: #B8A67E;
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.titre {
-  color: #b8a67e;
 }
 
 .img-position-right {
@@ -178,7 +154,6 @@ main {
 
   .produit {
     background-color: white;
-    border: 2px solid #b8a67e;
     border-radius: 10px;
     width: 25%;
     height: 5%;
@@ -250,15 +225,10 @@ main {
 }
 
 .title {
-
   position: relative;
-
   width: 100%;
-
   text-align: center;
-
   color: white;
-
 }
 
 *:not(input) {
@@ -266,7 +236,6 @@ main {
 }
 
 .product-image-container {
-  border: 2.5px solid #b8a67e;
   border-radius: 16px;
   padding: 10px;
   background-color: #ffffff;
@@ -301,23 +270,6 @@ hr {
 .sep {
   display: flex;
   justify-content: center;
-}
-.btn-contact {
-  color: #EEE7D8 !important;
-  background-color: #5A4328 !important;
-}
-
-.color-text-contact {
-  color: #B8A67E !important;
-}
-
-.color-placeholder-contact::placeholder{
-  opacity: 1 !important;
-  color: #B8A67E !important;
-}
-
-.color-border-contact {
-  border-color: #B8A67E !important;
 }
 
 .product-detail {

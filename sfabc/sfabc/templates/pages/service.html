@@ -12,7 +12,7 @@
                             <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}" loading="lazy">
                             {% if img_service.titre_image %}
                             <div>
-                                <p class="titre">{{ img_service.titre_image }}</p>
+                                <p class="titre-service">{{ img_service.titre_image }}</p>
                             </div>
                             {% endif %}
                         </div>
@@ -33,7 +33,7 @@
 
 
         <div class="w-50 p-5">
-            <h2 class="titre">{{ service.titre_service }}</h2>
+            <h2 class="titre-service">{{ service.titre_service }}</h2>
             <p>{{ service.description_service | linebreaks }}</p>
         </div>
         
