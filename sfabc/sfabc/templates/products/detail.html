@@ -36,7 +36,9 @@
         <p>{{ produit.description_produit }}</p>
       </div>
       <div class="product-price">
-        <h4>Prix: {{ produit.prix_produit }}€</h4>
+        {% if produit.prix_produit %}
+          <h4>Prix: {{ produit.prix_produit }}€</h4>
+        {% endif %}
         <div class="stars-container">
           {% for masque in etoiles %}
             <div class="star-wrapper">
@@ -48,9 +50,15 @@
               </svg>
             </div>
           {% endfor %}
-          <p>- {{ moyenne_avis }}</p>
+          {% if moyenne_avis %}
+            <p>- {{ moyenne_avis }}</p>
+          {% else %}
+            <p>- Aucun avis pour le moment </p>
+          {% endif %}
         </div>
-        <p>Voir les avis ({{ nombre_avis }})</p>
+        {% if avis %}
+          <a href="{% url 'products:reviews:liste_avis' produit.id_produit %}">Voir les avis ({{ nombre_avis }})</a>
+        {% endif %}
       </div>
     </div>
   </div>
