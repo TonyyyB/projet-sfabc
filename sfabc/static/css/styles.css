@@ -446,6 +446,17 @@ hr {
   align-items: end;
 }
 
+.rev-return{
+  color: black;
+}
+
+.end-revs{
+  display : flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
+
 .page-link{
   border : none !important;
   color: black !important;
