@@ -3,9 +3,6 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-}
-
-body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -13,6 +10,7 @@ body {
 
 main {
   position: relative;
+  padding : 20px;
   bottom: 150px;
   flex: 1;
 }
@@ -545,4 +543,9 @@ span.page-link{
 .star-filled {
   fill: rgb(var(--bs-dark-rgb));
   stroke: none;
+}
+
+.product-details{
+  display : flex;
+  justify-content: space-between;
 }

@@ -1,8 +1,6 @@
-from django.shortcuts import render
 from django.views.generic import *
-from apps.products.models import Produit, Image_Produit
-from django.db.models import Count, Prefetch, Avg
-from django import template
+from apps.products.models import Produit
+from django.db.models import Count, Avg
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import *
 
@@ -29,12 +27,9 @@ class DetailProduitView(DetailView):
             nombre=Count('id_note')
         )
         
-        #moyenne_avis = avis_stats['moyenne']
-        #nombre_avis = avis_stats['nombre']
-        
-        moyenne_avis = 4.5
-        nombre_avis = 5
-        
+        moyenne_avis = avis_stats['moyenne']
+        nombre_avis = avis_stats['nombre']
+       
         # Créer une liste de dictionnaires pour les étoiles
         etoiles = []
         if moyenne_avis:
@@ -53,8 +48,13 @@ class DetailProduitView(DetailView):
         context['nombre_avis'] = nombre_avis
         context['etoiles'] = etoiles
         
+        # Récupérer les avis liés au produit
+
+        liste_avis = Avis.objects.filter(produit=self.object)
+        context['avis'] = liste_avis
+
         return context
-# Create your views here.
+
 class ProduitListView(ListView):
     model = Produit
     template_name = "pages/liste_produits.html"
