@@ -57,3 +57,51 @@ class ImageSlotForm(forms.Form):
     )
     upload = forms.ImageField(required=False)
     titre_image = forms.CharField(required=False, max_length=100)
+
+
+class ServiceForm(forms.ModelForm):
+    class Meta:
+        model = Service
+        fields = ["titre_service", "description_service"]
+        widgets = {
+            "titre_service": forms.TextInput(attrs={"class": "input"}),
+            "description_service": forms.Textarea(attrs={"class": "textarea", "rows": 6}),
+        }
+
+
+class ImageServiceForm(forms.ModelForm):
+    upload = forms.ImageField(required=False)
+
+    class Meta:
+        model = Image_Service
+        fields = ["image", "titre_image"]
+        widgets = {
+            "titre_image": forms.TextInput(attrs={"class": "input"}),
+            "image": forms.Select(attrs={"class": "select-image"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['image'].required = False
+        self.fields['titre_image'].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        delete_field_name = 'DELETE'
+        delete_value = cleaned.get(delete_field_name, False)
+        if delete_value:
+            return cleaned
+        image = cleaned.get("image")
+        upload = cleaned.get("upload")
+        if image and upload:
+            raise forms.ValidationError("Choisissez une image OU un upload.")
+        return cleaned
+
+
+ImageServiceFormSet = inlineformset_factory(
+    Service,
+    Image_Service,
+    form=ImageServiceForm,
+    extra=1,
+    can_delete=True
+)

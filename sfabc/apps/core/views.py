@@ -2,14 +2,18 @@ from django.shortcuts import render
 from django.views.generic import *
 from apps.products.models import *
 from django.db.models import Prefetch, Max
-from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site, Site
+from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site, Site, Image_Service
 from apps.reviews.models import Avis
 from django.contrib.auth.decorators import login_required
-from .forms import ContactForm, ImageSlotForm, SiteForm, ImageSiteForm, AProposForm
+from .forms import ContactForm, ImageSlotForm, SiteForm, ImageSiteForm, AProposForm, ServiceForm, ImageServiceFormSet, ImageServiceForm
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.shortcuts import redirect, get_object_or_404
 from django.db import transaction
+from django.urls import reverse
+from django.http import JsonResponse
+import os
+from django.conf import settings
 # Create your views here.
 
 class Home(ListView):
@@ -269,3 +273,226 @@ def apropos_delete(request, pk):
 
     messages.success(request, "Section « À propos » supprimée.")
     return redirect("core:admin_apropos_list")
+
+@login_required
+def service_list(request):
+    services = Service.objects.order_by("ordre_service")
+    return render(request, "admin/core/service/service_list.html", {
+        "services": services
+    })
+
+@login_required
+@transaction.atomic
+def service_move(request, pk, direction):
+    service = get_object_or_404(Service, pk=pk)
+
+    if direction == "up":
+        swap = (
+            Service.objects
+            .filter(ordre_service__lt=service.ordre_service)
+            .order_by("-ordre_service")
+            .first()
+        )
+    else:  # down
+        swap = (
+            Service.objects
+            .filter(ordre_service__gt=service.ordre_service)
+            .order_by("ordre_service")
+            .first()
+        )
+
+    if swap:
+        service.ordre_service, swap.ordre_service = (
+            swap.ordre_service,
+            service.ordre_service,
+        )
+        service.save()
+        swap.save()
+
+    return redirect("core:admin_service_list")
+
+@login_required
+@transaction.atomic
+def service_delete(request, pk):
+    service = get_object_or_404(Service, pk=pk)
+    deleted_order = service.ordre_service
+    service.delete()
+
+    Service.objects.filter(
+        ordre_service__gt=deleted_order
+    ).update(ordre_service=models.F("ordre_service") - 1)
+
+    messages.success(request, "Service supprimé.")
+    return redirect("core:admin_service_list")
+
+@login_required
+@transaction.atomic
+def service_add(request):
+    if request.method == "POST":
+        form = ServiceForm(request.POST)
+        formset = ImageServiceFormSet(request.POST, request.FILES)
+        if form.is_valid() and formset.is_valid():
+            service = form.save(commit=False)
+            max_order = Service.objects.aggregate(Max("ordre_service"))["ordre_service__max"] or 0
+            service.ordre_service = max_order + 1
+            service.save()
+            formset.instance = service
+            instances = formset.save(commit=False)
+            for i, inst in enumerate(instances):
+                form_inst = formset.forms[i]
+                if form_inst.cleaned_data.get('upload'):
+                    inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
+                inst.save()
+            for obj in formset.deleted_objects:
+                obj.delete()
+            messages.success(request, "Service ajouté.")
+            return redirect("core:admin_service_edit", pk=service.pk)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    else:
+        form = ServiceForm()
+        formset = ImageServiceFormSet()
+        for form_inst in formset:
+            if 'DELETE' in form_inst.fields:
+                form_inst.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+
+    template_form = ImageServiceForm(prefix="__prefix__")
+    if 'DELETE' in template_form.fields:
+        template_form.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+    return render(request, "admin/core/service/service_edit.html", {
+        "form": form,
+        "formset": formset,
+        "service": None,
+        "template_form": template_form,
+        "total_forms": formset.total_form_count,
+    })
+
+@login_required
+@transaction.atomic
+def service_edit(request, pk):
+    service = get_object_or_404(Service, pk=pk)
+    if request.method == "POST":
+        form = ServiceForm(request.POST, instance=service)
+        formset = ImageServiceFormSet(request.POST, request.FILES, instance=service)
+        if form.is_valid() and formset.is_valid():
+            service = form.save()
+            instances = formset.save(commit=False)
+            for i, inst in enumerate(instances):
+                form_inst = formset.forms[i]
+                if form_inst.cleaned_data.get('upload'):
+                    inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
+                inst.save()
+            for obj in formset.deleted_objects:
+                obj.delete()
+            messages.success(request, "Service enregistré.")
+            return redirect("core:admin_service_edit", pk=service.pk)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+    else:
+        form = ServiceForm(instance=service)
+        formset = ImageServiceFormSet(instance=service)
+        for form_inst in formset:
+            if 'DELETE' in form_inst.fields:
+                form_inst.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+
+    template_form = ImageServiceForm(prefix="__prefix__")
+    if 'DELETE' in template_form.fields:
+        template_form.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+    return render(request, "admin/core/service/service_edit.html", {
+        "form": form,
+        "formset": formset,
+        "service": service,
+        "template_form": template_form,
+        "total_forms": formset.total_form_count,
+    })
+
+@login_required
+def image_library(request):
+    images = Image_Site.objects.all()
+    image_data = []
+    for img in images:
+        usages = []
+        # Check if used in Site
+        site = Site.load()
+        if site.logo == img:
+            usages.append({
+                'text': "Logo du site",
+                'url': reverse('core:admin_site_edit')
+            })
+        if site.bandeau == img:
+            usages.append({
+                'text': "Bandeau du site", 
+                'url': reverse('core:admin_site_edit')
+            })
+        # Check in A_Propos
+        apropos_images = Image_A_Propos.objects.filter(image=img).select_related('page_ap')
+        for ap_img in apropos_images:
+            usages.append({
+                'text': f"Page À propos: {ap_img.page_ap.titre_ap}",
+                'url': reverse('core:admin_apropos_edit', kwargs={'pk': ap_img.page_ap.pk})
+            })
+        # Check in Services
+        service_images = Image_Service.objects.filter(image=img).select_related('service')
+        for svc_img in service_images:
+            usages.append({
+                'text': f"Service: {svc_img.service.titre_service}",
+                'url': reverse('core:admin_service_edit', kwargs={'pk': svc_img.service.pk})
+            })
+        image_data.append({
+            'image': img,
+            'usages': usages,
+            'is_used': len(usages) > 0
+        })
+    return render(request, "admin/core/image_library.html", {"image_data": image_data})
+
+@login_required
+def image_delete(request, pk):
+    image = get_object_or_404(Image_Site, pk=pk)
+    # Check if used
+    is_used = (
+        Site.objects.filter(logo=image).exists() or
+        Site.objects.filter(bandeau=image).exists() or
+        Image_A_Propos.objects.filter(image=image).exists() or
+        Image_Service.objects.filter(image=image).exists()
+    )
+    if is_used:
+        messages.warning(request, "L'image est utilisée et ne peut pas être supprimée.")
+    else:
+        image.delete()
+        messages.success(request, "Image supprimée.")
+    return redirect("core:admin_image_library")
+
+@login_required
+def image_rename(request, pk):
+    image = get_object_or_404(Image_Site, pk=pk)
+    if request.method == "POST":
+        new_name = request.POST.get('new_name')
+        if new_name:
+            # Rename the file
+            old_path = os.path.join(settings.MEDIA_ROOT, image.image.name)
+            dir_path = os.path.dirname(old_path)
+            ext = os.path.splitext(image.image.name)[1]
+            new_filename = new_name + ext
+            new_path = os.path.join(dir_path, new_filename)
+            if os.path.exists(old_path):
+                os.rename(old_path, new_path)
+            # Update the field
+            image.image.name = os.path.relpath(new_path, settings.MEDIA_ROOT)
+            image.save()
+            messages.success(request, "Image renommée.")
+        return redirect("core:admin_image_library")
+    return render(request, "admin/core/image_rename.html", {"image": image})
+
+@login_required
+def image_api(request):
+    """API pour récupérer la liste des images pour le sélecteur"""
+    images = Image_Site.objects.all().order_by('image')
+    image_data = []
+
+    for img in images:
+        image_data.append({
+            'id': img.id_image,
+            'name': str(img),
+            'url': img.image.url
+        })
+
+    return JsonResponse({'images': image_data})
+

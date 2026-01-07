@@ -24,14 +24,14 @@
   </a>
 
   {% for page in pages %}
-    <div class="section-card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="list-item">
+      <div class="list-header">
         <div>
           <h2>{{ page.titre_ap }}</h2>
           <p>{{ page.description_ap|truncatewords:20 }}</p>
         </div>
 
-        <div class="apropos-arrows">
+        <div class="arrows">
           <a href="{% url 'core:admin_apropos_move' page.pk 'up' %}">
             <span class="material-symbols-outlined">arrow_upward</span>
           </a>

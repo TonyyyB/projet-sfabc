@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   </head>
   <body>
-    <a href="" class="logout-btn">Déconnexion</a>
+    <a href="{% url 'core:admin_logout' %}" class="logout-btn">Déconnexion</a>
 
     <div class="container">
       <header>
@@ -44,8 +44,8 @@
           <div class="actions">
             <a href="{% url 'core:admin_site_edit' %}" class="btn btn-primary"><span class="material-symbols-outlined">settings</span> Apparence du site</a>
             <a href="{% url 'core:admin_apropos_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">description</span> Gérer "À propos"</a>
-            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">build</span> Gérer les services</a>
-            <a href="" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Bibliothèque d'images</a>
+            <a href="{% url 'core:admin_service_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">build</span> Gérer les services</a>
+            <a href="{% url 'core:admin_image_library' %}" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Bibliothèque d'images</a>
           </div>
         </div>
 
