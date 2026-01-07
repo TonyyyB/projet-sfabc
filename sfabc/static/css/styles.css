@@ -530,6 +530,10 @@ span.page-link{
   gap: 4px;
 }
 
+.stars-container p{
+  margin-right: 50px;
+}
+
 .star-wrapper {
   position: relative;
   width: 24px;
@@ -559,4 +563,8 @@ span.page-link{
 .product-details{
   display : flex;
   justify-content: space-between;
+}
+
+.rev-direction{
+  color: black;
 }

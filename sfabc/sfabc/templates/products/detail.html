@@ -55,10 +55,10 @@
           {% else %}
             <p>- Aucun avis pour le moment </p>
           {% endif %}
+          {% if avis %}
+            <a href="{% url 'products:reviews:liste_avis' produit.id_produit %}" class='rev-direction'>Voir les avis ({{ nombre_avis }})</a>
+          {% endif %}
         </div>
-        {% if avis %}
-          <a href="{% url 'products:reviews:liste_avis' produit.id_produit %}">Voir les avis ({{ nombre_avis }})</a>
-        {% endif %}
       </div>
     </div>
   </div>

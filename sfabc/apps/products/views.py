@@ -27,7 +27,7 @@ class DetailProduitView(DetailView):
             nombre=Count('id_note')
         )
         
-        moyenne_avis = avis_stats['moyenne']
+        moyenne_avis = round(avis_stats['moyenne'], 2)
         nombre_avis = avis_stats['nombre']
        
         # Créer une liste de dictionnaires pour les étoiles
