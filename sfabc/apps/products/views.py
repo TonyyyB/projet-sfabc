@@ -50,7 +50,7 @@ class DetailProduitView(DetailView):
         
         # Récupérer les avis liés au produit
 
-        liste_avis = Avis.objects.filter(produit=self.object)
+        liste_avis = Avis.objects.filter(produit=self.object).order_by('-date')
         context['avis'] = liste_avis
 
         return context
