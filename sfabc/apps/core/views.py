@@ -9,6 +9,7 @@ from .forms import ContactForm, ImageSlotForm, SiteForm, ImageSiteForm, AProposF
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.urls import reverse
 from django.http import JsonResponse
