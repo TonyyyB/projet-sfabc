@@ -12,8 +12,8 @@ def style_processor(request):
         body_bg = site.background
         body_fg = site.foreground
         police = site.police
-        logo = site.logo.image.url if site.logo.image is not None else logo
-        bandeau = site.bandeau.image.url if site.bandeau.image is not None else bandeau
+        logo = site.logo.image.url if site.logo is not None else logo
+        bandeau = site.bandeau.image.url if site.bandeau is not None else bandeau
         hauteur_bandeau = site.bandeau_hauteur
         
     body_fg_rgb = str(tuple(int(body_fg.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)))[1:-1]

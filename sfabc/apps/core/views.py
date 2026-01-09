@@ -4,7 +4,7 @@ from apps.products.models import *
 from django.db.models import Prefetch, Max
 from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site, Site, Image_Service
 from apps.reviews.models import Avis
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
 from .forms import ContactForm, ImageSlotForm, SiteForm, ImageSiteForm, AProposForm, ServiceForm, ImageServiceFormSet, ImageServiceForm
 from django.contrib import messages
 from django.core.mail import send_mail
@@ -190,7 +190,7 @@ def apropos_move(request, pk, direction):
 def apropos_edit(request, pk=None):
     page = get_object_or_404(A_Propos, pk=pk) if pk else None
 
-    positions = ["left", "center", "right"]
+    positions = ["Gauche", "Centre", "Droite"]
     existing = {p: None for p in positions}
 
     if page:
@@ -336,15 +336,21 @@ def service_add(request):
             max_order = Service.objects.aggregate(Max("ordre_service"))["ordre_service__max"] or 0
             service.ordre_service = max_order + 1
             service.save()
-            formset.instance = service
-            instances = formset.save(commit=False)
-            for i, inst in enumerate(instances):
-                form_inst = formset.forms[i]
-                if form_inst.cleaned_data.get('upload'):
-                    inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
-                inst.save()
-            for obj in formset.deleted_objects:
-                obj.delete()
+            # Traiter tous les formulaires du formset
+            for form_inst in formset.forms:
+                if form_inst.cleaned_data:  # Vérifier que le formulaire a des données
+                    if not form_inst.cleaned_data.get('DELETE'):
+                        # Créer ou mettre à jour l'instance
+                        inst = form_inst.save(commit=False)
+                        inst.service = service
+                        
+                        # Gérer l'upload d'image
+                        if form_inst.cleaned_data.get('upload'):
+                            inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
+                        
+                        # Sauvegarder uniquement si une image est présente
+                        if inst.image:
+                            inst.save()
             messages.success(request, "Service ajouté.")
             return redirect("core:admin_service_edit", pk=service.pk)
         messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
@@ -375,14 +381,25 @@ def service_edit(request, pk):
         formset = ImageServiceFormSet(request.POST, request.FILES, instance=service)
         if form.is_valid() and formset.is_valid():
             service = form.save()
-            instances = formset.save(commit=False)
-            for i, inst in enumerate(instances):
-                form_inst = formset.forms[i]
-                if form_inst.cleaned_data.get('upload'):
-                    inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
-                inst.save()
-            for obj in formset.deleted_objects:
-                obj.delete()
+            # Traiter tous les formulaires du formset
+            for form_inst in formset.forms:
+                if form_inst.cleaned_data:  # Vérifier que le formulaire a des données
+                    if form_inst.cleaned_data.get('DELETE'):
+                        # Supprimer si marqué comme suppression
+                        if form_inst.instance.pk:
+                            form_inst.instance.delete()
+                    else:
+                        # Créer ou mettre à jour l'instance
+                        inst = form_inst.save(commit=False)
+                        inst.service = service
+                        
+                        # Gérer l'upload d'image
+                        if form_inst.cleaned_data.get('upload'):
+                            inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
+                        
+                        # Sauvegarder uniquement si une image est présente
+                        if inst.image:
+                            inst.save()
             messages.success(request, "Service enregistré.")
             return redirect("core:admin_service_edit", pk=service.pk)
         messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
@@ -496,3 +513,11 @@ def image_api(request):
 
     return JsonResponse({'images': image_data})
 
+
+@login_required
+def logout_view(request):
+    """
+    Vue pour la déconnexion de l'administration
+    """
+    logout(request)
+    return render(request, 'admin/logout.html')

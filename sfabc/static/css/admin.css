@@ -1111,3 +1111,25 @@ form > *:last-child {
   top: 0;
   left: 0;
 }
+
+.image-preview-container {
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e1e5e9;
+}
+
+.image-preview-container .image-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.image-preview-container img {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  max-height: 150px;
+  max-width: 100%;
+  object-fit: contain;
+}

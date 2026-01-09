@@ -7,7 +7,7 @@ app_name = "core"
 urlpatterns = [
     # Login / Logout for admin area
     path("admin/login/", auth_views.LoginView.as_view(template_name="admin/login.html"), name="admin_login"),
-    path("admin/logout/", auth_views.LogoutView.as_view(next_page='core:admin_login'), name="admin_logout"),
+    path("admin/logout/", logout_view, name="admin_logout"),
 
     path("", Home.as_view(), name="home"),
     path("contact/", ContactView.as_view(), name="contact"),

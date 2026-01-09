@@ -63,7 +63,7 @@ class Image_A_Propos(models.Model):
         return f"{self.page_ap} - {self.titre_image if self.titre_image else self.image.image.name}"
 
 class Image_Service(models.Model):
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service")
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service", null=True, blank=True)
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
     titre_image = models.CharField(max_length=100, null=True, blank=True)
 
@@ -79,8 +79,8 @@ class Site(models.Model):
     foreground = ColorField(default="#B8A67E")
     police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
-    logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site")
-    bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site")
+    logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site", null=True, blank=True)
+    bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site", null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.pk = 1
