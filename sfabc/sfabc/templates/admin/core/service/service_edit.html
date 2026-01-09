@@ -111,6 +111,13 @@
                   {% if f.image.errors %}
                     <div class="form-error">{{ f.image.errors }}</div>
                   {% endif %}
+                  <div class="image-preview-container" style="{% if not f.instance.image %}display: none;{% endif %} margin-top: 15px;">
+                    <div class="image-preview">
+                      {% if f.instance.image %}
+                        <img src="{{ f.instance.image.image.url }}" alt="{{ f.instance.image }}" height="80">
+                      {% endif %}
+                    </div>
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -160,6 +167,9 @@
                   Sélectionner une image
                 </button>
                 {{ template_form.image }}
+              </div>
+              <div class="image-preview-container" style="display: none; margin-top: 15px;">
+                <div class="image-preview"></div>
               </div>
             </div>
             <div class="form-group">

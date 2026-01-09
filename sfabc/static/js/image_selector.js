@@ -264,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const button = e.target.closest('.image-select-btn');
             const targetInput = document.getElementById(button.dataset.target);
-            const container = button.closest('.image-selector-container');
+            const container = button.closest('.image-selector-container') || button.closest('.image-select-container') || button.closest('.form-group');
 
             // Récupérer l'image actuelle depuis le select caché
             let currentImage = null;
@@ -272,8 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const selectedOption = targetInput.querySelector(`option[value="${targetInput.value}"]`);
                 if (selectedOption && selectedOption.textContent.trim()) {
                     // Essayer de récupérer l'URL de l'image depuis les données du bouton ou du formulaire
-                    const container = button.closest('.image-select-container, .form-group');
-                    const existingImage = container.querySelector('img');
+                    const existingImage = container ? container.querySelector('img') : null;
                     if (existingImage) {
                         currentImage = {
                             id: targetInput.value,
@@ -288,12 +287,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (targetInput) {
                     targetInput.value = selectedImage.id;
                     // Mettre à jour l'aperçu si disponible
-                    const previewContainer = container.querySelector('.image-preview-container');
-                    if (previewContainer) {
-                        previewContainer.style = "";
-                        const preview = previewContainer.querySelector('.image-preview');
-                        if (preview) {
-                            preview.innerHTML = `<img src="${selectedImage.url}" alt="${selectedImage.name}" height="80">`;
+                    if (container) {
+                        const previewContainer = container.querySelector('.image-preview-container');
+                        if (previewContainer) {
+                            previewContainer.style = "";
+                            const preview = previewContainer.querySelector('.image-preview');
+                            if (preview) {
+                                preview.innerHTML = `<img src="${selectedImage.url}" alt="${selectedImage.name}" height="80">`;
+                            }
                         }
                     }
                 }
