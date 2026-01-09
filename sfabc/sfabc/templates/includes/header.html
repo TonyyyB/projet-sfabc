@@ -8,7 +8,7 @@
         <!-- Top section -->
         <div class="top-section">
           <!-- Barre de recherche -->
-          <form class="search-form" role="search" method="get" name="search">
+          <form class="search-form" role="search" method="get" name="search" action="{% url 'products:liste_produits' %}">
             <div class="input-group">
               <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" name="search" />
               <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
@@ -67,7 +67,7 @@
             <ul class="list-group list-group-flush">
               {% for sub, url_name in submenus.items %}
                 <li class="list-group-item ms-3" style="background-color: var(--bs-body-bg); border: none;">
-                  <a href="" class="text-decoration-none" style="color: var(--bs-dark);">{{ sub }}</a>
+                  <a href="{%url 'products:detail_produit' url_name %}" class="text-decoration-none" style="color: var(--bs-dark);">{{ sub }}</a>
                 </li>
               {% endfor %}
             </ul>

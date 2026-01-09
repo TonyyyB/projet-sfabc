@@ -9,6 +9,7 @@ class A_Propos(models.Model):
     ordre_ap = models.PositiveIntegerField(unique=True)
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
+    
 
     def __str__(self):
         return self.titre_ap
