@@ -127,6 +127,10 @@ STATICFILES_DIRS = [BASE_DIR / "static"]   # fichiers statiques dans /static/
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Custom login for admin area
+LOGIN_URL = '/admin/login/'
+LOGIN_REDIRECT_URL = '/admin/'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
