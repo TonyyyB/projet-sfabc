@@ -9,3 +9,5 @@ django_bootstrap5
 django-cleanup
 django-colorfield
 django_bootstrap5
+django_sortable_listview
+

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import mark_safe
 from apps.core.models import A_Propos, Image_Site, Image_A_Propos, Site,Service, Image_Service
 
+
 # Register your models here.
 admin.site.register(A_Propos)
 admin.site.register(Site)

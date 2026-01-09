@@ -4,19 +4,27 @@
     <div class="product-container">
         {% if forloop.counter|divisibleby:2 %}
         <div class="product-even">
-            <h3>{{ prdt.nom_produit }}</h3>
-            <p>{{ prdt.description_produit }}</p>
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <h3>{{ prdt.nom_produit }}</h3>
+                <p>{{ prdt.description_produit }}</p>
+            </a>
         </div>
         <div class="product-image-container product-even">
-        <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
+            </a>
         </div>
         {% else %}
         <div class="product-image-container product-odd">
-        <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
+            </a>
         </div>
         <div class="product-odd">
-            <h3>{{ prdt.nom_produit }}</h3>
-            <p>{{ prdt.description_produit }}</p>
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <h3>{{ prdt.nom_produit }}</h3>
+                <p>{{ prdt.description_produit }}</p>
+            </a>
         </div>
         {% endif %}
     </div>

@@ -12,7 +12,7 @@ class Famille(models.Model):
 class Produit(models.Model):
     id_produit = models.AutoField(primary_key=True)
     nom_produit = models.CharField(max_length=200)
-    prix_produit = models.DecimalField(max_digits=10, decimal_places=2, null = True, blank = True)
+    prix_produit = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     description_produit = models.TextField()
     is_produit_du_moment = models.BooleanField(default=False)
     famille = models.ForeignKey(Famille, on_delete=models.CASCADE, related_name="famille")
