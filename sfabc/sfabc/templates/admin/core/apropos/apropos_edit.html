@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Éditer À propos</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+    <a href="{% url 'core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+
+    <div class="container">
+      <header>
+        <h1>
+          {% if page %}
+            Modifier
+          {% else %}
+            Créer
+          {% endif %}une section
+        </h1>
+      </header>
+
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+              <span class="material-symbols-outlined">
+                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+              </span>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="section-card">
+        {% csrf_token %}
+
+        <div class="form-section">
+          <h2>
+            <span class="material-symbols-outlined">description</span>
+            Contenu de la section
+          </h2>
+          <div class="form-group">
+            <label class="form-label">{{ form.titre_ap.label }}</label>
+            {{ form.titre_ap }}
+            {% if form.titre_ap.errors %}
+              <div class="form-error">{{ form.titre_ap.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ form.description_ap.label }}</label>
+            {{ form.description_ap }}
+            {% if form.description_ap.errors %}
+              <div class="form-error">{{ form.description_ap.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2>
+            <span class="material-symbols-outlined">image</span>
+            Images de la section
+          </h2>
+
+          <div class="image-grid">
+            {% for pos, sf in slot_forms %}
+              <div class="image-card">
+                <h3 class="image-name">{{ pos|capfirst }}</h3>
+
+                {% if sf.non_field_errors %}
+                  <div class="field-errors">
+                    {{ sf.non_field_errors }}
+                  </div>
+                {% endif %}
+
+                <div class="form-group">
+                  <label class="form-label">Image sélectionnée</label>
+                  <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="image-preview" style="flex-shrink: 0;">
+                      {% if sf.image.value %}
+                        {% for choice in sf.image %}
+                          {% if choice.0 == sf.image.value %}
+                            <img src="{{ choice.0|add:'/media/images/site/'|add:choice.1 }}" alt="{{ choice.1 }}" style="max-width: 60px; max-height: 60px; border-radius: 8px; border: 2px solid #e1e5e9;">
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
+                    </div>
+                    <button type="button" class="image-select-btn btn-secondary" data-target="id_{{ sf.image.id_for_label }}" style="flex: 1;">
+                      <span class="material-symbols-outlined">image_search</span>
+                      {% if sf.image.value %}Changer d'image{% else %}Sélectionner une image{% endif %}
+                    </button>
+                  </div>
+                  {{ sf.image }}
+                  {% if sf.image.errors %}
+                    <div class="form-error">{{ sf.image.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Ou importer une nouvelle image</label>
+                  {{ sf.upload }}
+                  {% if sf.upload.errors %}
+                    <div class="form-error">{{ sf.upload.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Titre de l'image</label>
+                  {{ sf.titre_image }}
+                  {% if sf.titre_image.errors %}
+                    <div class="form-error">{{ sf.titre_image.errors }}</div>
+                  {% endif %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'core:admin_apropos_list' %}" class="btn-cancel">
+            <span class="material-symbols-outlined">cancel</span>
+            Annuler
+          </a>
+          <button type="submit" class="btn-submit">
+            <span class="material-symbols-outlined">save</span>
+            Enregistrer
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <script src="{% static 'js/image_selector.js' %}"></script>
+  </body>
+</html>

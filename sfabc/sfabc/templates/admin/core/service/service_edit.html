@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      {% if service %}
+        Modifier
+      {% else %}
+        Ajouter
+      {% endif %}un service
+    </title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+
+  <body>
+    <a href="{% url 'core:admin_service_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+
+    <div class="container">
+      <header>
+        <h1>
+          {% if service %}
+            Modifier
+          {% else %}
+            Ajouter
+          {% endif %}un service
+        </h1>
+      </header>
+
+      {% if messages %}
+        <div class="messages">
+          {% for message in messages %}
+            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+              <span class="material-symbols-outlined">
+                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+              </span>
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <form method="post" enctype="multipart/form-data" class="section-card">
+        {% csrf_token %}
+
+        <div class="form-section">
+          <h2>
+            <span class="material-symbols-outlined">build</span>
+            Informations du service
+          </h2>
+          <div class="form-group">
+            <label class="form-label">{{ form.titre_service.label }}</label>
+            {{ form.titre_service }}
+            {% if form.titre_service.errors %}
+              <div class="form-error">{{ form.titre_service.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ form.description_service.label }}</label>
+            {{ form.description_service }}
+            {% if form.description_service.errors %}
+              <div class="form-error">{{ form.description_service.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">{{ form.ordre_service.label }}</label>
+            {{ form.ordre_service }}
+            {% if form.ordre_service.errors %}
+              <div class="form-error">{{ form.ordre_service.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h2>
+            <span class="material-symbols-outlined">image</span>
+            Images du service
+          </h2>
+
+          {{ formset.management_form }}
+
+          <div class="image-grid" id="imageGrid">
+            {% for f in formset %}
+              <div class="image-card">
+                {{ f.id }}
+                {% if f.non_field_errors %}
+                  <div class="field-errors">
+                    {{ f.non_field_errors }}
+                  </div>
+                {% endif %}
+                {% if not f.instance.pk %}
+                  <label class="delete-btn" for="{{ f.DELETE.id_for_label }}" onclick="removeImage(this)">
+                    <span class="material-symbols-outlined">close</span>
+                  </label>
+                {% endif %}
+
+                <div class="form-group">
+                  <label class="form-label">Image existante</label>
+                  <div class="image-select-container">
+                    <button type="button" class="image-select-btn" data-target="{{ f.image.id_for_label }}">
+                      <span class="material-symbols-outlined">image</span>
+                      {% if f.instance.image %}
+                        Modifier l'image sélectionnée
+                      {% else %}
+                        Sélectionner une image
+                      {% endif %}
+                    </button>
+                    {{ f.image }}
+                  </div>
+                  {% if f.image.errors %}
+                    <div class="form-error">{{ f.image.errors }}</div>
+                  {% endif %}
+                  <div class="image-preview-container" style="{% if not f.instance.image %}display: none;{% endif %} margin-top: 15px;">
+                    <div class="image-preview">
+                      {% if f.instance.image %}
+                        <img src="{{ f.instance.image.image.url }}" alt="{{ f.instance.image }}" height="80">
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Ou importer une nouvelle image</label>
+                  {{ f.upload }}
+                  {% if f.upload.errors %}
+                    <div class="form-error">{{ f.upload.errors }}</div>
+                  {% endif %}
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Titre de l'image</label>
+                  {{ f.titre_image }}
+                  {% if f.titre_image.errors %}
+                    <div class="form-error">{{ f.titre_image.errors }}</div>
+                  {% endif %}
+                </div>
+
+                {% if service is not None %}
+                  <div class="form-group">
+                    <label class="form-label">Supprimer l'image</label>
+                    {{ f.DELETE }}
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="form-group">
+            <button type="button" class="btn-submit" id="addImageBtn">
+              <span class="material-symbols-outlined">add</span>
+              Ajouter une image
+            </button>
+          </div>
+        </div>
+
+        <div id="templateSlot">
+          <div class="image-card">
+            <label class="delete-btn" for="{{ template_form.DELETE.id_for_label }}" onclick="removeImage(this)">
+              <span class="material-symbols-outlined">close</span>
+            </label>
+            <div class="form-group">
+              <label class="form-label">Image existante</label>
+              <div class="image-select-container">
+                <button type="button" class="image-select-btn" data-target="{{ template_form.image.id_for_label }}">
+                  <span class="material-symbols-outlined">image</span>
+                  Sélectionner une image
+                </button>
+                {{ template_form.image }}
+              </div>
+              <div class="image-preview-container" style="display: none; margin-top: 15px;">
+                <div class="image-preview"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ou importer une nouvelle image</label>
+              {{ template_form.upload }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Titre de l'image</label>
+              {{ template_form.titre_image }}
+            </div>
+            {% if service is not None %}
+              <div class="form-group">
+                <label class="form-label">Supprimer l'image</label>
+                {{ template_form.DELETE }}
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="{% url 'core:admin_service_list' %}" class="btn-cancel">
+            <span class="material-symbols-outlined">cancel</span>
+            Annuler
+          </a>
+          <button type="submit" class="btn-submit">
+            <span class="material-symbols-outlined">save</span>
+            Enregistrer
+          </button>
+          {% if service %}
+            <a href="{% url 'core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
+              <span class="material-symbols-outlined">delete</span>
+              Supprimer
+            </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+
+    <script>
+    let imageIndex = {{ total_forms }};
+
+    document.getElementById('addImageBtn').addEventListener('click', function () {
+      const grid = document.getElementById('imageGrid');
+      const template = document.getElementById('templateSlot').innerHTML;
+      const newCard = template.replace(/__prefix__/g, imageIndex);
+      grid.insertAdjacentHTML('beforeend', newCard);
+      imageIndex++;
+      document.getElementById('id_imageservice_set-TOTAL_FORMS').value = imageIndex;
+    });
+
+    function removeImage(btn) {
+      const card = btn.closest('.image-card');
+      const deleteInput = card.querySelector('input[name$="-DELETE"]');
+      if (deleteInput) {
+        deleteInput.checked = true;
+        card.style.display = 'none';
+      } else {
+        card.remove();
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll("[data-confirm]").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+          if (!confirm(el.dataset.confirm)) {
+            e.preventDefault();
+          }
+        });
+      });
+    });
+  </script>
+  <script src="{% static 'js/image_selector.js' %}"></script>
+  </body>
+</html>

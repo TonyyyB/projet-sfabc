@@ -6,7 +6,7 @@ import os
 # Create your models here.
 class A_Propos(models.Model):
     id_ap = models.AutoField(primary_key=True)
-    ordre_ap = models.IntegerField()
+    ordre_ap = models.PositiveIntegerField(unique=True)
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
     
@@ -57,14 +57,14 @@ class Image_A_Propos(models.Model):
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:
-        unique_together = ('image', 'page_ap')
+        unique_together = ('position', 'page_ap')
         verbose_name_plural = "Images à propos"
 
     def __str__(self):
         return f"{self.page_ap} - {self.titre_image if self.titre_image else self.image.image.name}"
 
 class Image_Service(models.Model):
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service")
+    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service", null=True, blank=True)
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
     titre_image = models.CharField(max_length=100, null=True, blank=True)
 
@@ -80,8 +80,8 @@ class Site(models.Model):
     foreground = ColorField(default="#B8A67E")
     police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
-    logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site")
-    bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site")
+    logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site", null=True, blank=True)
+    bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site", null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.pk = 1
