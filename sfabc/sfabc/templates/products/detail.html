@@ -63,8 +63,41 @@
     </div>
   </div>
   <div class="product-reviews">
-    <div class="product-reviews-form">
-      
+    <div class="card product-reviews-form">
+      <form method="post" action="">
+        {% csrf_token %}
+
+        <div class="card-header d-flex justify-content-between align-items-center rev-header">
+          <input 
+            type="text" 
+            name="pseudonyme" 
+            class="form-control me-2" 
+            placeholder="Votre pseudo" 
+            required
+          />
+
+          <div class="rev-stars stars-input">
+            {% for i in "12345" %}
+              <input type="radio" id="star{{ i }}" name="stars" value="{{ i }}">
+              <label for="star{{ i }}" class="star-label"></label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card-body rev-content">
+          <textarea
+            name="message" 
+            class="form-control" 
+            rows="3" 
+            placeholder="Votre avis" 
+            required
+          ></textarea>
+        </div>
+
+        <div class="card-footer text-body-secondary rev-footer d-flex justify-content-end">
+          <button type="submit" class="btn btn-contact">Envoyer</button>
+        </div>
+      </form>
     </div>
     {% for rev in avis|slice:":5" %}
         <div class="card review">
