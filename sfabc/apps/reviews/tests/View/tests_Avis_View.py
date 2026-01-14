@@ -13,7 +13,7 @@ class ListAvisViewTest(TestCase):
 
 
     def test_list_avis_view(self):
-        response = self.client.get(reverse('reviews:liste_avis', kwargs={'pk': self.produit.id_produit}))
+        response = self.client.get(reverse('products:reviews:liste_avis', kwargs={'pk': self.produit.id_produit}))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'reviews/reviews.html')
         self.assertContains(response, 'Excellent produit!')
