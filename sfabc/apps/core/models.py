@@ -53,7 +53,7 @@ EMPLACEMENT = [
 class Image_A_Propos(models.Model):
     image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_A_Propos")
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
-    titre_image = models.CharField(max_length=100)
+    titre_image = models.CharField(max_length=100, blank=True, null=True)
     position = models.CharField(choices=EMPLACEMENT)
 
     class Meta:

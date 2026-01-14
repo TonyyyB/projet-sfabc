@@ -15,7 +15,7 @@
   </head>
 
   <body>
-    <a href="{% url 'core:admin_service_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+    <a href="{% url 'admin_core:admin_service_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
 
     <div class="container">
       <header>
@@ -96,7 +96,13 @@
                 {% endif %}
 
                 <div class="form-group">
-                  <label class="form-label">Image existante</label>
+                  <div class="image-selector-container">
+                  <div class="image-preview-container" style="display:none;">
+                    <label class="form-label">Image modifié</label>
+                    <div class="image-preview">
+                      <img src="{{ f.instance.image.image.url }}" height="80" alt="Image Modifier" />
+                    </div>
+                  </div>
                   <div class="image-select-container">
                     <button type="button" class="image-select-btn" data-target="{{ f.image.id_for_label }}">
                       <span class="material-symbols-outlined">image</span>
@@ -108,6 +114,7 @@
                     </button>
                     {{ f.image }}
                   </div>
+                </div>
                   {% if f.image.errors %}
                     <div class="form-error">{{ f.image.errors }}</div>
                   {% endif %}
@@ -118,14 +125,6 @@
                       {% endif %}
                     </div>
                   </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Ou importer une nouvelle image</label>
-                  {{ f.upload }}
-                  {% if f.upload.errors %}
-                    <div class="form-error">{{ f.upload.errors }}</div>
-                  {% endif %}
                 </div>
 
                 <div class="form-group">
@@ -190,7 +189,13 @@
         </div>
 
         <div class="form-actions">
-          <a href="{% url 'core:admin_service_list' %}" class="btn-cancel">
+          {% if service %}
+            <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
+              <span class="material-symbols-outlined">delete</span>
+              Supprimer
+            </a>
+          {% endif %}
+          <a href="{% url 'admin_core:admin_service_list' %}" class="btn-cancel">
             <span class="material-symbols-outlined">cancel</span>
             Annuler
           </a>
@@ -198,12 +203,6 @@
             <span class="material-symbols-outlined">save</span>
             Enregistrer
           </button>
-          {% if service %}
-            <a href="{% url 'core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
-              <span class="material-symbols-outlined">delete</span>
-              Supprimer
-            </a>
-          {% endif %}
         </div>
       </form>
     </div>

@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Produits</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+<body>
+
+<a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">←</a>
+
+<div class="container">
+  <header>
+    <h1>Produits</h1>
+  </header>
+
+  <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">
+    + Ajouter un produit
+  </a>
+
+  {% for produit in produits %}
+    <div class="list-item">
+      <div>
+        <h2>{{ produit.nom_produit }}</h2>
+        <p>{{ produit.famille.nom_famille }} – {{ produit.prix_produit }} €</p>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" class="btn btn-primary">Modifier</a>
+        <a href="{% url 'admin_produits:admin_produit_delete' produit.pk %}" class="btn btn-danger" data-confirm>Supprimer</a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+document.querySelectorAll('[data-confirm]').forEach(el => {
+  el.onclick = e => { if (!confirm("Supprimer ce produit ?")) e.preventDefault(); }
+})
+</script>
+
+</body>
+</html>
