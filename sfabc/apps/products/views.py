@@ -25,7 +25,9 @@ class DetailProduitView(DetailView):
             nombre=Count('id_note')
         )
         
-        moyenne_avis = round(avis_stats['moyenne'], 2)
+        if avis_stats['moyenne'] is not None :
+            moyenne_avis = round(avis_stats['moyenne'], 2)
+        else : moyenne_avis = None
         nombre_avis = avis_stats['nombre']
        
         # Créer une liste de dictionnaires pour les étoiles
