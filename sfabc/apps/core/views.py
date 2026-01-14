@@ -4,6 +4,13 @@ from django.db.models import Prefetch
 from apps.core.models import A_Propos, Image_A_Propos, Service
 from .forms import *
 from django.core.mail import send_mail
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.urls import reverse
+from django.http import JsonResponse
+import os
+from django.conf import settings
 # Create your views here.
 
 class Home(ListView):
