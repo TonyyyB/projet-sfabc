@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Familles de produits</title>
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+  </head>
+  <body>
+    <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+
+    <div class="container">
+      <header>
+        <h1>Familles de produits</h1>
+      </header>
+
+      <a href="{% url 'admin_produits:admin_famille_add' %}" class="btn btn-primary">
+        <span class="material-symbols-outlined">add</span>
+        Ajouter une famille
+      </a>
+
+      {% for famille in familles %}
+        <div class="list-item">
+          <div class="list-header">
+            <h2>{{ famille.nom_famille }}</h2>
+            <span>{{ famille.famille.count }} produit(s)</span>
+          </div>
+
+          <div class="actions">
+            <a href="{% url 'admin_produits:admin_famille_edit' famille.pk %}" class="btn btn-primary">
+              <span class="material-symbols-outlined">edit</span>
+              Modifier
+            </a>
+          </div>
+        </div>
+      {% empty %}
+        <div class="section-card">Aucune famille créée.</div>
+      {% endfor %}
+    </div>
+  </body>
+</html>

@@ -10,7 +10,7 @@
 </head>
 
 <body>
-  <a href="{% url 'core:admin_dashboard' %}" class="logout-btn"><span
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span
       class="material-symbols-outlined">arrow_back</span></a>
 
   <div class="container">
@@ -34,11 +34,11 @@
           {% endif %}
         </div>
         <div class="actions">
-          <a href="{% url 'core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
+          <a href="{% url 'admin_core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
             <span class="material-symbols-outlined">edit</span>
             Renommer
           </a>
-          <a href="{% url 'core:admin_image_delete' data.image.id_image %}"
+          <a href="{% url 'admin_core:admin_image_delete' data.image.id_image %}"
              class="btn btn-danger"
              data-confirm="{% if data.is_used %}Cette image est utilisée quelque part. Êtes-vous sûr de vouloir la supprimer ?{% else %}Êtes-vous sûr de vouloir supprimer cette image ?{% endif %}">
             <span class="material-symbols-outlined">delete</span>
