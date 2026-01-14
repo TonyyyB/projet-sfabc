@@ -1,12 +1,10 @@
 from django.views.generic import *
 from apps.products.models import Produit
+from apps.reviews.models import Avis
 from django.db.models import Count, Avg
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import *
 
-from apps.reviews.models import Avis
-
-# Create your views here.
 class DetailProduitView(DetailView):
     model = Produit
     template_name = "products/detail.html"

@@ -64,7 +64,7 @@
   </div>
   <div class="product-reviews">
     <div class="card product-reviews-form">
-      <form method="post" action="">
+      <form method="post" action="{% url 'products:reviews:add_review' produit.id_produit %}">
         {% csrf_token %}
 
         <div class="card-header d-flex justify-content-between align-items-center rev-header">
@@ -77,8 +77,8 @@
           />
 
           <div class="rev-stars stars-input">
-            {% for i in "12345" %}
-              <input type="radio" id="star{{ i }}" name="stars" value="{{ i }}">
+            {% for i in "54321" %}
+              <input type="radio" id="star{{ i }}" name="stars" value="{{ i }}" required>
               <label for="star{{ i }}" class="star-label"></label>
             {% endfor %}
           </div>
@@ -89,8 +89,7 @@
             name="message" 
             class="form-control" 
             rows="3" 
-            placeholder="Votre avis" 
-            required
+            placeholder="Votre avis (facultatif)" 
           ></textarea>
         </div>
 
