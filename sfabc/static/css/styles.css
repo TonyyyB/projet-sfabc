@@ -395,6 +395,14 @@ hr {
   box-shadow: inset 0 2px 4px #5a432842;
 }
 
+.product-reviews-form{
+  margin: 25px;
+  border: solid 1px !important;
+  border-color: #5A4328 !important;
+  background-color: #ffffff !important;
+  box-shadow: inset 0 2px 4px #5a432842;
+}
+
 .rev-stars{
   font-size: large;
   color: #5A4328;
@@ -567,4 +575,47 @@ span.page-link{
 
 .rev-direction{
   color: black;
+}
+
+.stars-input {
+  display: flex !important;
+  gap: 0px !important;
+  flex-direction: row-reverse !important;
+}
+
+.stars-input input {
+  display: none !important;
+}
+
+.star-label {
+  font-size: large;
+  color: #B8A67E;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.star-label:hover,
+.star-label:hover ~ .star-label {
+  color: #5A4328;
+  content: "★";
+}
+
+.stars-input input:checked + .star-label,
+.stars-input input:checked + .star-label ~ .star-label {
+  color: #5A4328;
+}
+
+.star-label::before {
+  content: "☆";
+}
+
+.star-label:hover::before,
+.star-label:hover ~ .star-label::before,
+.stars-input input:checked + .star-label::before,
+.stars-input input:checked + .star-label ~ .star-label::before {
+  content: "★";
+}
+
+.form-control{
+  background-color: #FFFFFF00 !important;
 }
