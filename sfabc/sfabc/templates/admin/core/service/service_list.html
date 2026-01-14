@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   </head>
   <body>
-    <a href="{% url 'core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+    <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
 
     <div class="container">
       <header>
@@ -23,7 +23,7 @@
         </div>
       {% endif %}
 
-      <a href="{% url 'core:admin_service_add' %}" class="btn btn-primary">
+      <a href="{% url 'admin_core:admin_service_add' %}" class="btn btn-primary">
         <span class="material-symbols-outlined">add</span>
         Ajouter un service
       </a>
@@ -37,18 +37,18 @@
             </div>
 
             <div class="arrows">
-              <a href="{% url 'core:admin_service_move' service.pk 'up' %}"><span class="material-symbols-outlined">arrow_upward</span></a>
-              <a href="{% url 'core:admin_service_move' service.pk 'down' %}"><span class="material-symbols-outlined">arrow_downward</span></a>
+              <a href="{% url 'admin_core:admin_service_move' service.pk 'up' %}"><span class="material-symbols-outlined">arrow_upward</span></a>
+              <a href="{% url 'admin_core:admin_service_move' service.pk 'down' %}"><span class="material-symbols-outlined">arrow_downward</span></a>
             </div>
           </div>
 
           <div class="actions">
-            <a href="{% url 'core:admin_service_edit' service.pk %}" class="btn btn-primary">
+            <a href="{% url 'admin_core:admin_service_edit' service.pk %}" class="btn btn-primary">
               <span class="material-symbols-outlined">edit</span>
               Modifier
             </a>
 
-            <a href="{% url 'core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
+            <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
               <span class="material-symbols-outlined">delete</span>
               Supprimer
             </a>

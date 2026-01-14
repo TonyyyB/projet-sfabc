@@ -64,6 +64,11 @@ class ImageSelector {
                     </div>
 
                     <div class="image-modal-footer">
+                        <button class="btn-upload btn-submit" id="uploadImageBtn">
+                            <span class="material-symbols-outlined">upload</span>
+                            Importer une image
+                        </button>
+                        <input type="file" id="imageUploadInput" accept="image/*" hidden>
                         <button class="btn-cancel" id="cancelImageSelection">
                             <span class="material-symbols-outlined">cancel</span>
                             Annuler
@@ -87,6 +92,10 @@ class ImageSelector {
         this.newImagePreview = document.getElementById('newImagePreview');
     }
 
+    getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]').value;
+    }
+
     bindEvents() {
         // Fermer le modal
         this.modal.querySelector('.image-modal-close').addEventListener('click', () => this.close());
@@ -107,6 +116,7 @@ class ImageSelector {
         // Confirmer la sélection
         document.getElementById('confirmImageSelection').addEventListener('click', () => {
             if (this.selectedImage && this.callback) {
+                console.log(this.selectedImage);
                 this.callback(this.selectedImage);
             }
             this.close();
@@ -118,12 +128,44 @@ class ImageSelector {
                 this.close();
             }
         });
+
+        document.getElementById('uploadImageBtn').addEventListener('click', () => {
+            document.getElementById('imageUploadInput').click();
+        });
+
+
+
+        document.getElementById('imageUploadInput').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('type', this.imageType);
+            formData.append('product_id', this.productId || '');
+
+            const response = await fetch('/admin/images/upload/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': this.getCSRFToken()
+                }
+            });
+
+            const data = await response.json();
+            this.images.unshift(data.image);
+            this.filteredImages = [...this.images];
+            this.renderImages();
+        });
     }
 
     async loadImages() {
         try {
             // Récupérer les images depuis l'API Django ou une URL
-            const response = await fetch('/admin/images/api/');
+            const url = this.imageType === 'site' ? '/admin/images/api/' : '/admin/produits/images/api/';
+            console.log(url);
+            console.log(this.imageType);
+            const response = await fetch(url);
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des images');
             }
@@ -135,8 +177,7 @@ class ImageSelector {
             console.error('Erreur lors du chargement des images:', error);
             // Fallback: utiliser des données statiques si l'API n'est pas disponible
             this.images = [
-                { id: 1, name: 'image1.jpg', url: '/media/images/site/image1.jpg' },
-                { id: 2, name: 'image2.jpg', url: '/media/images/site/image2.jpg' },
+
             ];
             this.filteredImages = [...this.images];
             this.renderImages();
@@ -200,8 +241,10 @@ class ImageSelector {
         }
     }
 
-    open(callback, currentImage = null) {
+    open(callback, currentImage = null, imageType = 'site', productId = null) {
         this.callback = callback;
+        this.imageType = imageType;
+        this.productId = productId;
         this.currentImage = currentImage;
         this.selectedImage = null;
         this.searchInput.value = '';
@@ -252,19 +295,23 @@ class ImageSelector {
 const imageSelector = new ImageSelector();
 
 // Fonction globale pour ouvrir le sélecteur
-function openImageSelector(callback, currentImage = null) {
-    imageSelector.open(callback, currentImage);
+function openImageSelector(callback, currentImage = null, imageType = 'site', productId = null) {
+    imageSelector.open(callback, currentImage, imageType, productId);
 }
 
 // Attacher les événements aux boutons de sélection d'images
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Attacher aux boutons avec la classe image-select-btn
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (e.target.closest('.image-select-btn')) {
             e.preventDefault();
             const button = e.target.closest('.image-select-btn');
             const targetInput = document.getElementById(button.dataset.target);
-            const container = button.closest('.image-selector-container') || button.closest('.image-select-container') || button.closest('.form-group');
+            const container = button.closest('.image-selector-container');
+            const imageType = button.dataset.imageType || 'site';
+            const productId = button.dataset.productId || null;
+            console.log(button.dataset);
+            console.log(imageType);
 
             // Récupérer l'image actuelle depuis le select caché
             let currentImage = null;
@@ -283,22 +330,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            openImageSelector(function(selectedImage) {
+            openImageSelector(function (selectedImage) {
                 if (targetInput) {
+                    let option = targetInput.querySelector(
+                        `option[value="${selectedImage.id}"]`
+                    );
+                    console.log(targetInput);
+
+                    // Si l'option n'existe pas encore (image uploadée)
+                    if (!option) {
+                        option = document.createElement("option");
+                        option.value = selectedImage.id;
+                        option.textContent = selectedImage.name;
+                        targetInput.appendChild(option);
+                    }
                     targetInput.value = selectedImage.id;
                     // Mettre à jour l'aperçu si disponible
                     if (container) {
                         const previewContainer = container.querySelector('.image-preview-container');
                         if (previewContainer) {
-                            previewContainer.style = "";
-                            const preview = previewContainer.querySelector('.image-preview');
-                            if (preview) {
-                                preview.innerHTML = `<img src="${selectedImage.url}" alt="${selectedImage.name}" height="80">`;
-                            }
+                            previewContainer.style.display = "block";
+                            previewContainer.querySelector('.image-preview').innerHTML =
+                                `<img src="${selectedImage.url}" alt="${selectedImage.name}" height="80">`;
                         }
                     }
                 }
-            }, currentImage);
+            }, currentImage, imageType, productId);
         }
     });
 });

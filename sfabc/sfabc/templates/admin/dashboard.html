@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   </head>
   <body>
-    <a href="{% url 'core:admin_logout' %}" class="logout-btn">Déconnexion</a>
+    <a href="{% url 'admin_core:admin_logout' %}" class="logout-btn">Déconnexion</a>
 
     <div class="container">
       <header>
@@ -42,10 +42,10 @@
           </div>
 
           <div class="actions">
-            <a href="{% url 'core:admin_site_edit' %}" class="btn btn-primary"><span class="material-symbols-outlined">settings</span> Apparence du site</a>
-            <a href="{% url 'core:admin_apropos_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">description</span> Gérer "À propos"</a>
-            <a href="{% url 'core:admin_service_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">build</span> Gérer les services</a>
-            <a href="{% url 'core:admin_image_library' %}" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Bibliothèque d'images</a>
+            <a href="{% url 'admin_core:admin_site_edit' %}" class="btn btn-primary"><span class="material-symbols-outlined">settings</span> Apparence du site</a>
+            <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">description</span> Gérer "À propos"</a>
+            <a href="{% url 'admin_core:admin_service_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">build</span> Gérer les services</a>
+            <a href="{% url 'admin_core:admin_image_library' %}" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Bibliothèque d'images</a>
           </div>
         </div>
 
@@ -74,8 +74,8 @@
           </div>
 
           <div class="actions">
-            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">folder</span> Gérer les familles</a>
-            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">label</span> Gérer les produits</a>
+            <a href="{% url 'admin_produits:admin_famille_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">folder</span> Gérer les familles</a>
+            <a href="{% url 'admin_produits:admin_produit_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">label</span> Gérer les produits</a>
           </div>
         </div>
 
