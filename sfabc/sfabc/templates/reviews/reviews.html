@@ -15,5 +15,8 @@
             <div class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.date }}</div>
         </div>
     {% endfor %}
-{% include 'includes/pagination.html' %}
+<div class = "end-revs">
+    {% include 'includes/pagination.html' %}
+    <a href="{% url 'products:detail_produit' produit.id_produit %}" class='rev-return'>Retour</a>
+</div>
 {% endblock %}
