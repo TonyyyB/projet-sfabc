@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
   </head>
   <body>
-    <a href="{% url 'core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+    <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
 
     <div class="container">
       <header>
@@ -26,7 +26,15 @@
           {% for message in messages %}
             <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
               <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+                {% if message.tags == 'success' %}
+                  check_circle
+                {% elif message.tags == 'error' %}
+                  error
+                {% elif message.tags == 'warning' %}
+                  warning
+                {% else %}
+                  info
+                {% endif %}
               </span>
               {{ message }}
             </div>
@@ -70,12 +78,10 @@
                 <h3 class="image-name">{{ pos|capfirst }}</h3>
 
                 {% if sf.non_field_errors %}
-                  <div class="field-errors">
-                    {{ sf.non_field_errors }}
-                  </div>
+                  <div class="field-errors">{{ sf.non_field_errors }}</div>
                 {% endif %}
 
-                <div class="form-group">
+                <!--  <div class="form-group">
                   <label class="form-label">Image sélectionnée</label>
                   <div style="display: flex; gap: 12px; align-items: center;">
                     <div class="image-preview" style="flex-shrink: 0;">
@@ -96,30 +102,43 @@
                   {% if sf.image.errors %}
                     <div class="form-error">{{ sf.image.errors }}</div>
                   {% endif %}
-                </div>
+                </div> -->
 
-                <div class="form-group">
-                  <label class="form-label">Ou importer une nouvelle image</label>
-                  {{ sf.upload }}
-                  {% if sf.upload.errors %}
-                    <div class="form-error">{{ sf.upload.errors }}</div>
-                  {% endif %}
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Titre de l'image</label>
-                  {{ sf.titre_image }}
-                  {% if sf.titre_image.errors %}
-                    <div class="form-error">{{ sf.titre_image.errors }}</div>
-                  {% endif %}
-                </div>
-              </div>
+                <div class="form-group"> 
+                  {{ sf.position }}
+                  <div class="image-selector-container"> 
+                    <label class="form-label">Image actuel</label> 
+                    {% if sf.initial.image %} 
+                    <div class="image-preview"> 
+                      <img src="{{ sf.initial.image.image.url }}" height="80" alt="Image actuel" /> 
+                    </div> 
+                    {% endif %} 
+                    <div class="image-preview-container" style="display:none;"> 
+                      <label class="form-label">Image modifié</label> 
+                      <div class="image-preview"> 
+                        <img src="{{ sf.initial.image.url }}" height="80" alt="Logo Modifier" /> 
+                      </div> 
+                    </div> 
+                    <div class="image-select-container">
+                      <button type="button" class="image-select-btn" data-target="{{ sf.image.id_for_label }}" data-image-type="site">
+                         <span class="material-symbols-outlined">image</span>
+                          {% if sf.initial.image %} Modifier l'image {% else %} Sélectionner une image {% endif %} </button>
+                          {{ sf.image }} 
+                        </div> 
+                      </div> 
+                      {% if sf.image.errors %} 
+                      <div class="form-error">
+                        {{ sf.image.errors }}
+                      </div> 
+                      {% endif %} 
+                    </div>
+                  </div>
             {% endfor %}
           </div>
         </div>
 
         <div class="form-actions">
-          <a href="{% url 'core:admin_apropos_list' %}" class="btn-cancel">
+          <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn-cancel">
             <span class="material-symbols-outlined">cancel</span>
             Annuler
           </a>

@@ -21,9 +21,10 @@ class Produit(models.Model):
         return f"{self.nom_produit}, famille {self.famille}: {self.prix_produit}€"
     
 class Image_Produit(models.Model):
+    id_image = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to="images/produits")
-    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images")
+    produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images", null=True, blank=True)
     is_produit_du_moment = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Image {self.image.name} associée à {self.produit.nom_produit}"   
+        return f"Image {self.image.name}"   

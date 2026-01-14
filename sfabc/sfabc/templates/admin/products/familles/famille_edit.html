@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Modifier famille</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+<body>
+
+<a href="{% url 'admin_produits:admin_famille_list' %}" class="logout-btn">
+  <span class="material-symbols-outlined">arrow_back</span>
+</a>
+
+<div class="container">
+  <header>
+    <h1>Famille : {{ famille.nom_famille }}</h1>
+  </header>
+
+  {% if messages %}
+    <div class="section-card">
+      {% for message in messages %}
+        {{ message }}
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="section-card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit" class="btn btn-primary">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer
+      </button>
+    </form>
+  </div>
+
+  <div class="section-card">
+    <h2>Produits de cette famille</h2>
+
+    {% for produit in produits %}
+      <div class="list-item">
+        <strong>{{ produit.nom_produit }}</strong>
+        <span>{{ produit.prix_produit }} €</span>
+      </div>
+    {% empty %}
+      <p>Aucun produit dans cette famille.</p>
+    {% endfor %}
+  </div>
+</div>
+
+</body>
+</html>
