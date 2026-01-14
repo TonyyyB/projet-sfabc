@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Gérer À propos</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+<body>
+
+<a href="{% url 'core:admin_dashboard' %}" class="logout-btn">
+  <span class="material-symbols-outlined">arrow_back</span>
+</a>
+
+<div class="container">
+  <header>
+    <h1>Sections « À propos »</h1>
+  </header>
+
+  <a href="{% url 'core:admin_apropos_add' %}" class="btn btn-primary">
+    <span class="material-symbols-outlined">add</span>
+    Ajouter une section
+  </a>
+
+  {% for page in pages %}
+    <div class="list-item">
+      <div class="list-header">
+        <div>
+          <h2>{{ page.titre_ap }}</h2>
+          <p>{{ page.description_ap|truncatewords:20 }}</p>
+        </div>
+
+        <div class="arrows">
+          <a href="{% url 'core:admin_apropos_move' page.pk 'up' %}">
+            <span class="material-symbols-outlined">arrow_upward</span>
+          </a>
+          <a href="{% url 'core:admin_apropos_move' page.pk 'down' %}">
+            <span class="material-symbols-outlined">arrow_downward</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'core:admin_apropos_edit' page.pk %}" class="btn btn-primary">
+          <span class="material-symbols-outlined">edit</span>
+          Modifier
+        </a>
+
+        <a href="{% url 'core:admin_apropos_delete' page.pk %}"
+           class="btn btn-danger"
+           data-confirm="Êtes-vous sûr de vouloir supprimer cette section « À propos » ? Cette action est irréversible.">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("[data-confirm]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        const message = el.getAttribute("data-confirm");
+        if (!confirm(message)) {
+          e.preventDefault();
+        }
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

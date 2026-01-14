@@ -1,0 +1,66 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Bibliothèque d'images</title>
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+</head>
+
+<body>
+  <a href="{% url 'core:admin_dashboard' %}" class="logout-btn"><span
+      class="material-symbols-outlined">arrow_back</span></a>
+
+  <div class="container">
+    <header>
+      <h1>Bibliothèque d'images</h1>
+    </header>
+
+    <div class="image-grid" id="imageGrid">
+      {% for data in image_data %}
+      <div class="image-card">
+        <img src="{{ data.image.image.url }}" alt="{{ data.image }}">
+        <div class="image-name">{{ data.image }}</div>
+        <div class="usages">
+          {% if data.usages %}
+            Utilisée dans :<br>
+            {% for usage in data.usages %}
+              <a href="{{ usage.url }}" class="usage-link">{{ usage.text }}</a><br>
+            {% endfor %}
+          {% else %}
+            Non utilisée
+          {% endif %}
+        </div>
+        <div class="actions">
+          <a href="{% url 'core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
+            <span class="material-symbols-outlined">edit</span>
+            Renommer
+          </a>
+          <a href="{% url 'core:admin_image_delete' data.image.id_image %}"
+             class="btn btn-danger"
+             data-confirm="{% if data.is_used %}Cette image est utilisée quelque part. Êtes-vous sûr de vouloir la supprimer ?{% else %}Êtes-vous sûr de vouloir supprimer cette image ?{% endif %}">
+            <span class="material-symbols-outlined">delete</span>
+            Supprimer
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll("[data-confirm]").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+          if (!confirm(el.dataset.confirm)) {
+            e.preventDefault();
+          }
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
