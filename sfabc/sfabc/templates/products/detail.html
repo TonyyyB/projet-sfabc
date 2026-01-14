@@ -36,7 +36,9 @@
         <p>{{ produit.description_produit }}</p>
       </div>
       <div class="product-price">
-        <h4>Prix: {{ produit.prix_produit }}€</h4>
+        {% if produit.prix_produit %}
+          <h4>Prix: {{ produit.prix_produit }}€</h4>
+        {% endif %}
         <div class="stars-container">
           {% for masque in etoiles %}
             <div class="star-wrapper">
@@ -48,10 +50,65 @@
               </svg>
             </div>
           {% endfor %}
-          <p>- {{ moyenne_avis }}</p>
+          {% if moyenne_avis %}
+            <p>- {{ moyenne_avis }}</p>
+          {% else %}
+            <p>- Aucun avis pour le moment </p>
+          {% endif %}
+          {% if avis %}
+            <a href="{% url 'products:reviews:liste_avis' produit.id_produit %}" class='rev-direction'>Voir les avis ({{ nombre_avis }})</a>
+          {% endif %}
         </div>
-        <p>Voir les avis ({{ nombre_avis }})</p>
       </div>
     </div>
+  </div>
+  <div class="product-reviews">
+    <div class="card product-reviews-form">
+      <form method="post" action="{% url 'products:reviews:add_review' produit.id_produit %}">
+        {% csrf_token %}
+
+        <div class="card-header d-flex justify-content-between align-items-center rev-header">
+          <input 
+            type="text" 
+            name="pseudonyme" 
+            class="form-control me-2" 
+            placeholder="Votre pseudo" 
+            required
+          />
+
+          <div class="rev-stars stars-input">
+            {% for i in "54321" %}
+              <input type="radio" id="star{{ i }}" name="stars" value="{{ i }}" required>
+              <label for="star{{ i }}" class="star-label"></label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card-body rev-content">
+          <textarea
+            name="message" 
+            class="form-control" 
+            rows="3" 
+            placeholder="Votre avis (facultatif)" 
+          ></textarea>
+        </div>
+
+        <div class="card-footer text-body-secondary rev-footer d-flex justify-content-end">
+          <button type="submit" class="btn btn-contact">Envoyer</button>
+        </div>
+      </form>
+    </div>
+    {% for rev in avis|slice:":5" %}
+        <div class="card review">
+            <div class="card-header d-flex justify-content-between align-items-center rev-header">
+                <p class="rev-title">{{ rev.pseudonyme }}</p>
+                <p class="rev-stars">{{ rev.stars }}</p>
+            </div>
+            {% if rev.message %}
+                <div class="card-body rev-content">{{ rev.message }}</div>
+            {% endif %}
+            <div class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.date }}</div>
+        </div>
+    {% endfor %}
   </div>
 {% endblock %}
