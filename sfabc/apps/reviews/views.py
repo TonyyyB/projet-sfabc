@@ -5,6 +5,7 @@ from django.shortcuts import redirect, get_object_or_404
 
 # Create your views here.
 class ReviewListView(SortableListView):
+    """TODO: Vérifier — Vue listant et triant les avis d'un produit (pagination incluse)."""
     model = Avis
     template_name = "reviews/reviews.html"
     context_object_name = "reviews"
@@ -13,6 +14,7 @@ class ReviewListView(SortableListView):
     paginate_by = 5
 
     def get_context_data(self, **kwargs):
+        """TODO: Vérifier — Ajoute au contexte les infos de tri/pagination et le produit concerné par les avis."""
         context = super(SortableListView,
                         self).get_context_data(**kwargs)
         context['current_sort_query'] = self.get_sort_string()
@@ -23,10 +25,12 @@ class ReviewListView(SortableListView):
         return context
 
     def get_queryset(self):
+        """TODO: Vérifier — Retourne les avis du produit (pk URL) triés selon le champ courant (sortable_listview)."""
         qs = Avis.objects.filter(produit=self.kwargs['pk']).order_by(self.sort)
         return qs
 
 def add_review(request, pk):
+    """TODO: Vérifier — Crée un avis à partir du formulaire POST puis redirige vers le détail produit."""
     if request.method == "POST":
         produit = get_object_or_404(Produit, id_produit=pk)
         print(request.POST)

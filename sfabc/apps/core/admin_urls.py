@@ -21,6 +21,7 @@ urlpatterns = [
     path("site/services/<int:pk>/delete/", service_delete, name="admin_service_delete"),
     path("site/services/add/", service_add, name="admin_service_add"),
     path("site/services/<int:pk>/edit/", service_edit, name="admin_service_edit"),
+    path("site/services/image-form/", service_image_form, name="admin_service_image_form"),
     path("images/", image_library, name="admin_image_library"),
     path("images/upload/", upload_image, name="admin_image_upload"),
     path("images/api/", image_api, name="admin_image_api"),

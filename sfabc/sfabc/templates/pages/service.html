@@ -5,7 +5,7 @@
     <div class="d-flex justify-content-center">
         <section class="service p-5  {% if not forloop.last %}border-bottom border-1 border-black {%endif%} d-flex w-75 " id="service-{{ service.id_service }}">
         {% if service.service.count > 0 %}
-            <div id="carouselService" class="carousel slide w-50" data-bs-ride="carousel">
+            <div id="carouselService-{{ service.id_service }}" class="carousel slide w-50" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     {% for img_service in service.service.all %}
                         <div class="w-100  carousel-item {% if forloop.first %}active{% endif %}">
@@ -19,11 +19,11 @@
                     {% endfor %}
                 </div>
                 {% if service.service.count > 1 %}
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselService" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselService-{{ service.id_service }}" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Previous</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselService" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselService-{{ service.id_service }}" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Next</span>
                 </button>

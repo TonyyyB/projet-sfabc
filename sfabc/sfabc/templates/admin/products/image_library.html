@@ -47,12 +47,12 @@
           {% endif %}
         </div>
         <div class="actions">
-          <a href="{% url 'admin_core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
+          <a href="{% url 'admin_produits:admin_produit_image_rename' data.image.id_image %}" class="btn btn-secondary">
             <span class="material-symbols-outlined">edit</span>
             Renommer
           </a>
           {% if not data.is_used %}
-          <a href="{% url 'admin_core:admin_image_delete' data.image.id_image %}"
+          <a href="{% url 'admin_produits:admin_produit_image_delete' data.image.id_image %}"
              class="btn btn-danger"
              data-confirm="Êtes-vous sûr de vouloir supprimer cette image ?">
             <span class="material-symbols-outlined">delete</span>

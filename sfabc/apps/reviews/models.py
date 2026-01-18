@@ -11,6 +11,7 @@ NOTES = {
 }
 
 class Avis(models.Model):
+    """TODO: Vérifier — Modèle représentant un avis/notation associé à un produit."""
     id_note = models.AutoField(primary_key=True)
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="avis")
     pseudonyme = models.CharField(max_length=100)
@@ -19,9 +20,11 @@ class Avis(models.Model):
     message = models.TextField(null=True, blank=True)
 
     def __str__(self):
+        """TODO: Vérifier — Représentation lisible d'un avis (pseudonyme, produit, note)."""
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
     
     def stars(self) :
+        """TODO: Vérifier — Retourne une représentation en étoiles (★/☆) de la note sur 5."""
         rate = ""
         for _ in range(self.valeur):
             rate += "★"
@@ -30,4 +33,5 @@ class Avis(models.Model):
         return rate
     
     def get_nom_produit(self):
+        """TODO: Vérifier — Renvoie le nom du produit associé à l'avis (raccourci template/admin)."""
         return self.produit.nom_produit
