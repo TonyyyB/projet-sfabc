@@ -24,7 +24,7 @@
         <div class="list-item">
           <div class="list-header">
             <h2>{{ famille.nom_famille }}</h2>
-            <span>{{ famille.famille.count }} produit(s)</span>
+            <span>{{ famille.nb_produits|default:famille.famille.count }} produit(s)</span>
           </div>
 
           <div class="actions">
@@ -32,11 +32,31 @@
               <span class="material-symbols-outlined">edit</span>
               Modifier
             </a>
+
+            {% if famille.nb_produits|default:famille.famille.count == 0 %}
+              <a
+                href="{% url 'admin_produits:admin_famille_delete' famille.pk %}"
+                class="btn btn-danger"
+                data-confirm="Supprimer la famille « {{ famille.nom_famille }} » ?"
+              >
+                <span class="material-symbols-outlined">delete</span>
+                Supprimer
+              </a>
+            {% endif %}
           </div>
         </div>
       {% empty %}
         <div class="section-card">Aucune famille créée.</div>
       {% endfor %}
     </div>
+
+    <script>
+      document.querySelectorAll('[data-confirm]').forEach(el => {
+        el.addEventListener('click', e => {
+          const msg = el.dataset.confirm || "Supprimer cette famille ?";
+          if (!confirm(msg)) e.preventDefault();
+        })
+      })
+    </script>
   </body>
 </html>

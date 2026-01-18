@@ -104,7 +104,7 @@
                     </div>
                   </div>
                   <div class="image-select-container">
-                    <button type="button" class="image-select-btn" data-target="{{ f.image.id_for_label }}">
+                    <button type="button" class="image-select-btn">
                       <span class="material-symbols-outlined">image</span>
                       {% if f.instance.image %}
                         Modifier l'image sélectionnée
@@ -153,40 +153,7 @@
           </div>
         </div>
 
-        <div id="templateSlot">
-          <div class="image-card">
-            <label class="delete-btn" for="{{ template_form.DELETE.id_for_label }}" onclick="removeImage(this)">
-              <span class="material-symbols-outlined">close</span>
-            </label>
-            <div class="form-group">
-              <label class="form-label">Image existante</label>
-              <div class="image-select-container">
-                <button type="button" class="image-select-btn" data-target="{{ template_form.image.id_for_label }}">
-                  <span class="material-symbols-outlined">image</span>
-                  Sélectionner une image
-                </button>
-                {{ template_form.image }}
-              </div>
-              <div class="image-preview-container" style="display: none; margin-top: 15px;">
-                <div class="image-preview"></div>
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Ou importer une nouvelle image</label>
-              {{ template_form.upload }}
-            </div>
-            <div class="form-group">
-              <label class="form-label">Titre de l'image</label>
-              {{ template_form.titre_image }}
-            </div>
-            {% if service is not None %}
-              <div class="form-group">
-                <label class="form-label">Supprimer l'image</label>
-                {{ template_form.DELETE }}
-              </div>
-            {% endif %}
-          </div>
-        </div>
+        <div id="templateSlot" style="display:none;"></div>
 
         <div class="form-actions">
           {% if service %}
@@ -210,13 +177,35 @@
     <script>
     let imageIndex = {{ total_forms }};
 
-    document.getElementById('addImageBtn').addEventListener('click', function () {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Masquer la dernière carte vide en édition (extra=1)
+      {% if service %}
+      const cards = document.querySelectorAll('.image-card');
+      if (cards.length > 0) {
+        const lastCard = cards[cards.length - 1];
+        const idInput = lastCard.querySelector('input[name$="-id"]');
+        if (!idInput || !idInput.value) {
+          lastCard.style.display = 'none';
+          lastCard.classList.add('extra-form');
+        }
+      }
+      {% endif %}
+    });
+
+    document.getElementById('addImageBtn').addEventListener('click', async function () {
+      const response = await fetch(`/admin/site/services/image-form/?index=${imageIndex}`);
+      const data = await response.json();
+      
       const grid = document.getElementById('imageGrid');
-      const template = document.getElementById('templateSlot').innerHTML;
-      const newCard = template.replace(/__prefix__/g, imageIndex);
-      grid.insertAdjacentHTML('beforeend', newCard);
+      grid.insertAdjacentHTML('beforeend', data.html);
+      
       imageIndex++;
-      document.getElementById('id_imageservice_set-TOTAL_FORMS').value = imageIndex;
+      
+      // Mettre à jour TOTAL_FORMS par le name au lieu de l'id
+      const totalFormsInput = document.querySelector('input[name="imageservice_set-TOTAL_FORMS"]');
+      if (totalFormsInput) {
+        totalFormsInput.value = imageIndex;
+      }
     });
 
     function removeImage(btn) {
