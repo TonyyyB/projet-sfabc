@@ -6,14 +6,17 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import *
 
 class DetailProduitView(DetailView):
+    """Vue détail d'un produit avec images et statistiques d'avis."""
     model = Produit
     template_name = "products/detail.html"
     context_object_name = "produit"
     
     def get_queryset(self):
+        """Précharge les relations (images, avis) pour afficher un produit efficacement."""
         return Produit.objects.prefetch_related('images', 'avis')
     
     def get_context_data(self, **kwargs):
+        """Construit le contexte du détail produit (images, stats des avis, liste des avis)."""
         context = super().get_context_data(**kwargs)
         
         context["images"] = context["produit"].images.all()
@@ -56,11 +59,13 @@ class DetailProduitView(DetailView):
         return context
 
 class ProduitListView(ListView):
+    """Vue listant les produits avec recherche et pagination."""
     model = Produit
     template_name = "pages/liste_produits.html"
     context_object_name = "produits"
 
     def get_queryset(self):
+        """Retourne la liste de produits filtrée par recherche (si fournie) et ordonnée par famille."""
         query = self.request.GET.get('search')
         if query:
             return Produit.objects.filter(nom_produit__icontains=query).select_related('famille').prefetch_related("images").order_by("famille")
@@ -68,6 +73,7 @@ class ProduitListView(ListView):
 
 
     def get_context_data(self, **kwargs):
+        """Ajoute le titre, la recherche et la pagination au contexte de la liste de produits."""
         context = super(ProduitListView, self).get_context_data(**kwargs)
         context["title"] = "Les produits"
         context["search"] = self.request.GET.get('search')

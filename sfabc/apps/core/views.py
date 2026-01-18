@@ -14,11 +14,13 @@ from django.conf import settings
 # Create your views here.
 
 class Home(ListView):
+    """Vue d'accueil listant les produits "du moment"."""
     model = Produit
     template_name = "pages/home.html"
     context_object_name = "produits_moment"
     
     def get_queryset(self):
+        """Récupère les produits marqués "produit du moment" avec préchargement des images associées."""
         return Produit.objects.filter(is_produit_du_moment=True).prefetch_related(
             Prefetch(
             "images", 
@@ -27,21 +29,25 @@ class Home(ListView):
             )
         )
     def get_context_data(self, **kwargs):
+        """Construit le contexte de la page d'accueil (hérite du contexte ListView)."""
         context = super().get_context_data(**kwargs)
         return context
 
 
 class ContactView(FormView):
+    """Vue formulaire de contact (envoi d'email à la validation)."""
     template_name = 'pages/contact.html'
     form_class = ContactForm
     success_url = '/email-sent/'
 
     def get_context_data(self, **kwargs):
+        """Ajoute un titre au contexte du formulaire de contact."""
         context = super().get_context_data(**kwargs)
         context["title"] = "Contactez-moi !"
         return context
 
     def form_valid(self, form):
+        """Envoie un email à partir des champs validés puis redirige vers la success_url."""
         send_mail(
             subject=f"{form.cleaned_data['Nom'] } vous contacte pour: {form.cleaned_data['Sujet']}",
             message=form.cleaned_data['Message'],
@@ -52,12 +58,14 @@ class ContactView(FormView):
         return super().form_valid(form)
 
 class AProposView(ListView):
+    """Vue listant les sections "À propos" avec images par emplacement."""
     model = A_Propos
     context_object_name = "sections_ap"
     template_name = "pages/about.html"
 
 
     def get_queryset(self):
+        """Retourne les sections "À propos" ordonnées, avec préchargement des images par position (gauche/centre/droite)."""
         return A_Propos.objects.order_by("ordre_ap").prefetch_related(
             Prefetch(
                 "images",
@@ -78,21 +86,25 @@ class AProposView(ListView):
 
 
     def get_context_data(self, **kwargs):
+        """Ajoute le titre de page "À propos" au contexte."""
         context = super(AProposView, self).get_context_data(**kwargs)
         context["title"] = "À propos"
         return context
 
 class ServiceView(ListView):
+    """Vue listant les services affichés sur la page services."""
     model = Service
     context_object_name = "services"
     template_name = "pages/service.html"
 
 
     def get_queryset(self):
+        """Retourne les services ordonnés, en préchargeant les relations d'images."""
         return Service.objects.order_by("ordre_service").prefetch_related("image")
 
 
     def get_context_data(self, **kwargs):
+        """Ajoute le titre de page "Services" au contexte."""
         context = super(ServiceView, self).get_context_data(**kwargs)
         context["title"] = "Services"
         return context

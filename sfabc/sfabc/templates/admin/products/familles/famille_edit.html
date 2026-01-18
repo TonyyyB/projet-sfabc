@@ -19,12 +19,12 @@
   </header>
 
   {% if messages %}
-    <div class="section-card">
-      {% for message in messages %}
-        {{ message }}
-      {% endfor %}
-    </div>
-  {% endif %}
+        <div class="section-card">
+          {% for message in messages %}
+            {{ message }}
+          {% endfor %}
+        </div>
+      {% endif %}
 
   <div class="section-card">
     <form method="post">
@@ -42,10 +42,12 @@
     <h2>Produits de cette famille</h2>
 
     {% for produit in produits %}
-      <div class="list-item">
+    <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" style="text-decoration: none; color: inherit;">
+    <div class="list-item">
         <strong>{{ produit.nom_produit }}</strong>
         <span>{{ produit.prix_produit }} €</span>
       </div>
+    </a>
     {% empty %}
       <p>Aucun produit dans cette famille.</p>
     {% endfor %}

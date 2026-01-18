@@ -81,34 +81,11 @@
                   <div class="field-errors">{{ sf.non_field_errors }}</div>
                 {% endif %}
 
-                <!--  <div class="form-group">
-                  <label class="form-label">Image sélectionnée</label>
-                  <div style="display: flex; gap: 12px; align-items: center;">
-                    <div class="image-preview" style="flex-shrink: 0;">
-                      {% if sf.image.value %}
-                        {% for choice in sf.image %}
-                          {% if choice.0 == sf.image.value %}
-                            <img src="{{ choice.0|add:'/media/images/site/'|add:choice.1 }}" alt="{{ choice.1 }}" style="max-width: 60px; max-height: 60px; border-radius: 8px; border: 2px solid #e1e5e9;">
-                          {% endif %}
-                        {% endfor %}
-                      {% endif %}
-                    </div>
-                    <button type="button" class="image-select-btn btn-secondary" data-target="id_{{ sf.image.id_for_label }}" style="flex: 1;">
-                      <span class="material-symbols-outlined">image_search</span>
-                      {% if sf.image.value %}Changer d'image{% else %}Sélectionner une image{% endif %}
-                    </button>
-                  </div>
-                  {{ sf.image }}
-                  {% if sf.image.errors %}
-                    <div class="form-error">{{ sf.image.errors }}</div>
-                  {% endif %}
-                </div> -->
-
                 <div class="form-group"> 
                   {{ sf.position }}
                   <div class="image-selector-container"> 
-                    <label class="form-label">Image actuel</label> 
                     {% if sf.initial.image %} 
+                    <label class="form-label">Image actuel</label> 
                     <div class="image-preview"> 
                       <img src="{{ sf.initial.image.image.url }}" height="80" alt="Image actuel" /> 
                     </div> 
@@ -132,6 +109,11 @@
                       </div> 
                       {% endif %} 
                     </div>
+                    <label class="form-label">{{ sf.titre_image.label }}</label> 
+                    {{ sf.titre_image }} 
+                    {% if sf.titre_image.errors %}
+                      <div class="form-error">{{ sf.titre_image.errors }}</div>
+                    {% endif %}
                   </div>
             {% endfor %}
           </div>
