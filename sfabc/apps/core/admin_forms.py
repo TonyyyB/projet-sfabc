@@ -1,11 +1,13 @@
 from django import forms
-
-from .models import *
-from colorfield.widgets import ColorWidget
 from django.forms import inlineformset_factory
+
+from colorfield.widgets import ColorWidget
+
+from .models import A_Propos, Image_Service, Image_Site, Service, Site
 
 class ImageSiteForm(forms.ModelForm):
     """Formulaire admin pour uploader une Image_Site."""
+
     class Meta:
         model = Image_Site
         fields = ["image"]
@@ -20,6 +22,7 @@ POLICES = [
 
 class SiteForm(forms.ModelForm):
     """Formulaire admin de configuration du site (couleurs, police, bandeau, logo)."""
+
     class Meta:
         model = Site
         fields = [
@@ -40,6 +43,7 @@ class SiteForm(forms.ModelForm):
 
 class AProposForm(forms.ModelForm):
     """Formulaire admin pour créer/modifier une section "À propos"."""
+
     class Meta:
         model = A_Propos
         fields = ["titre_ap", "description_ap"]
@@ -65,6 +69,7 @@ class ImageSlotForm(forms.Form):
 
 class ServiceForm(forms.ModelForm):
     """Formulaire admin pour créer/modifier un service (titre + description)."""
+
     class Meta:
         model = Service
         fields = ["titre_service", "description_service"]
@@ -111,12 +116,12 @@ class ImageServiceForm(forms.ModelForm):
     def save(self, commit=True):
         """Sauvegarde l'instance en créant une Image_Site lors d'un upload (si fourni)."""
         instance = super().save(commit=False)
-        
+
         # Gérer l'upload d'image
         upload = self.cleaned_data.get('upload')
         if upload:
             instance.image = Image_Site.objects.create(image=upload)
-        
+
         if commit:
             instance.save()
         return instance

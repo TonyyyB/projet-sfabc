@@ -1,20 +1,37 @@
-from django.shortcuts import render
-from django.views.generic import *
-from apps.products.models import *
-from django.db.models import Max
-from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site, Site, Image_Service
-from apps.reviews.models import Avis
+import os
+import traceback
+
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from .admin_forms import *
-from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404
-from django.db import transaction
-from django.urls import reverse
-from django.http import JsonResponse
-import os
-from django.conf import settings
 from django.core.paginator import Paginator
+from django.db import models, transaction
+from django.db.models import Max
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from apps.core.models import (
+    A_Propos,
+    Image_A_Propos,
+    Image_Service,
+    Image_Site,
+    Service,
+    Site,
+)
+from apps.products.models import Famille, Image_Produit, Produit
+from apps.reviews.models import Avis
+
+from .admin_forms import (
+    AProposForm,
+    ImageServiceForm,
+    ImageServiceFormSet,
+    ImageSiteForm,
+    ImageSlotForm,
+    ServiceForm,
+    SiteForm,
+)
 
 def _process_service_images(request, service):
     """
@@ -41,8 +58,8 @@ def _process_service_images(request, service):
     # (évite de supprimer/recréer et surtout garantit la prise en compte des nouvelles cartes)
     try:
         formset.save()
-    except Exception as e:
-        print(f"Erreur lors de la sauvegarde du formset images service: {e}")
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(f"Erreur lors de la sauvegarde du formset images service: {exc}")
         return False
 
     return True
@@ -55,7 +72,7 @@ def admin_dashboard(request):
     Vue pour la page d'accueil de l'administration
     Affiche un résumé des contenus et des liens vers les pages de gestion
     """
-    
+
     # Récupération des statistiques pour affichage
     context = {
         # Core
@@ -63,17 +80,17 @@ def admin_dashboard(request):
         'nb_services': Service.objects.count(),
         'nb_images_site': Image_Site.objects.count(),
         'site_config': Site.load(),
-        
+
         # Products
         'nb_familles': Famille.objects.count(),
         'nb_produits': Produit.objects.count(),
         'nb_produits_du_moment': Produit.objects.filter(is_produit_du_moment=True).count(),
-        
+
         # Reviews
         'nb_avis': Avis.objects.count(),
         'nb_avis_recents': Avis.objects.order_by('-date')[:5].count(),
     }
-    
+
     return render(request, 'admin/dashboard.html', context)
 
 @login_required
@@ -158,7 +175,7 @@ def apropos_edit(request, pk=None):
 
     if request.method == "POST":
         form = AProposForm(request.POST, instance=page)
-        
+
         print(request.POST)
 
         slot_forms = [
@@ -175,7 +192,7 @@ def apropos_edit(request, pk=None):
 
         if valid:
             page = form.save(commit=False)
-            
+
             if page.pk is None:
                 max_ordre = A_Propos.objects.aggregate(
                     max_ordre=Max("ordre_ap")
@@ -204,30 +221,38 @@ def apropos_edit(request, pk=None):
 
             messages.success(request, "Section « À propos » enregistrée.")
             return redirect("admin_core:admin_apropos_edit", pk=page.pk)
-        else:
-            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
-            print("FORM PRINCIPAL ERRORS:", form.errors)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+        print("FORM PRINCIPAL ERRORS:", form.errors)
 
-            for pos, sf in slot_forms:
-                print(f"SLOT {pos} ERRORS:", sf.errors)
-                print(f"SLOT {pos} NON FIELD ERRORS:", sf.non_field_errors())
-                print(f"SLOT {pos} CLEANED:", getattr(sf, "cleaned_data", None))
+        for pos, sf in slot_forms:
+            print(f"SLOT {pos} ERRORS:", sf.errors)
+            print(f"SLOT {pos} NON FIELD ERRORS:", sf.non_field_errors())
+            print(f"SLOT {pos} CLEANED:", getattr(sf, "cleaned_data", None))
     else:
         form = AProposForm(instance=page)
         slot_forms = [
-            (pos, ImageSlotForm(
-                prefix=pos,
-                initial={
-                    "position": pos,
-                    "image": existing.get(EMPLACEMENT_AP[pos]).image if existing.get(EMPLACEMENT_AP[pos]) else None,
-                    "titre_image": existing.get(EMPLACEMENT_AP[pos]).titre_image if existing.get(EMPLACEMENT_AP[pos]) else "",
-                },
-            ))
+            (
+                pos,
+                ImageSlotForm(
+                    prefix=pos,
+                    initial={
+                        "position": pos,
+                        "image": (
+                            existing.get(EMPLACEMENT_AP[pos]).image
+                            if existing.get(EMPLACEMENT_AP[pos])
+                            else None
+                        ),
+                        "titre_image": (
+                            existing.get(EMPLACEMENT_AP[pos]).titre_image
+                            if existing.get(EMPLACEMENT_AP[pos])
+                            else ""
+                        ),
+                    },
+                ),
+            )
             for pos in positions
         ]
         print(slot_forms)
-        # Afficher les URLs des images existantes
-        existing_images = [slot.initial["image"].image.url for _, slot in slot_forms if slot.initial["image"] is not None]
     return render(request, "admin/core/apropos/apropos_edit.html", {
         "form": form,
         "slot_forms": slot_forms,
@@ -314,24 +339,23 @@ def service_add(request):
             max_order = Service.objects.aggregate(Max("ordre_service"))["ordre_service__max"] or 0
             service.ordre_service = max_order + 1
             service.save()
-            
+
             # Traiter les images indépendamment
             if _process_service_images(request, service):
                 messages.success(request, "Service ajouté.")
                 return redirect("admin_core:admin_service_edit", pk=service.pk)
-            else:
-                messages.warning(request, "Service ajouté mais erreurs lors du traitement des images.")
-                return redirect("admin_core:admin_service_edit", pk=service.pk)
-        else:
-            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
-            formset = ImageServiceFormSet(request.POST, request.FILES, prefix="imageservice_set")
+            messages.warning(request, "Service ajouté mais erreurs lors du traitement des images.")
+            return redirect("admin_core:admin_service_edit", pk=service.pk)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+        formset = ImageServiceFormSet(request.POST, request.FILES, prefix="imageservice_set")
     else:
         form = ServiceForm()
         formset = ImageServiceFormSet(prefix="imageservice_set")
 
     template_form = ImageServiceForm(prefix="__prefix__")
     if 'DELETE' in template_form.fields:
-        template_form.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+        onchange = "if(this.checked) this.closest('.image-card').style.display='none';"
+        template_form.fields['DELETE'].widget.attrs['onchange'] = onchange
     return render(request, "admin/core/service/service_edit.html", {
         "form": form,
         "formset": formset,
@@ -349,23 +373,23 @@ def service_edit(request, pk):
         form = ServiceForm(request.POST, instance=service)
         if form.is_valid():
             form.save()
-            
+
             # Traiter les images indépendamment
             if _process_service_images(request, service):
                 messages.success(request, "Service enregistré.")
             else:
                 messages.warning(request, "Service enregistré mais erreurs lors du traitement des images.")
-            
+
             return redirect("admin_core:admin_service_edit", pk=service.pk)
-        else:
-            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
-    
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+
     form = ServiceForm(instance=service)
     formset = ImageServiceFormSet(instance=service, prefix="imageservice_set")
 
     template_form = ImageServiceForm(prefix="__prefix__")
     if 'DELETE' in template_form.fields:
-        template_form.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+        onchange = "if(this.checked) this.closest('.image-card').style.display='none';"
+        template_form.fields['DELETE'].widget.attrs['onchange'] = onchange
     return render(request, "admin/core/service/service_edit.html", {
         "form": form,
         "formset": formset,
@@ -373,7 +397,7 @@ def service_edit(request, pk):
         "template_form": template_form,
         "total_forms": formset.total_form_count(),
     })
-    
+
 @login_required
 def upload_image(request):
     """Upload une image (site ou produit) et renvoie ses métadonnées en JSON pour l'UI admin."""
@@ -417,7 +441,7 @@ def image_library(request):
             })
         if site.bandeau == img:
             usages.append({
-                'text': "Bandeau du site", 
+                'text': "Bandeau du site",
                 'url': reverse('admin_core:admin_site_edit')
             })
         # Check in A_Propos
@@ -514,11 +538,11 @@ def service_image_form(request):
         # Obtenir le prochain index depuis le request
         form_index = int(request.GET.get('index', 0))
         prefix = f'imageservice_set-{form_index}'
-        
+
         form = ImageServiceForm(prefix=prefix)
-        
+
         # Construire le HTML simplement sans f-strings complexes
-        html = f'<div class="image-card">'
+        html = '<div class="image-card">'
         # Pas besoin de form.id pour les nouvelles entrées
         html += '<label class="delete-btn" onclick="removeImage(this)">'
         html += '<span class="material-symbols-outlined">close</span>'
@@ -543,27 +567,11 @@ def service_image_form(request):
         html += str(form['titre_image'])
         html += '</div>'
         html += '</div>'
-        
+
         return JsonResponse({'html': html})
-    except Exception as e:
-        import traceback
+    except Exception as exc:  # pylint: disable=broad-exception-caught
         traceback.print_exc()
-        return JsonResponse({'error': str(e)}, status=500)
-
-@login_required
-def image_api(request):
-    """API: renvoie la liste des images du site (id/nom/url) pour le sélecteur (doublon à rationaliser)."""
-    images = Image_Site.objects.all().order_by('image')
-    image_data = []
-
-    for img in images:
-        image_data.append({
-            'id': img.id_image,
-            'name': str(img),
-            'url': img.image.url
-        })
-
-    return JsonResponse({'images': image_data})
+        return JsonResponse({'error': str(exc)}, status=500)
 
 @login_required
 def logout_view(request):

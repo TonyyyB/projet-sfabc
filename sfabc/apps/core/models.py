@@ -1,7 +1,9 @@
-from django.db import models
-from colorfield.fields import ColorField
-from django.utils.html import mark_safe
 import os
+
+from django.db import models
+from django.utils.html import mark_safe
+
+from colorfield.fields import ColorField
 
 # Create your models here.
 class A_Propos(models.Model):
@@ -10,12 +12,12 @@ class A_Propos(models.Model):
     ordre_ap = models.PositiveIntegerField(unique=True)
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
-    
+
 
     def __str__(self):
         """Représentation lisible d'une section "À propos" (titre)."""
         return self.titre_ap
-    
+
     class Meta:
         verbose_name_plural = "A propos"
 
@@ -36,17 +38,17 @@ class Image_Site(models.Model):
     """Modèle d'image générique utilisée sur le site (logo, bandeau, pages, etc.)."""
     id_image = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to="images/site")
-    
+
     def image_tag(self):
         """Retourne un snippet HTML (img) pour l'admin afin de prévisualiser l'image."""
-        return mark_safe('<img src="/directory/%s" width="150" height="150" />' % (self.image))
+        return mark_safe(f'<img src="/directory/{self.image}" width="150" height="150" />')
 
     image_tag.short_description = "Image du site"
-    
+
     def __str__(self):
         """Retourne le nom de fichier de l'image (basename)."""
         return os.path.basename(self.image.name)
-    
+
     class Meta:
         verbose_name_plural = "Images du site"
 
@@ -54,12 +56,16 @@ class Image_Site(models.Model):
 EMPLACEMENT = [
     ("right", "Droite"),
     ("center", "Centre"),
-    ("left", "Gauche")
+    ("left", "Gauche"),
 ]
 
 class Image_A_Propos(models.Model):
     """Association entre une section "À propos" et une image, positionnée (gauche/centre/droite)."""
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_A_Propos")
+    image = models.ForeignKey(
+        Image_Site,
+        on_delete=models.CASCADE,
+        related_name="images_A_Propos",
+    )
     page_ap = models.ForeignKey(A_Propos, on_delete=models.CASCADE, related_name="images")
     titre_image = models.CharField(max_length=100, blank=True, null=True)
     position = models.CharField(choices=EMPLACEMENT)
@@ -70,11 +76,18 @@ class Image_A_Propos(models.Model):
 
     def __str__(self):
         """Représentation lisible du lien image ↔ section "À propos" (avec titre si présent)."""
-        return f"{self.page_ap} - {self.titre_image if self.titre_image else self.image.image.name}"
+        titre = self.titre_image if self.titre_image else self.image.image.name
+        return f"{self.page_ap} - {titre}"
 
 class Image_Service(models.Model):
     """Association entre un service et une image du site (avec titre optionnel)."""
-    image = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="images_Service", null=True, blank=True)
+    image = models.ForeignKey(
+        Image_Site,
+        on_delete=models.CASCADE,
+        related_name="images_Service",
+        null=True,
+        blank=True,
+    )
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
     titre_image = models.CharField(max_length=100, null=True, blank=True)
 
@@ -92,8 +105,20 @@ class Site(models.Model):
     foreground = ColorField(default="#B8A67E")
     police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
-    logo = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="logo_site", null=True, blank=True)
-    bandeau = models.ForeignKey(Image_Site, on_delete=models.CASCADE, related_name="bandeau_site", null=True, blank=True)
+    logo = models.ForeignKey(
+        Image_Site,
+        on_delete=models.CASCADE,
+        related_name="logo_site",
+        null=True,
+        blank=True,
+    )
+    bandeau = models.ForeignKey(
+        Image_Site,
+        on_delete=models.CASCADE,
+        related_name="bandeau_site",
+        null=True,
+        blank=True,
+    )
 
     def save(self, *args, **kwargs):
         """Force l'unicité (pk=1) afin de conserver un singleton de configuration du site."""
@@ -103,7 +128,7 @@ class Site(models.Model):
     @classmethod
     def load(cls):
         """Charge la configuration unique du site (crée l'objet pk=1 si absent)."""
-        obj, created = cls.objects.get_or_create(pk=1)
+        obj, _ = cls.objects.get_or_create(pk=1)
         return obj
 
     class Meta:

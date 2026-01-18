@@ -1,6 +1,6 @@
-from django.urls import path, include
-from django.contrib.auth import views as auth_views
-from apps.core.views import *
+from django.urls import path
+
+from apps.core.views import AProposView, ContactView, Home, ServiceView
 
 app_name = "core"
 

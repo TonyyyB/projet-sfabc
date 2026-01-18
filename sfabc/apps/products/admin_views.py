@@ -1,17 +1,18 @@
-from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-from .models import *
-from .admin_forms import *
+import os
+import traceback
+
+from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render
-from django.shortcuts import redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.conf import settings
-from django.core.paginator import Paginator
 
-import os
+from .admin_forms import FamilleForm, ImageProduitForm, ImageProduitFormSet, ProduitForm
+from .models import Famille, Image_Produit, Produit
 
 @login_required
 def image_produit_api(request):
@@ -54,7 +55,7 @@ def famille_delete(request, pk):
     famille.delete()
     messages.success(request, "Famille supprimée.")
     return redirect("admin_produits:admin_famille_list")
-    
+
 @login_required
 def famille_add(request):
     """Crée une nouvelle famille via FamilleForm."""
@@ -232,10 +233,9 @@ def produit_image_form(request):
         html += '</div>'
 
         return JsonResponse({"html": html})
-    except Exception as e:
-        import traceback
+    except Exception as exc:  # pylint: disable=broad-exception-caught
         traceback.print_exc()
-        return JsonResponse({"error": str(e)}, status=500)
+        return JsonResponse({"error": str(exc)}, status=500)
 
 
 @login_required
