@@ -10,7 +10,6 @@ class ImageSelector {
         this.callback = null;
         this.images = [];
         this.filteredImages = [];
-        this.previewComparison = null;
         this.currentImagePreview = null;
         this.newImagePreview = null;
 
@@ -33,24 +32,6 @@ class ImageSelector {
                             Sélectionner une image
                         </h2>
                         <button class="image-modal-close">&times;</button>
-                    </div>
-
-                    <div class="image-preview-comparison" id="imagePreviewComparison" style="display: none;">
-                        <h3>Aperçu avant/après</h3>
-                        <div class="preview-container">
-                            <div class="preview-item">
-                                <h4>Image actuelle</h4>
-                                <div class="preview-image" id="currentImagePreview">
-                                    <span class="no-image">Aucune image</span>
-                                </div>
-                            </div>
-                            <div class="preview-item">
-                                <h4>Nouvelle image</h4>
-                                <div class="preview-image" id="newImagePreview">
-                                    <span class="no-image">Sélectionnez une image</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
 
                     <div class="image-search-container">
@@ -219,18 +200,10 @@ class ImageSelector {
         this.selectedImage = image;
 
         // Mettre à jour l'aperçu de la nouvelle image
-        this.updateNewImagePreview(image);
+        //this.updateNewImagePreview(image);
 
         // Activer le bouton de confirmation
         document.getElementById('confirmImageSelection').disabled = false;
-    }
-
-    updateCurrentImagePreview(image) {
-        if (image && image.url) {
-            this.currentImagePreview.innerHTML = `<img src="${image.url}" alt="${image.name || 'Image actuelle'}" style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px;">`;
-        } else {
-            this.currentImagePreview.innerHTML = '<span class="no-image">Aucune image</span>';
-        }
     }
 
     updateNewImagePreview(image) {
@@ -251,14 +224,7 @@ class ImageSelector {
         this.filteredImages = [...this.images];
 
         // Mettre à jour l'aperçu de l'image actuelle
-        this.updateCurrentImagePreview(currentImage);
-
-        // Afficher ou masquer la section d'aperçu selon qu'il y a une image actuelle
-        if (currentImage) {
-            this.previewComparison.style.display = 'block';
-        } else {
-            this.previewComparison.style.display = 'none';
-        }
+        //this.updateCurrentImagePreview(currentImage);
 
         // Désactiver le bouton de confirmation
         document.getElementById('confirmImageSelection').disabled = true;
@@ -286,7 +252,7 @@ class ImageSelector {
         this.callback = null;
 
         // Réinitialiser les aperçus
-        this.updateCurrentImagePreview(null);
+        //this.updateCurrentImagePreview(null);
         this.updateNewImagePreview(null);
     }
 }
@@ -306,10 +272,15 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.target.closest('.image-select-btn')) {
             e.preventDefault();
             const button = e.target.closest('.image-select-btn');
-            const targetInput = document.getElementById(button.dataset.target);
             const container = button.closest('.image-selector-container');
             const imageType = button.dataset.imageType || 'site';
             const productId = button.dataset.productId || null;
+            
+            // Chercher le select de manière relative au conteneur
+            // - services : ...-image
+            // - produits : ...-image_existing
+            const targetInput = container.querySelector('select[name$="-image"], select[name$="-image_existing"]');
+            
             console.log(button.dataset);
             console.log(imageType);
 
@@ -347,7 +318,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     targetInput.value = selectedImage.id;
                     // Mettre à jour l'aperçu si disponible
                     if (container) {
-                        const previewContainer = container.querySelector('.image-preview-container');
+                        const previewContainers = container.querySelectorAll('.image-preview-container');
+                        // Cibler le dernier conteneur d'aperçu (celui après le select)
+                        const previewContainer = previewContainers[previewContainers.length - 1];
                         if (previewContainer) {
                             previewContainer.style.display = "block";
                             previewContainer.querySelector('.image-preview').innerHTML =

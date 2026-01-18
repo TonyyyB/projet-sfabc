@@ -1,26 +1,78 @@
-from django.shortcuts import render
-from django.views.generic import *
-from apps.products.models import *
-from django.db.models import Max
-from apps.core.models import A_Propos, Image_A_Propos, Service, Image_Site, Site, Image_Service
-from apps.reviews.models import Avis
+import os
+import traceback
+
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
-from .admin_forms import *
-from django.contrib import messages
-from django.shortcuts import redirect, get_object_or_404
-from django.db import transaction
-from django.urls import reverse
+from django.core.paginator import Paginator
+from django.db import models, transaction
+from django.db.models import Max
 from django.http import JsonResponse
-import os
-from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from apps.core.models import (
+    A_Propos,
+    Image_A_Propos,
+    Image_Service,
+    Image_Site,
+    Service,
+    Site,
+)
+from apps.products.models import Famille, Image_Produit, Produit
+from apps.reviews.models import Avis
+
+from .admin_forms import (
+    AProposForm,
+    ImageServiceForm,
+    ImageServiceFormSet,
+    ImageSiteForm,
+    ImageSlotForm,
+    ServiceForm,
+    SiteForm,
+)
+
+def _process_service_images(request, service):
+    """
+    Traite les images d'un service via un inline formset.
+
+    Traite les images du service indépendamment.
+    Supprime toutes les images existantes et ajoute les nouvelles depuis POST.
+    Les erreurs individuelles sont loggées sans bloquer le processus.
+    """
+    # IMPORTANT: le prefix du formset dépend du related_name du FK.
+    # Ici on force un prefix stable, aligné avec le JS/AJAX (service_image_form).
+    formset = ImageServiceFormSet(
+        request.POST,
+        request.FILES,
+        instance=service,
+        prefix="imageservice_set",
+    )
+
+    if not formset.is_valid():
+        print(f"Formset invalid: {formset.errors}")
+        return False
+
+    # Laisser Django gérer ajouts/suppressions/modifs via le formset.
+    # (évite de supprimer/recréer et surtout garantit la prise en compte des nouvelles cartes)
+    try:
+        formset.save()
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(f"Erreur lors de la sauvegarde du formset images service: {exc}")
+        return False
+
+    return True
+
 @login_required
 def admin_dashboard(request):
     """
+    Affiche un tableau de bord admin avec statistiques des contenus.
+
     Vue pour la page d'accueil de l'administration
     Affiche un résumé des contenus et des liens vers les pages de gestion
     """
-    
+
     # Récupération des statistiques pour affichage
     context = {
         # Core
@@ -28,21 +80,22 @@ def admin_dashboard(request):
         'nb_services': Service.objects.count(),
         'nb_images_site': Image_Site.objects.count(),
         'site_config': Site.load(),
-        
+
         # Products
         'nb_familles': Famille.objects.count(),
         'nb_produits': Produit.objects.count(),
         'nb_produits_du_moment': Produit.objects.filter(is_produit_du_moment=True).count(),
-        
+
         # Reviews
         'nb_avis': Avis.objects.count(),
         'nb_avis_recents': Avis.objects.order_by('-date')[:5].count(),
     }
-    
+
     return render(request, 'admin/dashboard.html', context)
 
 @login_required
 def edit_site(request):
+    """Édite la configuration globale du site et permet l'ajout d'images dans la bibliothèque."""
     site = Site.load()
 
     if request.method == "POST":
@@ -68,14 +121,22 @@ def edit_site(request):
         "site": site,
     })
 
+EMPLACEMENT_AP = {
+    "Gauche": "left",
+    "Centre": "center",
+    "Droite": "right",
+}
+
 @login_required
 def apropos_list(request):
+    """Liste les sections "À propos" triées par ordre d'affichage."""
     pages = A_Propos.objects.order_by("ordre_ap")
     return render(request, "admin/core/apropos/apropos_list.html", {"pages": pages})
 
 @login_required
 @transaction.atomic
 def apropos_move(request, pk, direction):
+    """Change l'ordre d'une section "À propos" en échangeant sa position avec la section voisine (up/down)."""
     page = get_object_or_404(A_Propos, pk=pk)
 
     if direction == "up":
@@ -102,6 +163,7 @@ def apropos_move(request, pk, direction):
 
 @login_required
 def apropos_edit(request, pk=None):
+    """Crée/modifie une section "À propos" et gère ses images par emplacement (gauche/centre/droite)."""
     page = get_object_or_404(A_Propos, pk=pk) if pk else None
 
     positions = ["Gauche", "Centre", "Droite"]
@@ -113,27 +175,24 @@ def apropos_edit(request, pk=None):
 
     if request.method == "POST":
         form = AProposForm(request.POST, instance=page)
-        
+
         print(request.POST)
 
         slot_forms = [
-            (
-                pos,
-                ImageSlotForm(
-                    request.POST,
-                    request.FILES,
-                    prefix=pos,
-                    initial={"position": pos}
-                )
-            )
+            (pos, ImageSlotForm(
+                request.POST,
+                request.FILES,
+                prefix=pos,
+                initial={"position": pos}
+            ))
             for pos in positions
         ]
 
-        valid = form.is_valid() and all(sf.is_valid() for _, sf in slot_forms)
+        valid = form.is_valid() and all(sf.is_valid() for pos, sf in slot_forms)
 
         if valid:
             page = form.save(commit=False)
-            
+
             if page.pk is None:
                 max_ordre = A_Propos.objects.aggregate(
                     max_ordre=Max("ordre_ap")
@@ -141,7 +200,7 @@ def apropos_edit(request, pk=None):
                 page.ordre_ap = max_ordre + 1
             page.save()
             for pos, sf in slot_forms:
-                Image_A_Propos.objects.filter(page_ap=page, position=pos).delete()
+                Image_A_Propos.objects.filter(page_ap=page, position=EMPLACEMENT_AP[pos]).delete()
 
                 image = sf.cleaned_data["image"]
                 upload = sf.cleaned_data["upload"]
@@ -152,23 +211,23 @@ def apropos_edit(request, pk=None):
 
                 if image:
                     position = sf.cleaned_data["position"]
+                    print(position)
                     Image_A_Propos.objects.create(
                         page_ap=page,
                         image=image,
-                        position=position,
+                        position=EMPLACEMENT_AP[position],
                         titre_image=titre,
                     )
 
             messages.success(request, "Section « À propos » enregistrée.")
             return redirect("admin_core:admin_apropos_edit", pk=page.pk)
-        else:
-            messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
-            print("FORM PRINCIPAL ERRORS:", form.errors)
+        messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+        print("FORM PRINCIPAL ERRORS:", form.errors)
 
-            for pos, sf in slot_forms:
-                print(f"SLOT {pos} ERRORS:", sf.errors)
-                print(f"SLOT {pos} NON FIELD ERRORS:", sf.non_field_errors())
-                print(f"SLOT {pos} CLEANED:", getattr(sf, "cleaned_data", None))
+        for pos, sf in slot_forms:
+            print(f"SLOT {pos} ERRORS:", sf.errors)
+            print(f"SLOT {pos} NON FIELD ERRORS:", sf.non_field_errors())
+            print(f"SLOT {pos} CLEANED:", getattr(sf, "cleaned_data", None))
     else:
         form = AProposForm(instance=page)
         slot_forms = [
@@ -178,15 +237,22 @@ def apropos_edit(request, pk=None):
                     prefix=pos,
                     initial={
                         "position": pos,
-                        "image": existing[pos].image if existing[pos] else None,
-                        "titre_image": existing[pos].titre_image if existing[pos] else "",
+                        "image": (
+                            existing.get(EMPLACEMENT_AP[pos]).image
+                            if existing.get(EMPLACEMENT_AP[pos])
+                            else None
+                        ),
+                        "titre_image": (
+                            existing.get(EMPLACEMENT_AP[pos]).titre_image
+                            if existing.get(EMPLACEMENT_AP[pos])
+                            else ""
+                        ),
                     },
-                )
-
+                ),
             )
             for pos in positions
         ]
-        print([slot.initial["image"].image.url for _,slot in slot_forms if slot.initial["image"] is not None])
+        print(slot_forms)
     return render(request, "admin/core/apropos/apropos_edit.html", {
         "form": form,
         "slot_forms": slot_forms,
@@ -195,6 +261,7 @@ def apropos_edit(request, pk=None):
 
 @login_required
 def apropos_delete(request, pk):
+    """Supprime une section "À propos" puis réajuste les ordres pour conserver une séquence 1..N."""
     page = get_object_or_404(A_Propos, pk=pk)
     deleted_order = page.ordre_ap
     page.delete()
@@ -209,6 +276,7 @@ def apropos_delete(request, pk):
 
 @login_required
 def service_list(request):
+    """Liste les services triés par ordre d'affichage."""
     services = Service.objects.order_by("ordre_service")
     return render(request, "admin/core/service/service_list.html", {
         "services": services
@@ -217,6 +285,7 @@ def service_list(request):
 @login_required
 @transaction.atomic
 def service_move(request, pk, direction):
+    """Change l'ordre d'un service en échangeant sa position avec le service voisin (up/down)."""
     service = get_object_or_404(Service, pk=pk)
 
     if direction == "up":
@@ -247,6 +316,7 @@ def service_move(request, pk, direction):
 @login_required
 @transaction.atomic
 def service_delete(request, pk):
+    """Supprime un service puis réajuste l'ordre des services restants."""
     service = get_object_or_404(Service, pk=pk)
     deleted_order = service.ordre_service
     service.delete()
@@ -261,101 +331,76 @@ def service_delete(request, pk):
 @login_required
 @transaction.atomic
 def service_add(request):
+    """Crée un service (ordre auto) et gère l'ajout de ses images via formset."""
     if request.method == "POST":
         form = ServiceForm(request.POST)
-        formset = ImageServiceFormSet(request.POST, request.FILES)
-        if form.is_valid() and formset.is_valid():
+        if form.is_valid():
             service = form.save(commit=False)
             max_order = Service.objects.aggregate(Max("ordre_service"))["ordre_service__max"] or 0
             service.ordre_service = max_order + 1
             service.save()
-            # Traiter tous les formulaires du formset
-            for form_inst in formset.forms:
-                if form_inst.cleaned_data:  # Vérifier que le formulaire a des données
-                    if not form_inst.cleaned_data.get('DELETE'):
-                        # Créer ou mettre à jour l'instance
-                        inst = form_inst.save(commit=False)
-                        inst.service = service
-                        
-                        # Gérer l'upload d'image
-                        if form_inst.cleaned_data.get('upload'):
-                            inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
-                        
-                        # Sauvegarder uniquement si une image est présente
-                        if inst.image:
-                            inst.save()
-            messages.success(request, "Service ajouté.")
+
+            # Traiter les images indépendamment
+            if _process_service_images(request, service):
+                messages.success(request, "Service ajouté.")
+                return redirect("admin_core:admin_service_edit", pk=service.pk)
+            messages.warning(request, "Service ajouté mais erreurs lors du traitement des images.")
             return redirect("admin_core:admin_service_edit", pk=service.pk)
         messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
+        formset = ImageServiceFormSet(request.POST, request.FILES, prefix="imageservice_set")
     else:
         form = ServiceForm()
-        formset = ImageServiceFormSet()
-        for form_inst in formset:
-            if 'DELETE' in form_inst.fields:
-                form_inst.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+        formset = ImageServiceFormSet(prefix="imageservice_set")
 
     template_form = ImageServiceForm(prefix="__prefix__")
     if 'DELETE' in template_form.fields:
-        template_form.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+        onchange = "if(this.checked) this.closest('.image-card').style.display='none';"
+        template_form.fields['DELETE'].widget.attrs['onchange'] = onchange
     return render(request, "admin/core/service/service_edit.html", {
         "form": form,
         "formset": formset,
         "service": None,
         "template_form": template_form,
-        "total_forms": formset.total_form_count,
+        "total_forms": formset.total_form_count(),
     })
 
 @login_required
 @transaction.atomic
 def service_edit(request, pk):
+    """Modifie un service existant et ses images associées via formset."""
     service = get_object_or_404(Service, pk=pk)
     if request.method == "POST":
         form = ServiceForm(request.POST, instance=service)
-        formset = ImageServiceFormSet(request.POST, request.FILES, instance=service)
-        if form.is_valid() and formset.is_valid():
-            service = form.save()
-            # Traiter tous les formulaires du formset
-            for form_inst in formset.forms:
-                if form_inst.cleaned_data:  # Vérifier que le formulaire a des données
-                    if form_inst.cleaned_data.get('DELETE'):
-                        # Supprimer si marqué comme suppression
-                        if form_inst.instance.pk:
-                            form_inst.instance.delete()
-                    else:
-                        # Créer ou mettre à jour l'instance
-                        inst = form_inst.save(commit=False)
-                        inst.service = service
-                        
-                        # Gérer l'upload d'image
-                        if form_inst.cleaned_data.get('upload'):
-                            inst.image = Image_Site.objects.create(image=form_inst.cleaned_data['upload'])
-                        
-                        # Sauvegarder uniquement si une image est présente
-                        if inst.image:
-                            inst.save()
-            messages.success(request, "Service enregistré.")
+        if form.is_valid():
+            form.save()
+
+            # Traiter les images indépendamment
+            if _process_service_images(request, service):
+                messages.success(request, "Service enregistré.")
+            else:
+                messages.warning(request, "Service enregistré mais erreurs lors du traitement des images.")
+
             return redirect("admin_core:admin_service_edit", pk=service.pk)
         messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
-    else:
-        form = ServiceForm(instance=service)
-        formset = ImageServiceFormSet(instance=service)
-        for form_inst in formset:
-            if 'DELETE' in form_inst.fields:
-                form_inst.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+
+    form = ServiceForm(instance=service)
+    formset = ImageServiceFormSet(instance=service, prefix="imageservice_set")
 
     template_form = ImageServiceForm(prefix="__prefix__")
     if 'DELETE' in template_form.fields:
-        template_form.fields['DELETE'].widget.attrs['onchange'] = "if(this.checked) this.closest('.image-card').style.display='none';"
+        onchange = "if(this.checked) this.closest('.image-card').style.display='none';"
+        template_form.fields['DELETE'].widget.attrs['onchange'] = onchange
     return render(request, "admin/core/service/service_edit.html", {
         "form": form,
         "formset": formset,
         "service": service,
         "template_form": template_form,
-        "total_forms": formset.total_form_count,
+        "total_forms": formset.total_form_count(),
     })
-    
+
 @login_required
 def upload_image(request):
+    """Upload une image (site ou produit) et renvoie ses métadonnées en JSON pour l'UI admin."""
     image = request.FILES["image"]
     image_type = request.POST.get("type", "site")
     product_id = request.POST.get("product_id", None)
@@ -378,12 +423,17 @@ def upload_image(request):
 
 @login_required
 def image_library(request):
-    images = Image_Site.objects.all()
+    """Affiche la bibliothèque d'images du site avec pagination et liste des usages (logo/bandeau/à propos/services)."""
+    images = Image_Site.objects.all().order_by("id_image")
+    paginator = Paginator(images, 24)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
     image_data = []
-    for img in images:
+    site = Site.load()
+
+    for img in page_obj.object_list:
         usages = []
         # Check if used in Site
-        site = Site.load()
         if site.logo == img:
             usages.append({
                 'text': "Logo du site",
@@ -391,7 +441,7 @@ def image_library(request):
             })
         if site.bandeau == img:
             usages.append({
-                'text': "Bandeau du site", 
+                'text': "Bandeau du site",
                 'url': reverse('admin_core:admin_site_edit')
             })
         # Check in A_Propos
@@ -413,10 +463,18 @@ def image_library(request):
             'usages': usages,
             'is_used': len(usages) > 0
         })
-    return render(request, "admin/core/image_library.html", {"image_data": image_data})
+
+    return render(request, "admin/core/image_library.html", {
+        "image_data": image_data,
+        "page_obj": page_obj,
+        "is_paginated": page_obj.has_other_pages(),
+        "current_sort_query": "",
+        "current_querystring": "",
+    })
 
 @login_required
 def image_delete(request, pk):
+    """Supprime une image si elle n'est utilisée nulle part, sinon affiche un avertissement."""
     image = get_object_or_404(Image_Site, pk=pk)
     # Check if used
     is_used = (
@@ -434,6 +492,7 @@ def image_delete(request, pk):
 
 @login_required
 def image_rename(request, pk):
+    """Renomme physiquement le fichier sur disque puis met à jour le champ ImageField (MEDIA_ROOT)."""
     image = get_object_or_404(Image_Site, pk=pk)
     if request.method == "POST":
         new_name = request.POST.get('new_name')
@@ -451,11 +510,15 @@ def image_rename(request, pk):
             image.save()
             messages.success(request, "Image renommée.")
         return redirect("admin_core:admin_image_library")
-    return render(request, "admin/core/image_rename.html", {"image": image})
+    current_name = os.path.splitext(os.path.basename(image.image.name))[0]
+    return render(request, "admin/core/image_rename.html", {
+        "image": image,
+        "current_name": current_name,
+    })
 
 @login_required
 def image_api(request):
-    """API pour récupérer la liste des images pour le sélecteur"""
+    """API: renvoie la liste des images du site (id/nom/url) pour le sélecteur."""
     images = Image_Site.objects.all().order_by('image')
     image_data = []
 
@@ -469,8 +532,52 @@ def image_api(request):
     return JsonResponse({'images': image_data})
 
 @login_required
+def service_image_form(request):
+    """Retourne en JSON le HTML d'un formulaire (card) vide pour ajouter une image de service (AJAX)."""
+    try:
+        # Obtenir le prochain index depuis le request
+        form_index = int(request.GET.get('index', 0))
+        prefix = f'imageservice_set-{form_index}'
+
+        form = ImageServiceForm(prefix=prefix)
+
+        # Construire le HTML simplement sans f-strings complexes
+        html = '<div class="image-card">'
+        # Pas besoin de form.id pour les nouvelles entrées
+        html += '<label class="delete-btn" onclick="removeImage(this)">'
+        html += '<span class="material-symbols-outlined">close</span>'
+        html += '</label>'
+        html += '<div class="form-group">'
+        html += '<label class="form-label">Image existante</label>'
+        html += '<div class="image-selector-container">'
+        html += '<div class="image-select-container">'
+        html += '<button type="button" class="image-select-btn">'
+        html += '<span class="material-symbols-outlined">image</span>'
+        html += 'Sélectionner une image'
+        html += '</button>'
+        html += str(form['image'])
+        html += '</div>'
+        html += '<div class="image-preview-container" style="display: none; margin-top: 15px;">'
+        html += '<div class="image-preview"></div>'
+        html += '</div>'
+        html += '</div>'
+        html += '</div>'
+        html += '<div class="form-group">'
+        html += '<label class="form-label">Titre de l\'image</label>'
+        html += str(form['titre_image'])
+        html += '</div>'
+        html += '</div>'
+
+        return JsonResponse({'html': html})
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        traceback.print_exc()
+        return JsonResponse({'error': str(exc)}, status=500)
+
+@login_required
 def logout_view(request):
     """
+    Déconnecte l'utilisateur de l'espace admin et affiche la page de logout.
+
     Vue pour la déconnexion de l'administration
     """
     logout(request)
