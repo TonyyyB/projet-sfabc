@@ -1,6 +1,26 @@
-from django.urls import path, include
+from django.urls import path
 from django.contrib.auth import views as auth_views
-from .admin_views import *
+
+from .admin_views import (
+    admin_dashboard,
+    apropos_delete,
+    apropos_edit,
+    apropos_list,
+    apropos_move,
+    edit_site,
+    image_api,
+    image_delete,
+    image_library,
+    image_rename,
+    logout_view,
+    service_add,
+    service_delete,
+    service_edit,
+    service_image_form,
+    service_list,
+    service_move,
+    upload_image,
+)
 
 app_name = "admin_core"
 

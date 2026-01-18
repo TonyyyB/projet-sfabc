@@ -3,11 +3,11 @@ from apps.products.models import Produit
 
 # Create your models here.
 NOTES = {
-    1 : "1",
-    2 : "2",
-    3 : "3",
-    4 : "4",
-    5 : "5"
+    1: "1",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
 }
 
 class Avis(models.Model):
@@ -22,16 +22,16 @@ class Avis(models.Model):
     def __str__(self):
         """TODO: Vérifier — Représentation lisible d'un avis (pseudonyme, produit, note)."""
         return f"{self.pseudonyme} sur {self.produit} : {self.valeur}/5"
-    
-    def stars(self) :
+
+    def stars(self):
         """TODO: Vérifier — Retourne une représentation en étoiles (★/☆) de la note sur 5."""
         rate = ""
         for _ in range(self.valeur):
             rate += "★"
-        for _ in range(5-self.valeur):
+        for _ in range(5 - self.valeur):
             rate += "☆"
         return rate
-    
+
     def get_nom_produit(self):
         """TODO: Vérifier — Renvoie le nom du produit associé à l'avis (raccourci template/admin)."""
         return self.produit.nom_produit

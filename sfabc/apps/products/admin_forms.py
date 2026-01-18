@@ -1,14 +1,19 @@
 from django import forms
-from apps.products.models import *
 from django.forms import inlineformset_factory
+
+from apps.products.models import Famille, Image_Produit, Produit
+
+
 class FamilleForm(forms.ModelForm):
     """Formulaire admin pour créer/modifier une famille."""
+
     class Meta:
         model = Famille
         fields = ["nom_famille"]
 
 class ProduitForm(forms.ModelForm):
     """Formulaire admin pour créer/modifier un produit."""
+
     class Meta:
         model = Produit
         fields = [
@@ -22,6 +27,7 @@ class ProduitForm(forms.ModelForm):
 
 class ImageProduitForm(forms.ModelForm):
     """Formulaire admin pour gérer une ligne d'image produit (sélection existante ou upload)."""
+
     class Meta:
         model = Image_Produit
         # IMPORTANT: on n'inclut PAS le champ modèle `image` (ImageField) dans le form.

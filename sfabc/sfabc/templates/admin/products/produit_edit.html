@@ -213,8 +213,18 @@ document.getElementById('addImageBtn').addEventListener('click', async function 
 
 /* UNE SEULE IMAGE DU MOMENT */
 document.addEventListener('change', function (e) {
-  if (e.target.name && e.target.name.endsWith('is_produit_du_moment') && e.target.name !== 'is_produit_du_moment') {
-    document.querySelectorAll('input[name$="is_produit_du_moment"]').forEach(cb => {
+  // On ne limite qu'au formset des images (noms: images-0-is_produit_du_moment, ...)
+  // Le checkbox du produit (name="is_produit_du_moment") doit rester indépendant.
+  const isImageMomentCheckbox = (
+    e.target instanceof HTMLInputElement
+    && e.target.type === 'checkbox'
+    && typeof e.target.name === 'string'
+    && e.target.name.startsWith('images-')
+    && e.target.name.endsWith('is_produit_du_moment')
+  );
+
+  if (isImageMomentCheckbox && e.target.checked) {
+    document.querySelectorAll('input[type="checkbox"][name^="images-"][name$="is_produit_du_moment"]').forEach(cb => {
       if (cb !== e.target) cb.checked = false;
     });
   }

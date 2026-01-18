@@ -1,7 +1,8 @@
-from apps.reviews.models import Avis
-from apps.products.models import Produit
+from django.shortcuts import get_object_or_404, redirect
 from sortable_listview import SortableListView
-from django.shortcuts import redirect, get_object_or_404
+
+from apps.products.models import Produit
+from apps.reviews.models import Avis
 
 # Create your views here.
 class ReviewListView(SortableListView):
@@ -9,14 +10,16 @@ class ReviewListView(SortableListView):
     model = Avis
     template_name = "reviews/reviews.html"
     context_object_name = "reviews"
-    allowed_sort_fields = {'valeur': {'default_direction': '-','verbose_name': 'Note'},'date': {'default_direction': '-','verbose_name': 'Publié le'}}
-    default_sort_field = 'valeur'
+    allowed_sort_fields = {
+        "valeur": {"default_direction": "-", "verbose_name": "Note"},
+        "date": {"default_direction": "-", "verbose_name": "Publié le"},
+    }
+    default_sort_field = "valeur"
     paginate_by = 5
 
     def get_context_data(self, **kwargs):
         """TODO: Vérifier — Ajoute au contexte les infos de tri/pagination et le produit concerné par les avis."""
-        context = super(SortableListView,
-                        self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['current_sort_query'] = self.get_sort_string()
         context['current_querystring'] = self.get_querystring()
         context['sort_link_list'] = self.sort_link_list
@@ -26,8 +29,7 @@ class ReviewListView(SortableListView):
 
     def get_queryset(self):
         """TODO: Vérifier — Retourne les avis du produit (pk URL) triés selon le champ courant (sortable_listview)."""
-        qs = Avis.objects.filter(produit=self.kwargs['pk']).order_by(self.sort)
-        return qs
+        return Avis.objects.filter(produit=self.kwargs['pk']).order_by(self.sort)
 
 def add_review(request, pk):
     """TODO: Vérifier — Crée un avis à partir du formulaire POST puis redirige vers le détail produit."""
