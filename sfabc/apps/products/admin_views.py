@@ -1,6 +1,9 @@
 import os
 import traceback
 import json
+import csv
+import unicodedata
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
@@ -14,6 +17,372 @@ from django.urls import reverse
 
 from .admin_forms import FamilleForm, ImageProduitForm, ImageProduitFormSet, ProduitForm
 from .models import Famille, Image_Produit, Produit
+
+
+def _normalize_header(value: str) -> str:
+    value = (value or "").strip().lower()
+    value = unicodedata.normalize("NFKD", value)
+    value = "".join(c for c in value if not unicodedata.combining(c))
+    return value
+
+
+def _parse_produits_csv(file_bytes: bytes) -> list[dict]:
+    """Parse un CSV Produits avec colonnes:
+    - Famille
+    - Nom
+    - Photos (liste de noms séparés par ';', ou vide)
+    - Description
+    - Prix
+
+    NOTE: si le CSV utilise ';' comme séparateur, le champ Photos doit être correctement quoté
+    (car il contient aussi des ';').
+    """
+    text = None
+    for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+        try:
+            text = file_bytes.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        raise ValueError("Encodage CSV non supporté")
+
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return []
+
+    # Essayer ',' puis ';' (le module csv gère les champs quotés)
+    for delimiter in (",", ";"):
+        reader = csv.reader(lines, delimiter=delimiter)
+        try:
+            header = next(reader)
+        except StopIteration:
+            return []
+
+        header_norm = [_normalize_header(h) for h in header]
+        required = {"famille", "nom", "photos", "description", "prix"}
+        if not required.issubset(set(header_norm)):
+            continue
+
+        idx = {name: header_norm.index(name) for name in required}
+        rows: list[dict] = []
+        for row in reader:
+            if not row or all(not (c or "").strip() for c in row):
+                continue
+            # Certaines lignes peuvent être plus courtes
+            def get(name: str) -> str:
+                i = idx[name]
+                return (row[i] if i < len(row) else "").strip()
+
+            famille = get("famille")
+            nom = get("nom")
+            photos_raw = get("photos")
+            description = get("description")
+            prix_raw = get("prix")
+
+            photos = []
+            if photos_raw:
+                photos = []
+                for p in photos_raw.split(";"):
+                    p = p.strip()
+                    if not p:
+                        continue
+                    try:
+                        photos.append(_safe_basename(p))
+                    except ValueError as exc:
+                        raise ValueError(f"Nom de photo invalide: {p}") from exc
+
+            rows.append({
+                "famille": famille,
+                "nom": nom,
+                "photos": photos,
+                "description": description,
+                "prix": prix_raw,
+            })
+
+        return rows
+
+    raise ValueError("Colonnes CSV requises: Famille, Nom, Photos, Description, Prix")
+
+
+@login_required
+def import_produits(request):
+    """Import CSV des produits, avec sélection/import d'images manquantes via ImageSelector."""
+    if request.method == "POST":
+        step = request.POST.get("step", "parse")
+
+        if step == "parse":
+            csv_file = request.FILES.get("csv_file")
+            if not csv_file:
+                messages.error(request, "Veuillez sélectionner un fichier CSV.")
+                return redirect("admin_produits:admin_import_produits")
+
+            try:
+                rows = _parse_produits_csv(csv_file.read())
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                messages.error(request, f"CSV invalide: {exc}")
+                return redirect("admin_produits:admin_import_produits")
+
+            if not rows:
+                messages.warning(request, "Aucune ligne importable n'a été trouvée.")
+                return redirect("admin_produits:admin_import_produits")
+
+            # Index images produits par nom exact (basename)
+            images = Image_Produit.objects.all()
+            by_name = {os.path.basename(img.image.name): img for img in images if img.image.name}
+
+            existing_familles = {
+                (name or "").strip().lower()
+                for name in Famille.objects.values_list("nom_famille", flat=True)
+            }
+
+            resolved_rows = []
+            missing_images = 0
+            missing_familles = 0
+
+            for r in rows:
+                fam_name = (r.get("famille") or "").strip()
+                if fam_name and fam_name.lower() not in existing_familles:
+                    missing_familles += 1
+
+                photo_cells = []
+                for name in (r.get("photos") or []):
+                    filename = os.path.basename(name)
+                    img = by_name.get(filename)
+                    if filename and img is None:
+                        missing_images += 1
+                    photo_cells.append({
+                        "requested": filename,
+                        "image": (
+                            {
+                                "id": img.id_image,
+                                "name": img.image.url.split('/')[-1],
+                                "url": img.image.url,
+                            }
+                            if img else None
+                        ),
+                    })
+
+                resolved_rows.append({
+                    "famille": fam_name,
+                    "nom": (r.get("nom") or "").strip(),
+                    "description": (r.get("description") or "").strip(),
+                    "prix": (r.get("prix") or "").strip(),
+                    "photos": photo_cells,
+                })
+
+            return render(request, "admin/products/import_produits.html", {
+                "step": "resolve",
+                "rows": resolved_rows,
+                "rows_json": json.dumps(rows, ensure_ascii=False),
+                "missing_images": missing_images,
+                "missing_familles": missing_familles,
+            })
+
+        if step == "import":
+            rows_json = request.POST.get("rows_json", "")
+            try:
+                rows = json.loads(rows_json) if rows_json else []
+            except json.JSONDecodeError:
+                rows = []
+
+            if not isinstance(rows, list) or not rows:
+                messages.error(request, "Import impossible: données manquantes. Veuillez relancer l'import.")
+                return redirect("admin_produits:admin_import_produits")
+
+            created = 0
+            warnings = 0
+
+            # Import transactionnel
+            with transaction.atomic():
+                for idx, r in enumerate(rows):
+                    fam_name = str(r.get("famille", "")).strip()
+                    nom = str(r.get("nom", "")).strip()
+                    description = str(r.get("description", "")).strip()
+                    prix_raw = str(r.get("prix", "")).strip()
+
+                    if not fam_name or not nom:
+                        warnings += 1
+                        continue
+
+                    famille, _ = Famille.objects.get_or_create(nom_famille=fam_name)
+
+                    prix_value = None
+                    if prix_raw:
+                        try:
+                            prix_value = Decimal(prix_raw.replace(",", "."))
+                        except (InvalidOperation, ValueError):
+                            prix_value = None
+                            warnings += 1
+
+                    produit = Produit.objects.create(
+                        famille=famille,
+                        nom_produit=nom,
+                        description_produit=description,
+                        prix_produit=prix_value,
+                    )
+
+                    # Associer les images choisies (y compris celles pré-remplies si trouvées)
+                    photos = r.get("photos") or []
+                    if isinstance(photos, list):
+                        for photo_i, photo in enumerate(photos):
+                            field = f"rows-{idx}-photo-{photo_i}-image_existing"
+                            image_id = (request.POST.get(field) or "").strip()
+                            if not image_id:
+                                continue
+                            try:
+                                img = Image_Produit.objects.get(pk=int(image_id))
+                            except Exception:  # pylint: disable=broad-exception-caught
+                                warnings += 1
+                                continue
+                            img.produit = produit
+                            img.save(update_fields=["produit"])
+
+                    created += 1
+
+            messages.success(request, f"{created} produit(s) importé(s).")
+            if warnings:
+                messages.warning(request, "Certaines lignes/champs n'ont pas pu être importés correctement.")
+            return redirect("admin_produits:admin_produit_list")
+
+    return render(request, "admin/products/import_produits.html", {"step": "upload"})
+
+
+def _safe_basename(filename: str) -> str:
+    """Retourne un nom de fichier 'basename' sûr (bloque tout chemin)."""
+    name = os.path.basename(filename or "").strip()
+    if not name or name in {".", ".."}:
+        raise ValueError("Nom de fichier invalide")
+    if "/" in name or "\\" in name:
+        raise ValueError("Nom de fichier invalide")
+    return name
+
+
+def _existing_product_image_filenames() -> set[str]:
+    """Renvoie l'ensemble des noms (basename) déjà présents pour Image_Produit."""
+    existing = set(
+        os.path.basename(img.image.name)
+        for img in Image_Produit.objects.exclude(image="")
+    )
+    return {name for name in existing if name}
+
+
+@login_required
+def import_images_produits_existing_names(request):
+    """API: renvoie la liste des noms de fichiers déjà importés (basename) pour les images produits."""
+    return JsonResponse({"names": sorted(_existing_product_image_filenames())})
+
+
+@login_required
+def import_images_produits(request):
+    """Importe plusieurs images produits en une fois, en conservant strictement les noms."""
+    if request.method == "POST":
+        files = request.FILES.getlist("images")
+        if not files:
+            messages.error(request, "Veuillez sélectionner au moins une image.")
+            return redirect("admin_produits:admin_import_images_produits")
+
+        desired_names_raw = request.POST.get("desired_names", "")
+        try:
+            desired_names = json.loads(desired_names_raw) if desired_names_raw else None
+        except json.JSONDecodeError:
+            desired_names = None
+
+        existing_names = _existing_product_image_filenames()
+
+        final_names: list[str] = []
+        conflicts: list[str] = []
+
+        for idx, upload in enumerate(files):
+            original_name = _safe_basename(upload.name)
+            base, ext = os.path.splitext(original_name)
+
+            wanted = None
+            if isinstance(desired_names, list) and idx < len(desired_names):
+                wanted = str(desired_names[idx] or "").strip()
+
+            if wanted:
+                wanted = _safe_basename(wanted)
+                wanted_base, wanted_ext = os.path.splitext(wanted)
+                if wanted_ext == "":
+                    filename = f"{wanted_base}{ext}"
+                else:
+                    filename = wanted
+            else:
+                filename = original_name
+
+            final_names.append(filename)
+
+        # doublons dans le batch
+        counts: dict[str, int] = {}
+        for name in final_names:
+            counts[name] = counts.get(name, 0) + 1
+        duplicates_in_batch = {name for name, count in counts.items() if count > 1}
+        conflicts.extend(sorted(duplicates_in_batch))
+
+        # doublons avec l'existant (DB + FS)
+        media_dir = os.path.join(settings.MEDIA_ROOT, "images", "produits")
+        for name in final_names:
+            if name in existing_names:
+                conflicts.append(name)
+                continue
+            if os.path.exists(os.path.join(media_dir, name)):
+                conflicts.append(name)
+
+        if conflicts:
+            conflicts = sorted(set(conflicts))
+            messages.error(
+                request,
+                "Import annulé: certains noms de fichiers existent déjà (ou sont dupliqués). "
+                f"Conflits: {', '.join(conflicts)}",
+            )
+            return redirect("admin_produits:admin_import_images_produits")
+
+        os.makedirs(media_dir, exist_ok=True)
+
+        created = 0
+        created_paths: list[str] = []
+        created_ids: list[int] = []
+
+        try:
+            with transaction.atomic():
+                for upload, filename in zip(files, final_names):
+                    rel_path = os.path.join("images", "produits", filename)
+                    abs_path = os.path.join(settings.MEDIA_ROOT, rel_path)
+
+                    with open(abs_path, "xb") as f:
+                        for chunk in upload.chunks():
+                            f.write(chunk)
+                    created_paths.append(abs_path)
+
+                    img = Image_Produit()
+                    img.image.name = rel_path.replace(os.sep, "/")
+                    img.save()
+                    created_ids.append(img.pk)
+                    created += 1
+        except FileExistsError:
+            for path in created_paths:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+            Image_Produit.objects.filter(pk__in=created_ids).delete()
+            messages.error(request, "Import annulé: un fichier existe déjà (conflit détecté pendant l'écriture).")
+            return redirect("admin_produits:admin_import_images_produits")
+        except Exception:  # pylint: disable=broad-exception-caught
+            for path in created_paths:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+            Image_Produit.objects.filter(pk__in=created_ids).delete()
+            messages.error(request, "Import annulé: erreur inattendue pendant l'import.")
+            return redirect("admin_produits:admin_import_images_produits")
+
+        messages.success(request, f"{created} image(s) importée(s) avec succès.")
+        return redirect("admin_produits:admin_produit_image_library")
+
+    return render(request, "admin/products/import_images_produits.html")
 
 @login_required
 def image_produit_api(request):
@@ -334,6 +703,46 @@ def image_produit_delete(request, pk):
     else:
         image.delete()
         messages.success(request, "Image supprimée.")
+
+    return redirect("admin_produits:admin_produit_image_library")
+
+
+@login_required
+def image_produit_bulk_delete(request):
+    """Supprime en masse des images produits (si non liées à un produit)."""
+    if request.method != "POST":
+        return redirect("admin_produits:admin_produit_image_library")
+
+    raw_ids = request.POST.getlist("selected_images")
+    try:
+        ids = [int(x) for x in raw_ids]
+    except (TypeError, ValueError):
+        messages.error(request, "Sélection invalide.")
+        return redirect("admin_produits:admin_produit_image_library")
+
+    if not ids:
+        return redirect("admin_produits:admin_produit_image_library")
+
+    images = Image_Produit.objects.select_related("produit").filter(pk__in=ids)
+
+    deleted_count = 0
+    skipped: list[str] = []
+
+    for image in images:
+        if image.produit_id is not None:
+            skipped.append(image.image.url.split('/')[-1])
+            continue
+        image.delete()
+        deleted_count += 1
+
+    if deleted_count:
+        messages.success(request, f"{deleted_count} image(s) supprimée(s).")
+    if skipped:
+        messages.warning(
+            request,
+            "Certaines images n'ont pas été supprimées car elles sont utilisées: "
+            + ", ".join(skipped),
+        )
 
     return redirect("admin_produits:admin_produit_image_library")
 

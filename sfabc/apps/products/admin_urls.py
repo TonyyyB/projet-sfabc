@@ -11,6 +11,16 @@ urlpatterns = [
     path("images/image-form/", admin_views.produit_image_form, name="admin_produit_image_form"),
     path("images/<int:pk>/delete/", admin_views.image_produit_delete, name="admin_produit_image_delete"),
     path("images/<int:pk>/rename/", admin_views.image_produit_rename, name="admin_produit_image_rename"),
+    path("images/bulk-delete/", admin_views.image_produit_bulk_delete, name="admin_produit_image_bulk_delete"),
+
+    # Imports
+    path("import/images-produits/", admin_views.import_images_produits, name="admin_import_images_produits"),
+    path(
+        "import/images-produits/existing-names/",
+        admin_views.import_images_produits_existing_names,
+        name="admin_import_images_produits_existing_names",
+    ),
+    path("import/produits/", admin_views.import_produits, name="admin_import_produits"),
     path("<int:pk>/", admin_views.produit_edit, name="admin_produit_edit"),
     path("<int:pk>/delete/", admin_views.produit_delete, name="admin_produit_delete"),
     path("familles/", admin_views.famille_list, name="admin_famille_list"),

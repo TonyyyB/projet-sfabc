@@ -7,9 +7,13 @@ from .admin_views import (
     apropos_edit,
     apropos_list,
     apropos_move,
+    import_images_site,
+    import_images_site_existing_names,
+    import_apropos,
     edit_site,
     image_api,
     image_delete,
+    image_bulk_delete,
     image_library,
     image_rename,
     logout_view,
@@ -47,4 +51,14 @@ urlpatterns = [
     path("images/api/", image_api, name="admin_image_api"),
     path("images/<int:pk>/delete/", image_delete, name="admin_image_delete"),
     path("images/<int:pk>/rename/", image_rename, name="admin_image_rename"),
+    path("images/bulk-delete/", image_bulk_delete, name="admin_image_bulk_delete"),
+
+    # Imports
+    path("import/images-site/", import_images_site, name="admin_import_images_site"),
+    path(
+        "import/images-site/existing-names/",
+        import_images_site_existing_names,
+        name="admin_import_images_site_existing_names",
+    ),
+    path("import/a-propos/", import_apropos, name="admin_import_apropos"),
 ]

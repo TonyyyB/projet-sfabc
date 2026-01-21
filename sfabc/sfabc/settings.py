@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -79,10 +80,42 @@ WSGI_APPLICATION = 'sfabc.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+def _is_nfs_path(path: Path) -> bool:
+    """Retourne True si le chemin est monté sur NFS (évite SQLite sur NFS)."""
+    try:
+        target = str(path.resolve())
+        best_mountpoint = ""
+        best_fstype = ""
+        with open("/proc/mounts", "r", encoding="utf-8") as f:
+            for line in f:
+                parts = line.split()
+                if len(parts) < 3:
+                    continue
+                mountpoint = parts[1].replace("\\040", " ")
+                fstype = parts[2]
+                if target.startswith(mountpoint.rstrip("/") + "/") or target == mountpoint:
+                    if len(mountpoint) > len(best_mountpoint):
+                        best_mountpoint = mountpoint
+                        best_fstype = fstype
+        return best_fstype in {"nfs", "nfs4"}
+    except OSError:
+        return False
+
+
+_sqlite_name_env = os.environ.get("SFABC_SQLITE_PATH")
+if _sqlite_name_env:
+    SQLITE_NAME = Path(_sqlite_name_env)
+else:
+    SQLITE_NAME = (Path("/tmp") / "sfabc-db.sqlite3") if _is_nfs_path(BASE_DIR) else (BASE_DIR / "db.sqlite3")
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': SQLITE_NAME,
+        'OPTIONS': {
+            # éviter certains blocages en cas de FS lent/chargé
+            'timeout': 20,
+        },
     }
 }
 

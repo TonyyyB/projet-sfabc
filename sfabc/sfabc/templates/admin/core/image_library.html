@@ -31,38 +31,55 @@
         </div>
       {% endif %}
 
-    <div class="image-grid" id="imageGrid">
-      {% for data in image_data %}
-      <div class="image-card">
-        <img src="{{ data.image.image.url }}" alt="{{ data.image }}">
-        <div class="image-name">{{ data.image }}</div>
-        <div class="usages">
-          {% if data.usages %}
-            Utilisée dans :<br>
-            {% for usage in data.usages %}
-              <a href="{{ usage.url }}" class="usage-link">{{ usage.text }}</a><br>
-            {% endfor %}
-          {% else %}
-            Non utilisée
-          {% endif %}
-        </div>
-        <div class="actions">
-          <a href="{% url 'admin_core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
-            <span class="material-symbols-outlined">edit</span>
-            Renommer
-          </a>
-          {% if not data.is_used %}
-          <a href="{% url 'admin_core:admin_image_delete' data.image.id_image %}"
-             class="btn btn-danger"
-             data-confirm="Êtes-vous sûr de vouloir supprimer cette image ?">
-            <span class="material-symbols-outlined">delete</span>
-            Supprimer
-          </a>
-          {% endif %}
-        </div>
+    <form method="post" action="{% url 'admin_core:admin_image_bulk_delete' %}" id="bulkDeleteForm">
+      {% csrf_token %}
+
+      <div class="actions" id="bulkActions" style="display: none; justify-content: flex-end; margin-bottom: 14px;">
+        <button type="submit" class="btn btn-danger" id="bulkDeleteBtn">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer la sélection
+        </button>
       </div>
-      {% endfor %}
-    </div>
+
+      <div class="image-grid" id="imageGrid">
+        {% for data in image_data %}
+        <div class="image-card">
+          <img src="{{ data.image.image.url }}" alt="{{ data.image }}">
+          <div class="image-name">{{ data.image }}</div>
+
+          <div class="usages">
+            {% if data.usages %}
+              Utilisée dans :<br>
+              {% for usage in data.usages %}
+                <a href="{{ usage.url }}" class="usage-link">{{ usage.text }}</a><br>
+              {% endfor %}
+            {% else %}
+              Non utilisée
+            {% endif %}
+          </div>
+
+          <div class="actions">
+            <a href="{% url 'admin_core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
+              <span class="material-symbols-outlined">edit</span>
+              Renommer
+            </a>
+
+            <label class="btn {% if data.is_used %}btn-secondary{% else %}btn-danger{% endif %}" style="display: inline-flex; gap: 8px; align-items: center; cursor: {% if data.is_used %}not-allowed{% else %}pointer{% endif %};" title="{% if data.is_used %}Image utilisée: suppression impossible{% else %}Sélectionner pour suppression{% endif %}">
+              <input
+                type="checkbox"
+                class="image-select"
+                name="selected_images"
+                value="{{ data.image.id_image }}"
+                {% if data.is_used %}disabled{% endif %}
+                style="margin: 0; width: 1.05em; height: 1.05em;"
+              />
+              Sélectionner
+            </label>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </form>
 
     <div class="pagination-container">
       {% include 'includes/pagination.html' %}
@@ -71,12 +88,27 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", function () {
-      document.querySelectorAll("[data-confirm]").forEach(function (el) {
-        el.addEventListener("click", function (e) {
-          if (!confirm(el.dataset.confirm)) {
-            e.preventDefault();
-          }
-        });
+      const bulkActions = document.getElementById('bulkActions');
+      const bulkForm = document.getElementById('bulkDeleteForm');
+      const selects = Array.from(document.querySelectorAll('.image-select'));
+
+      function refreshBulkActions() {
+        const checkedCount = selects.filter(c => c.checked).length;
+        bulkActions.style.display = checkedCount > 0 ? 'flex' : 'none';
+      }
+
+      selects.forEach(c => c.addEventListener('change', refreshBulkActions));
+      refreshBulkActions();
+
+      bulkForm.addEventListener('submit', function (e) {
+        const checkedCount = selects.filter(c => c.checked).length;
+        if (checkedCount === 0) {
+          e.preventDefault();
+          return;
+        }
+        if (!confirm(`Supprimer ${checkedCount} image(s) sélectionnée(s) ?`)) {
+          e.preventDefault();
+        }
       });
     });
   </script>
