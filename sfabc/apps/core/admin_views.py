@@ -176,8 +176,6 @@ def apropos_edit(request, pk=None):
     if request.method == "POST":
         form = AProposForm(request.POST, instance=page)
 
-        print(request.POST)
-
         slot_forms = [
             (pos, ImageSlotForm(
                 request.POST,
@@ -211,7 +209,6 @@ def apropos_edit(request, pk=None):
 
                 if image:
                     position = sf.cleaned_data["position"]
-                    print(position)
                     Image_A_Propos.objects.create(
                         page_ap=page,
                         image=image,
@@ -252,7 +249,6 @@ def apropos_edit(request, pk=None):
             )
             for pos in positions
         ]
-        print(slot_forms)
     return render(request, "admin/core/apropos/apropos_edit.html", {
         "form": form,
         "slot_forms": slot_forms,

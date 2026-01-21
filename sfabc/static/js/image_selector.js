@@ -12,6 +12,7 @@ class ImageSelector {
         this.filteredImages = [];
         this.currentImagePreview = null;
         this.newImagePreview = null;
+        this.uploadInput = null;
 
         this.init();
     }
@@ -54,10 +55,6 @@ class ImageSelector {
                             <span class="material-symbols-outlined">cancel</span>
                             Annuler
                         </button>
-                        <button class="btn-submit" id="confirmImageSelection" disabled>
-                            <span class="material-symbols-outlined">check</span>
-                            Sélectionner
-                        </button>
                     </div>
                 </div>
             </div>
@@ -68,6 +65,7 @@ class ImageSelector {
         this.modal = document.getElementById('imageModal');
         this.searchInput = this.modal.querySelector('.image-search-input');
         this.grid = document.getElementById('imageSelectionGrid');
+        this.uploadInput = document.getElementById('imageUploadInput');
         this.previewComparison = document.getElementById('imagePreviewComparison');
         this.currentImagePreview = document.getElementById('currentImagePreview');
         this.newImagePreview = document.getElementById('newImagePreview');
@@ -94,15 +92,6 @@ class ImageSelector {
             this.filterImages(e.target.value);
         });
 
-        // Confirmer la sélection
-        document.getElementById('confirmImageSelection').addEventListener('click', () => {
-            if (this.selectedImage && this.callback) {
-                console.log(this.selectedImage);
-                this.callback(this.selectedImage);
-            }
-            this.close();
-        });
-
         // Échap pour fermer
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.modal.style.display === 'block') {
@@ -111,13 +100,11 @@ class ImageSelector {
         });
 
         document.getElementById('uploadImageBtn').addEventListener('click', () => {
-            document.getElementById('imageUploadInput').click();
+            this.uploadInput?.click();
         });
 
-
-
-        document.getElementById('imageUploadInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
+        this.uploadInput?.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
             if (!file) return;
 
             const formData = new FormData();
@@ -125,18 +112,42 @@ class ImageSelector {
             formData.append('type', this.imageType);
             formData.append('product_id', this.productId || '');
 
-            const response = await fetch('/admin/images/upload/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': this.getCSRFToken()
-                }
-            });
+            try {
+                const response = await fetch('/admin/images/upload/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': this.getCSRFToken()
+                    }
+                });
 
-            const data = await response.json();
-            this.images.unshift(data.image);
-            this.filteredImages = [...this.images];
-            this.renderImages();
+                if (!response.ok) {
+                    throw new Error("Erreur lors de l'upload de l'image");
+                }
+
+                const data = await response.json();
+                const uploadedImage = data?.image;
+                if (!uploadedImage) {
+                    throw new Error("Réponse d'upload invalide");
+                }
+
+                this.images.unshift(uploadedImage);
+                this.filteredImages = [...this.images];
+                this.renderImages();
+
+                // Sélectionner immédiatement l'image uploadée et fermer le modal.
+                if (this.callback) {
+                    this.callback(uploadedImage);
+                }
+                this.close();
+            } catch (error) {
+                console.error("Erreur lors de l'upload:", error);
+            } finally {
+                // Permet de re-sélectionner le même fichier (sinon l'event change peut ne pas se déclencher)
+                if (this.uploadInput) {
+                    this.uploadInput.value = '';
+                }
+            }
         });
     }
 
@@ -199,14 +210,15 @@ class ImageSelector {
         element.classList.add('selected');
         this.selectedImage = image;
 
-        // Mettre à jour l'aperçu de la nouvelle image
-        //this.updateNewImagePreview(image);
-
-        // Activer le bouton de confirmation
-        document.getElementById('confirmImageSelection').disabled = false;
+        // Validation immédiate (plus de bouton "Sélectionner")
+        if (this.callback) {
+            this.callback(image);
+        }
+        this.close();
     }
 
     updateNewImagePreview(image) {
+        if (!this.newImagePreview) return;
         if (image && image.url) {
             this.newImagePreview.innerHTML = `<img src="${image.url}" alt="${image.name || 'Nouvelle image'}" style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px;">`;
         } else {
@@ -225,9 +237,6 @@ class ImageSelector {
 
         // Mettre à jour l'aperçu de l'image actuelle
         //this.updateCurrentImagePreview(currentImage);
-
-        // Désactiver le bouton de confirmation
-        document.getElementById('confirmImageSelection').disabled = true;
 
         // Charger les images si ce n'est pas déjà fait
         if (this.images.length === 0) {
@@ -273,12 +282,14 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             const button = e.target.closest('.image-select-btn');
             const container = button.closest('.image-selector-container');
+            const card = button.closest('.image-card') || container;
             const imageType = button.dataset.imageType || 'site';
             const productId = button.dataset.productId || null;
             
             // Chercher le select de manière relative au conteneur
             // - services : ...-image
             // - produits : ...-image_existing
+            if (!container) return;
             const targetInput = container.querySelector('select[name$="-image"], select[name$="-image_existing"]');
             
             console.log(button.dataset);
@@ -290,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const selectedOption = targetInput.querySelector(`option[value="${targetInput.value}"]`);
                 if (selectedOption && selectedOption.textContent.trim()) {
                     // Essayer de récupérer l'URL de l'image depuis les données du bouton ou du formulaire
-                    const existingImage = container ? container.querySelector('img') : null;
+                    const existingImage = card ? card.querySelector('.image-preview-container img') : null;
                     if (existingImage) {
                         currentImage = {
                             id: targetInput.value,
@@ -317,9 +328,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     targetInput.value = selectedImage.id;
                     // Mettre à jour l'aperçu si disponible
-                    if (container) {
-                        const previewContainers = container.querySelectorAll('.image-preview-container');
-                        // Cibler le dernier conteneur d'aperçu (celui après le select)
+                    if (card) {
+                        const previewContainers = card.querySelectorAll('.image-preview-container');
                         const previewContainer = previewContainers[previewContainers.length - 1];
                         if (previewContainer) {
                             previewContainer.style.display = "block";

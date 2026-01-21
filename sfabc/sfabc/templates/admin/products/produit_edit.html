@@ -71,7 +71,12 @@
 
   <div class="form-group">
     <label class="form-label">{{ form.famille.label }}</label>
-    {{ form.famille }}
+    <div style="display:flex; align-items:center; gap:10px;">
+      {{ form.famille }}
+      <button type="button" id="addFamilleBtn" class="btn-submit" style="padding: 8px 10px; min-width: auto;" title="Ajouter une famille">
+        <span class="material-symbols-outlined" style="font-size: 20px; line-height: 1;">add</span>
+      </button>
+    </div>
   </div>
 
   <div class="form-group">
@@ -122,19 +127,20 @@
               </button>
               {{ f.image_existing }}
             </div>
+
+            <div class="image-preview-container" style="margin-top: 15px; display:none;">
+              <div class="image-preview">
+                {% if f.instance.image %}
+                  <img src="{{ f.instance.image.url }}" alt="Image produit" height="80">
+                {% endif %}
+              </div>
+            </div>
           </div>
 
           {% if f.image_existing.errors %}
             <div class="form-error">{{ f.image_existing.errors }}</div>
           {% endif %}
 
-          <div class="image-preview-container" style="margin-top: 15px; display:none;">
-            <div class="image-preview">
-              {% if f.instance.image %}
-                <img src="{{ f.instance.image.url }}" alt="Image produit" height="80">
-              {% endif %}
-            </div>
-          </div>
         </div>
 
         <div class="form-group">
@@ -167,6 +173,36 @@
 </div>
 
 </form>
+</div>
+
+<!-- ================= MODAL AJOUT FAMILLE ================= -->
+<div id="familleModal" class="image-modal" style="display:none;">
+  <div class="image-modal-content" style="max-width: 520px;">
+    <div class="image-modal-header">
+      <h2>
+        <span class="material-symbols-outlined">category</span>
+        Ajouter une famille
+      </h2>
+      <button type="button" class="image-modal-close" id="familleModalClose">&times;</button>
+    </div>
+    <div class="image-modal-body" style="padding: 20px;">
+      <div class="form-group" style="margin:0;">
+        <label class="form-label" for="familleNameInput">Nom de la famille</label>
+        <input id="familleNameInput" type="text" maxlength="100" placeholder="Ex: Boissons" style="width: 100%;">
+        <div id="familleModalError" class="form-error" style="display:none; margin-top: 10px;"></div>
+      </div>
+    </div>
+    <div class="image-modal-footer">
+      <button type="button" class="btn-cancel" id="familleCancelBtn">
+        <span class="material-symbols-outlined">cancel</span>
+        Annuler
+      </button>
+      <button type="button" class="btn-submit" id="familleCreateBtn">
+        <span class="material-symbols-outlined">check</span>
+        Créer
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- ================= JS ================= -->
@@ -240,6 +276,120 @@ function removeImage(btn) {
     card.remove();
   }
 }
+
+// ===== AJOUT FAMILLE (AJAX) =====
+function getCSRFToken() {
+  const csrfEl = document.querySelector('[name=csrfmiddlewaretoken]');
+  return csrfEl ? csrfEl.value : '';
+}
+
+function openFamilleModal() {
+  const modal = document.getElementById('familleModal');
+  const input = document.getElementById('familleNameInput');
+  const err = document.getElementById('familleModalError');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  if (input) input.value = '';
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => input && input.focus(), 50);
+}
+
+function closeFamilleModal() {
+  const modal = document.getElementById('familleModal');
+  modal.style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+function showFamilleError(message) {
+  const err = document.getElementById('familleModalError');
+  if (!err) return;
+  err.textContent = message;
+  err.style.display = 'block';
+}
+
+async function createFamille() {
+  const input = document.getElementById('familleNameInput');
+  const name = (input && input.value ? input.value : '').trim();
+  if (!name) {
+    showFamilleError('Veuillez saisir un nom.');
+    return;
+  }
+
+  const createBtn = document.getElementById('familleCreateBtn');
+  if (createBtn) createBtn.disabled = true;
+
+  try {
+    const response = await fetch('{% url "admin_produits:admin_famille_create_ajax" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken(),
+      },
+      body: JSON.stringify({ name }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      showFamilleError(data && data.error ? data.error : 'Erreur lors de la création.');
+      return;
+    }
+
+    const familleSelect = document.querySelector('select[name="famille"]');
+    if (!familleSelect) {
+      showFamilleError('Select famille introuvable.');
+      return;
+    }
+
+    const id = String(data.id);
+    const label = data.name;
+    let option = familleSelect.querySelector(`option[value="${CSS.escape(id)}"]`);
+    if (!option) {
+      option = document.createElement('option');
+      option.value = id;
+      option.textContent = label;
+      familleSelect.appendChild(option);
+    } else {
+      option.textContent = label;
+    }
+
+    familleSelect.value = id;
+    familleSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    closeFamilleModal();
+  } catch (e) {
+    console.error(e);
+    showFamilleError('Erreur réseau.');
+  } finally {
+    if (createBtn) createBtn.disabled = false;
+  }
+}
+
+document.getElementById('addFamilleBtn')?.addEventListener('click', openFamilleModal);
+document.getElementById('familleCancelBtn')?.addEventListener('click', closeFamilleModal);
+document.getElementById('familleModalClose')?.addEventListener('click', closeFamilleModal);
+
+document.getElementById('familleModal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeFamilleModal();
+});
+
+document.getElementById('familleCreateBtn')?.addEventListener('click', createFamille);
+
+document.getElementById('familleNameInput')?.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    createFamille();
+  }
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeFamilleModal();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  const modal = document.getElementById('familleModal');
+  if (e.key === 'Escape' && modal && modal.style.display === 'block') {
+    closeFamilleModal();
+  }
+});
 </script>
 
 <script src="{% static 'js/image_selector.js' %}"></script>

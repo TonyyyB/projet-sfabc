@@ -14,6 +14,13 @@ class FamilleForm(forms.ModelForm):
 class ProduitForm(forms.ModelForm):
     """Formulaire admin pour créer/modifier un produit."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Placeholder plus explicite que le "---------" par défaut
+        if "famille" in self.fields:
+            self.fields["famille"].empty_label = "— Choisir une famille —"
+            self.fields["famille"].queryset = Famille.objects.all().order_by("nom_famille")
+
     class Meta:
         model = Produit
         fields = [
@@ -50,6 +57,8 @@ class ImageProduitForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["image_existing"].required = False
         self.fields["upload"].required = False
+        # Placeholder plus explicite pour la sélection existante
+        self.fields["image_existing"].empty_label = "— Sélectionner une image —"
 
     def clean(self):
         """Valide le choix exclusif (image existante vs upload) et remplit instance.image en conséquence."""
