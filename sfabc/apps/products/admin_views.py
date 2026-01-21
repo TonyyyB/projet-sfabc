@@ -1,5 +1,6 @@
 import os
 import traceback
+import json
 
 from django.conf import settings
 from django.contrib import messages
@@ -73,6 +74,40 @@ def famille_add(request):
         "form": form
     })
 
+
+@login_required
+def famille_create_ajax(request):
+    """API AJAX: crée (ou récupère) une famille et renvoie {id, name}.
+
+    Attendu: POST JSON {"name": "..."} ou form-data name=...
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Méthode non autorisée"}, status=405)
+
+    name = None
+    if request.content_type and "application/json" in request.content_type:
+        try:
+            payload = json.loads((request.body or b"").decode("utf-8") or "{}")
+            name = payload.get("name")
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "JSON invalide"}, status=400)
+    else:
+        name = request.POST.get("name")
+
+    name = (name or "").strip()
+    if not name:
+        return JsonResponse({"error": "Nom de famille requis"}, status=400)
+
+    if len(name) > 100:
+        return JsonResponse({"error": "Nom trop long (100 caractères max)"}, status=400)
+
+    existing = Famille.objects.filter(nom_famille__iexact=name).first()
+    if existing:
+        return JsonResponse({"id": existing.pk, "name": existing.nom_famille, "created": False})
+
+    famille = Famille.objects.create(nom_famille=name)
+    return JsonResponse({"id": famille.pk, "name": famille.nom_famille, "created": True})
+
 @login_required
 def famille_edit(request, pk):
     """Modifie une famille et affiche la liste des produits associés."""
@@ -115,19 +150,29 @@ def produit_add(request):
 
         if form.is_valid() and formset.is_valid():
             produit = form.save()
+            # Identifier (via les forms) l'image cochée "du moment" (si une seule doit l'être)
+            moment_instance = None
+            for f in formset.forms:
+                if not getattr(f, "cleaned_data", None):
+                    continue
+                if f.cleaned_data.get("DELETE"):
+                    continue
+                if f.cleaned_data.get("is_produit_du_moment"):
+                    moment_instance = f.instance
+                    break
+
             images = formset.save(commit=False)
-
-            Image_Produit.objects.filter(
-                produit=produit, is_produit_du_moment=True
-            ).update(is_produit_du_moment=False)
-
             for img in images:
                 img.produit = produit
-                if img.is_produit_du_moment:
-                    Image_Produit.objects.filter(
-                        produit=produit
-                    ).update(is_produit_du_moment=False)
                 img.save()
+
+            for obj in formset.deleted_objects:
+                obj.delete()
+
+            # Enforcer: une seule image "du moment" sur ce produit
+            if moment_instance and moment_instance.pk:
+                Image_Produit.objects.filter(produit=produit).update(is_produit_du_moment=False)
+                Image_Produit.objects.filter(pk=moment_instance.pk, produit=produit).update(is_produit_du_moment=True)
 
             messages.success(request, "Produit créé.")
             return redirect("admin_produits:admin_produit_edit", produit.pk)
@@ -158,14 +203,16 @@ def produit_edit(request, pk):
         if form.is_valid() and formset.is_valid():
             form.save()
 
-            if any(
-                f.cleaned_data.get("is_produit_du_moment")
-                for f in formset.forms
-                if f.cleaned_data and not f.cleaned_data.get("DELETE")
-            ):
-                Image_Produit.objects.filter(
-                    produit=produit
-                ).update(is_produit_du_moment=False)
+            # Identifier l'image "du moment" choisie (si présente)
+            moment_instance = None
+            for f in formset.forms:
+                if not getattr(f, "cleaned_data", None):
+                    continue
+                if f.cleaned_data.get("DELETE"):
+                    continue
+                if f.cleaned_data.get("is_produit_du_moment"):
+                    moment_instance = f.instance
+                    break
 
             instances = formset.save(commit=False)
             for inst in instances:
@@ -174,6 +221,11 @@ def produit_edit(request, pk):
 
             for obj in formset.deleted_objects:
                 obj.delete()
+
+            # Enforcer: une seule image "du moment" sur ce produit
+            if moment_instance and moment_instance.pk:
+                Image_Produit.objects.filter(produit=produit).update(is_produit_du_moment=False)
+                Image_Produit.objects.filter(pk=moment_instance.pk, produit=produit).update(is_produit_du_moment=True)
 
             messages.success(request, "Produit enregistré.")
             return redirect("admin_produits:admin_produit_edit", pk=produit.pk)
@@ -322,4 +374,4 @@ def produit_delete(request, pk):
     produit = get_object_or_404(Produit, pk=pk)
     produit.delete()
     messages.success(request, "Produit supprimé.")
-    return redirect("admin_produits:produit_list")
+    return redirect("admin_produits:admin_produit_list")

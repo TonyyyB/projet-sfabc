@@ -14,6 +14,7 @@ urlpatterns = [
     path("<int:pk>/", admin_views.produit_edit, name="admin_produit_edit"),
     path("<int:pk>/delete/", admin_views.produit_delete, name="admin_produit_delete"),
     path("familles/", admin_views.famille_list, name="admin_famille_list"),
+    path("familles/create-ajax/", admin_views.famille_create_ajax, name="admin_famille_create_ajax"),
     path("familles/add/", admin_views.famille_add, name="admin_famille_add"),
     path("familles/<int:pk>/", admin_views.famille_edit, name="admin_famille_edit"),
     path("familles/<int:pk>/delete/", admin_views.famille_delete, name="admin_famille_delete"),
