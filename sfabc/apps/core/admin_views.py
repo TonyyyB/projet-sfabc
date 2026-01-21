@@ -1,5 +1,8 @@
 import os
 import traceback
+import json
+import io
+import unicodedata
 
 from django.conf import settings
 from django.contrib import messages
@@ -32,6 +35,368 @@ from .admin_forms import (
     ServiceForm,
     SiteForm,
 )
+
+
+def _safe_basename(filename: str) -> str:
+    """Retourne un nom de fichier 'basename' sûr (bloque tout chemin)."""
+    name = os.path.basename(filename or "").strip()
+    # bloquer toute tentative de path traversal ou nom vide
+    if not name or name in {".", ".."}:
+        raise ValueError("Nom de fichier invalide")
+    if "/" in name or "\\" in name:
+        raise ValueError("Nom de fichier invalide")
+    return name
+
+
+def _existing_site_image_filenames() -> set[str]:
+    """Renvoie l'ensemble des noms (basename) déjà présents pour Image_Site."""
+    existing = set(
+        os.path.basename(img.image.name)
+        for img in Image_Site.objects.exclude(image="")
+    )
+    return {name for name in existing if name}
+
+
+def _normalize_header(value: str) -> str:
+    """Normalise une en-tête CSV (sans accents, lower, trim)."""
+    value = (value or "").strip().lower()
+    value = unicodedata.normalize("NFKD", value)
+    value = "".join(c for c in value if not unicodedata.combining(c))
+    return value
+
+
+def _parse_apropos_csv(file_bytes: bytes) -> list[dict]:
+    """Parse un CSV A_Propos avec colonnes: Titre, Description, Photos.
+
+    Supporte un champ Photos contenant des ';' non quotés en splittant uniquement
+    les 2 premiers séparateurs du CSV (Titre/Description) puis en gardant le reste.
+    """
+    # Décodage souple (UTF-8 BOM / latin1 fallback)
+    text = None
+    for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
+        try:
+            text = file_bytes.decode(enc)
+            break
+        except UnicodeDecodeError:
+            continue
+    if text is None:
+        raise ValueError("Encodage CSV non supporté")
+
+    # Nettoyer les lignes vides
+    lines = [ln for ln in text.splitlines() if ln.strip()]
+    if not lines:
+        return []
+
+    header_line = lines[0].strip()
+    # Choix du séparateur principal: ';' ou ','
+    delimiter = ";" if header_line.count(";") >= 2 else ","
+
+    header_parts = [h.strip() for h in header_line.split(delimiter)]
+    header_norm = [_normalize_header(h) for h in header_parts]
+
+    # Indexer les colonnes attendues
+    def _find_idx(*names: str) -> int | None:
+        for name in names:
+            norm = _normalize_header(name)
+            if norm in header_norm:
+                return header_norm.index(norm)
+        return None
+
+    idx_title = _find_idx("Titre", "Title")
+    idx_desc = _find_idx("Description", "Desc")
+    idx_photos = _find_idx("Photos", "Photo", "Images")
+
+    if idx_title is None or idx_desc is None or idx_photos is None:
+        raise ValueError("Colonnes CSV requises: Titre, Description, Photos")
+
+    rows: list[dict] = []
+    for raw in lines[1:]:
+        # Split max 2 séparateurs pour conserver le champ Photos même s'il contient ';'
+        parts = [p.strip() for p in raw.split(delimiter, 2)]
+        if len(parts) < 3:
+            # ligne invalide, on ignore
+            continue
+
+        # Reconstituer un tableau de 3 champs (Titre, Description, Photos)
+        title = parts[0]
+        desc = parts[1]
+        photos_raw = parts[2].strip().strip('"').strip("'")
+
+        # Parser les 3 positions: gauche;centre;droite
+        photos = [p.strip() for p in photos_raw.split(";")]
+        while len(photos) < 3:
+            photos.append("")
+        photos = photos[:3]
+
+        if not title and not desc and not any(photos):
+            continue
+
+        rows.append({
+            "titre": title,
+            "description": desc,
+            "photos": photos,
+        })
+
+    return rows
+
+
+@login_required
+def import_apropos(request):
+    """Import CSV pour A_Propos avec résolution d'images manquantes via ImageSelector."""
+    if request.method == "POST":
+        step = request.POST.get("step", "parse")
+
+        if step == "parse":
+            csv_file = request.FILES.get("csv_file")
+            if not csv_file:
+                messages.error(request, "Veuillez sélectionner un fichier CSV.")
+                return redirect("admin_core:admin_import_apropos")
+
+            try:
+                rows = _parse_apropos_csv(csv_file.read())
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                messages.error(request, f"CSV invalide: {exc}")
+                return redirect("admin_core:admin_import_apropos")
+
+            if not rows:
+                messages.warning(request, "Aucune ligne importable n'a été trouvée.")
+                return redirect("admin_core:admin_import_apropos")
+
+            # Pré-résolution des images existantes par nom exact
+            images = Image_Site.objects.all()
+            by_name = {os.path.basename(img.image.name): img for img in images if img.image.name}
+
+            positions = ["left", "center", "right"]
+            resolved_rows = []
+            missing_count = 0
+
+            for r in rows:
+                resolved_photos = []
+                for pos, name in zip(positions, r["photos"], strict=False):
+                    filename = os.path.basename(name) if name else ""
+                    img = by_name.get(filename) if filename else None
+                    if filename and img is None:
+                        missing_count += 1
+                    resolved_photos.append({
+                        "position": pos,
+                        "requested": filename,
+                        "image": (
+                            {
+                                "id": img.id_image,
+                                "name": str(img),
+                                "url": img.image.url,
+                            }
+                            if img else None
+                        ),
+                    })
+
+                resolved_rows.append({
+                    "titre": r["titre"],
+                    "description": r["description"],
+                    "photos": resolved_photos,
+                })
+
+            return render(request, "admin/core/import_apropos.html", {
+                "step": "resolve",
+                "rows": resolved_rows,
+                "rows_json": json.dumps(rows, ensure_ascii=False),
+                "missing_count": missing_count,
+            })
+
+        if step == "import":
+            rows_json = request.POST.get("rows_json", "")
+            try:
+                rows = json.loads(rows_json) if rows_json else []
+            except json.JSONDecodeError:
+                rows = []
+
+            if not isinstance(rows, list) or not rows:
+                messages.error(request, "Import impossible: données manquantes. Veuillez relancer l'import.")
+                return redirect("admin_core:admin_import_apropos")
+
+            positions = ["left", "center", "right"]
+            ordre_start = (A_Propos.objects.aggregate(max_ordre=Max("ordre_ap"))["max_ordre"] or 0) + 1
+            created = 0
+            unresolved: list[str] = []
+
+            with transaction.atomic():
+                for idx, r in enumerate(rows):
+                    titre = str(r.get("titre", "")).strip()
+                    description = str(r.get("description", "")).strip()
+
+                    page = A_Propos.objects.create(
+                        ordre_ap=ordre_start + idx,
+                        titre_ap=titre,
+                        description_ap=description,
+                    )
+
+                    # 3 positions
+                    for pos in positions:
+                        field_name = f"rows-{idx}-{pos}-image"
+                        image_id = request.POST.get(field_name) or ""
+                        image_id = image_id.strip()
+                        requested_name = ""
+                        photos = r.get("photos") or []
+                        if isinstance(photos, list):
+                            pos_index = positions.index(pos)
+                            if pos_index < len(photos):
+                                requested_name = str(photos[pos_index] or "").strip()
+
+                        if not requested_name and not image_id:
+                            continue
+
+                        if not image_id:
+                            unresolved.append(f"{titre} ({pos}): {requested_name}")
+                            continue
+
+                        try:
+                            img = Image_Site.objects.get(pk=int(image_id))
+                        except Exception:  # pylint: disable=broad-exception-caught
+                            unresolved.append(f"{titre} ({pos}): {requested_name}")
+                            continue
+
+                        Image_A_Propos.objects.create(
+                            page_ap=page,
+                            image=img,
+                            position=pos,
+                            titre_image=None,
+                        )
+
+                    created += 1
+
+            messages.success(request, f"{created} section(s) « À propos » importée(s).")
+            if unresolved:
+                messages.warning(
+                    request,
+                    "Certaines images n'ont pas été associées (image introuvable ou non sélectionnée).",
+                )
+            return redirect("admin_core:admin_apropos_list")
+
+    return render(request, "admin/core/import_apropos.html", {"step": "upload"})
+
+
+@login_required
+def import_images_site_existing_names(request):
+    """API: renvoie la liste des noms de fichiers déjà importés (basename)."""
+    return JsonResponse({"names": sorted(_existing_site_image_filenames())})
+
+
+@login_required
+def import_images_site(request):
+    """Importe plusieurs images du site en une fois, en conservant strictement les noms."""
+    if request.method == "POST":
+        files = request.FILES.getlist("images")
+        if not files:
+            messages.error(request, "Veuillez sélectionner au moins une image.")
+            return redirect("admin_core:admin_import_images_site")
+
+        desired_names_raw = request.POST.get("desired_names", "")
+        try:
+            desired_names = json.loads(desired_names_raw) if desired_names_raw else None
+        except json.JSONDecodeError:
+            desired_names = None
+
+        existing_names = _existing_site_image_filenames()
+
+        # Construire les noms finaux à enregistrer (en gardant l'extension originale si besoin)
+        final_names: list[str] = []
+        conflicts: list[str] = []
+
+        for idx, upload in enumerate(files):
+            original_name = _safe_basename(upload.name)
+            base, ext = os.path.splitext(original_name)
+
+            wanted = None
+            if isinstance(desired_names, list) and idx < len(desired_names):
+                wanted = str(desired_names[idx] or "").strip()
+
+            if wanted:
+                wanted = _safe_basename(wanted)
+                wanted_base, wanted_ext = os.path.splitext(wanted)
+                # si pas d'extension fournie, garder celle d'origine
+                if wanted_ext == "":
+                    filename = f"{wanted_base}{ext}"
+                else:
+                    filename = wanted
+            else:
+                filename = original_name
+
+            final_names.append(filename)
+
+        # Détecter doublons dans le batch
+        counts: dict[str, int] = {}
+        for name in final_names:
+            counts[name] = counts.get(name, 0) + 1
+        duplicates_in_batch = {name for name, count in counts.items() if count > 1}
+        conflicts.extend(sorted(duplicates_in_batch))
+
+        # Détecter doublons avec l'existant (DB + FS)
+        media_dir = os.path.join(settings.MEDIA_ROOT, "images", "site")
+        for name in final_names:
+            if name in existing_names:
+                conflicts.append(name)
+                continue
+            if os.path.exists(os.path.join(media_dir, name)):
+                conflicts.append(name)
+
+        # Si conflit, refuser (le JS est censé gérer le popup, mais on sécurise côté serveur)
+        if conflicts:
+            conflicts = sorted(set(conflicts))
+            messages.error(
+                request,
+                "Import annulé: certains noms de fichiers existent déjà (ou sont dupliqués). "
+                f"Conflits: {', '.join(conflicts)}",
+            )
+            return redirect("admin_core:admin_import_images_site")
+
+        os.makedirs(media_dir, exist_ok=True)
+
+        # Écriture stricte (pas de renommage automatique) + pas d'import partiel
+        created = 0
+        created_paths: list[str] = []
+        created_ids: list[int] = []
+
+        try:
+            with transaction.atomic():
+                for upload, filename in zip(files, final_names):
+                    rel_path = os.path.join("images", "site", filename)
+                    abs_path = os.path.join(settings.MEDIA_ROOT, rel_path)
+
+                    # 'xb' => échoue si le fichier existe (file exists)
+                    with open(abs_path, "xb") as f:
+                        for chunk in upload.chunks():
+                            f.write(chunk)
+                    created_paths.append(abs_path)
+
+                    img = Image_Site()
+                    img.image.name = rel_path.replace(os.sep, "/")
+                    img.save()
+                    created_ids.append(img.pk)
+                    created += 1
+        except FileExistsError:
+            # Conflit tardif (race condition), on nettoie ce qui a déjà été créé
+            for path in created_paths:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+            Image_Site.objects.filter(pk__in=created_ids).delete()
+            messages.error(request, "Import annulé: un fichier existe déjà (conflit détecté pendant l'écriture).")
+            return redirect("admin_core:admin_import_images_site")
+        except Exception:  # pylint: disable=broad-exception-caught
+            for path in created_paths:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+            Image_Site.objects.filter(pk__in=created_ids).delete()
+            messages.error(request, "Import annulé: erreur inattendue pendant l'import.")
+            return redirect("admin_core:admin_import_images_site")
+
+        messages.success(request, f"{created} image(s) importée(s) avec succès.")
+        return redirect("admin_core:admin_image_library")
+
+    return render(request, "admin/core/import_images_site.html")
 
 def _process_service_images(request, service):
     """
@@ -484,6 +849,52 @@ def image_delete(request, pk):
     else:
         image.delete()
         messages.success(request, "Image supprimée.")
+    return redirect("admin_core:admin_image_library")
+
+
+@login_required
+def image_bulk_delete(request):
+    """Supprime en masse des images (si non utilisées)."""
+    if request.method != "POST":
+        return redirect("admin_core:admin_image_library")
+
+    raw_ids = request.POST.getlist("selected_images")
+    try:
+        ids = [int(x) for x in raw_ids]
+    except (TypeError, ValueError):
+        messages.error(request, "Sélection invalide.")
+        return redirect("admin_core:admin_image_library")
+
+    if not ids:
+        return redirect("admin_core:admin_image_library")
+
+    images = Image_Site.objects.filter(pk__in=ids)
+
+    deleted_count = 0
+    skipped: list[str] = []
+    for image in images:
+        is_used = (
+            Site.objects.filter(logo=image).exists() or
+            Site.objects.filter(bandeau=image).exists() or
+            Image_A_Propos.objects.filter(image=image).exists() or
+            Image_Service.objects.filter(image=image).exists()
+        )
+        if is_used:
+            skipped.append(str(image))
+            continue
+
+        image.delete()
+        deleted_count += 1
+
+    if deleted_count:
+        messages.success(request, f"{deleted_count} image(s) supprimée(s).")
+    if skipped:
+        messages.warning(
+            request,
+            "Certaines images n'ont pas été supprimées car elles sont utilisées: "
+            + ", ".join(skipped),
+        )
+
     return redirect("admin_core:admin_image_library")
 
 @login_required
