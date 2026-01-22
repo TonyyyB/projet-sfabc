@@ -259,7 +259,7 @@ def _safe_basename(filename: str) -> str:
 
 
 def _existing_product_image_filenames() -> set[str]:
-    """Renvoie l'ensemble des noms (basename) déjà présents pour Image_Produit."""
+    """Renvoie l'ensemble des noms (basename) déjà présents pour Image_Produit (BD uniquement)."""
     existing = set(
         os.path.basename(img.image.name)
         for img in Image_Produit.objects.exclude(image="")
@@ -276,9 +276,19 @@ def import_images_produits_existing_names(request):
 @login_required
 def import_images_produits(request):
     """Importe plusieurs images produits en une fois, en conservant strictement les noms."""
+
+    def _wants_json() -> bool:
+        accept = (request.headers.get("Accept") or "").lower()
+        return request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in accept
+
     if request.method == "POST":
         files = request.FILES.getlist("images")
         if not files:
+            if _wants_json():
+                return JsonResponse(
+                    {"ok": False, "error": "Veuillez sélectionner au moins une image.", "conflicts": []},
+                    status=400,
+                )
             messages.error(request, "Veuillez sélectionner au moins une image.")
             return redirect("admin_produits:admin_import_images_produits")
 
@@ -320,17 +330,23 @@ def import_images_produits(request):
         duplicates_in_batch = {name for name, count in counts.items() if count > 1}
         conflicts.extend(sorted(duplicates_in_batch))
 
-        # doublons avec l'existant (DB + FS)
+        # doublons avec l'existant (BD uniquement)
         media_dir = os.path.join(settings.MEDIA_ROOT, "images", "produits")
         for name in final_names:
             if name in existing_names:
                 conflicts.append(name)
-                continue
-            if os.path.exists(os.path.join(media_dir, name)):
-                conflicts.append(name)
 
         if conflicts:
             conflicts = sorted(set(conflicts))
+            if _wants_json():
+                return JsonResponse(
+                    {
+                        "ok": False,
+                        "error": "Conflit de noms de fichiers.",
+                        "conflicts": conflicts,
+                    },
+                    status=409,
+                )
             messages.error(
                 request,
                 "Import annulé: certains noms de fichiers existent déjà (ou sont dupliqués). "
@@ -350,7 +366,9 @@ def import_images_produits(request):
                     rel_path = os.path.join("images", "produits", filename)
                     abs_path = os.path.join(settings.MEDIA_ROOT, rel_path)
 
-                    with open(abs_path, "xb") as f:
+                    # On se base sur la BD comme source de vérité: si le fichier existe déjà sur disque
+                    # mais qu'il n'est pas référencé en BD, on l'écrase (évite les faux conflits).
+                    with open(abs_path, "wb") as f:
                         for chunk in upload.chunks():
                             f.write(chunk)
                     created_paths.append(abs_path)
@@ -360,15 +378,6 @@ def import_images_produits(request):
                     img.save()
                     created_ids.append(img.pk)
                     created += 1
-        except FileExistsError:
-            for path in created_paths:
-                try:
-                    os.remove(path)
-                except OSError:
-                    pass
-            Image_Produit.objects.filter(pk__in=created_ids).delete()
-            messages.error(request, "Import annulé: un fichier existe déjà (conflit détecté pendant l'écriture).")
-            return redirect("admin_produits:admin_import_images_produits")
         except Exception:  # pylint: disable=broad-exception-caught
             for path in created_paths:
                 try:
@@ -376,10 +385,24 @@ def import_images_produits(request):
                 except OSError:
                     pass
             Image_Produit.objects.filter(pk__in=created_ids).delete()
+            if _wants_json():
+                return JsonResponse(
+                    {
+                        "ok": False,
+                        "error": "Erreur inattendue pendant l'import.",
+                        "conflicts": [],
+                    },
+                    status=500,
+                )
             messages.error(request, "Import annulé: erreur inattendue pendant l'import.")
             return redirect("admin_produits:admin_import_images_produits")
 
         messages.success(request, f"{created} image(s) importée(s) avec succès.")
+        if _wants_json():
+            return JsonResponse(
+                {"ok": True, "redirect": reverse("admin_produits:admin_produit_image_library")},
+                status=200,
+            )
         return redirect("admin_produits:admin_produit_image_library")
 
     return render(request, "admin/products/import_images_produits.html")

@@ -7,111 +7,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Import - Images pour les produits</title>
   <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/import_images_admin.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <style>
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.55);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 9999;
-    }
-
-    .modal {
-      width: min(700px, 100%);
-      background: #fff;
-      border-radius: 12px;
-      padding: 18px;
-      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
-    }
-
-    .modal h2 {
-      margin: 0 0 10px 0;
-      font-size: 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .modal .modal-body {
-      margin-top: 10px;
-      max-height: 55vh;
-      overflow: auto;
-    }
-
-    .modal .modal-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 14px;
-    }
-
-    .conflict-list {
-      margin: 10px 0 0 0;
-      padding-left: 18px;
-    }
-
-    .rename-row {
-      display: grid;
-      grid-template-columns: 120px 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .rename-preview {
-      width: 120px;
-      height: 120px;
-      border-radius: 10px;
-      overflow: hidden;
-      background: #f3f3f3;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .rename-preview img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .hint {
-      color: #666;
-      font-size: 0.95rem;
-    }
-
-    .file-list {
-      margin-top: 14px;
-      background: rgba(0,0,0,0.03);
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 0.95rem;
-    }
-
-    .file-list-item {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 6px 0;
-      border-bottom: 1px solid rgba(0,0,0,0.06);
-    }
-
-    .file-list-item:last-child {
-      border-bottom: none;
-    }
-
-    .badge {
-      font-size: 0.8rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(184, 166, 126, 0.25);
-      color: #333;
-      white-space: nowrap;
-    }
-  </style>
 </head>
 
 <body>
@@ -145,8 +42,8 @@
       </div>
 
       <p class="hint">
-        Sélectionner une ou plusieurs images. Les noms de fichiers sont conservés strictement.
-        En cas de doublon (déjà importé ou doublon dans la sélection), une fenêtre demandera de renommer.
+        Déposez une ou plusieurs images, puis modifiez les noms directement dans la liste.
+        La validation est bloquée en cas de doublon (déjà importé ou doublon dans la sélection).
       </p>
 
       <form method="post" enctype="multipart/form-data" id="importForm">
@@ -154,17 +51,28 @@
 
         <div class="form-group">
           <label class="form-label">Fichiers</label>
-          <input type="file" name="images" id="imagesInput" multiple accept="image/*" />
+          <input type="file" name="images" id="imagesInput" multiple accept="image/*" style="display:none;" />
           <input type="hidden" name="desired_names" id="desiredNamesInput" value="" />
         </div>
+
+        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Déposer des images">
+          <div class="dropzone-title">
+            <span class="material-symbols-outlined">cloud_upload</span>
+            Déposer des images ici (ou cliquer)
+          </div>
+          <p class="dropzone-hint">Glisser-déposer des images, puis modifier les noms directement dans la liste.</p>
+        </div>
+
+        <div id="clientValidation" class="client-validation" style="display:none;"></div>
 
         <div id="selectedFiles" class="file-list" style="display:none;"></div>
 
         <div class="actions" style="margin-top: 16px;">
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
             <span class="material-symbols-outlined">download</span>
             Importer
           </button>
+          <div id="submitDisabledNote" class="submit-disabled-note">Corrigez les doublons/erreurs pour pouvoir importer.</div>
           <a href="{% url 'admin_produits:admin_produit_image_library' %}" class="btn btn-secondary">
             <span class="material-symbols-outlined">image</span>
             Bibliothèque d'images
@@ -174,322 +82,10 @@
     </div>
   </div>
 
-  <!-- Modal 1: conflicts overview -->
-  <div class="modal-backdrop" id="conflictModalBackdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="conflictTitle">
-      <h2 id="conflictTitle"><span class="material-symbols-outlined">error</span> Conflit de noms</h2>
-      <div class="modal-body">
-        <p>Ces images ont un nom identique à une autre image (déjà importée ou dans la sélection) :</p>
-        <ul class="conflict-list" id="conflictList"></ul>
-        <p class="hint" style="margin-top: 10px;">Annuler ou renommer les fichiers avant l'import.</p>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" id="conflictCancelBtn">Annuler</button>
-        <button type="button" class="btn btn-primary" id="conflictRenameBtn">Modifier les noms</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal 2: sequential rename -->
-  <div class="modal-backdrop" id="renameModalBackdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="renameTitle">
-      <h2 id="renameTitle"><span class="material-symbols-outlined">edit</span> Modifier le nom</h2>
-      <div class="modal-body">
-        <div class="rename-row">
-          <div class="rename-preview" id="renamePreview"></div>
-          <div>
-            <div style="margin-bottom: 8px;">
-              <div class="hint">Fichier</div>
-              <div id="renameCurrentName" style="font-weight: 600;"></div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Nouveau nom (sans changer l'extension)</label>
-              <input type="text" id="renameInput" class="input" placeholder="ex: produit_001" />
-              <div class="hint" id="renameExtHint"></div>
-              <div class="hint" id="renameError" style="color: #b00020; display:none;"></div>
-            </div>
-
-            <div class="hint" id="renameProgress"></div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" id="renameAbortBtn">Annuler</button>
-        <button type="button" class="btn btn-primary" id="renameNextBtn">Valider</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const existingNamesUrl = "{% url 'admin_produits:admin_import_images_produits_existing_names' %}";
-
-    const imagesInput = document.getElementById('imagesInput');
-    const desiredNamesInput = document.getElementById('desiredNamesInput');
-    const selectedFilesEl = document.getElementById('selectedFiles');
-
-    const conflictBackdrop = document.getElementById('conflictModalBackdrop');
-    const conflictListEl = document.getElementById('conflictList');
-    const conflictCancelBtn = document.getElementById('conflictCancelBtn');
-    const conflictRenameBtn = document.getElementById('conflictRenameBtn');
-
-    const renameBackdrop = document.getElementById('renameModalBackdrop');
-    const renamePreviewEl = document.getElementById('renamePreview');
-    const renameCurrentNameEl = document.getElementById('renameCurrentName');
-    const renameInputEl = document.getElementById('renameInput');
-    const renameExtHintEl = document.getElementById('renameExtHint');
-    const renameErrorEl = document.getElementById('renameError');
-    const renameProgressEl = document.getElementById('renameProgress');
-    const renameAbortBtn = document.getElementById('renameAbortBtn');
-    const renameNextBtn = document.getElementById('renameNextBtn');
-
-    let existingNames = new Set();
-    let desiredNames = [];
-    let conflictIndexes = [];
-    let renameCursor = 0;
-
-    function showBackdrop(el) {
-      el.style.display = 'flex';
-      el.setAttribute('aria-hidden', 'false');
-    }
-
-    function hideBackdrop(el) {
-      el.style.display = 'none';
-      el.setAttribute('aria-hidden', 'true');
-    }
-
-    function baseName(filename) {
-      const parts = filename.split('/');
-      return parts[parts.length - 1];
-    }
-
-    function splitExt(filename) {
-      const name = baseName(filename);
-      const dot = name.lastIndexOf('.');
-      if (dot <= 0) return { base: name, ext: '' };
-      return { base: name.slice(0, dot), ext: name.slice(dot) };
-    }
-
-    function normalizeWantedBase(input) {
-      return (input || '').trim().replaceAll('\\\n', '').replaceAll('\\r', '');
-    }
-
-    function refreshSelectedFilesUI(files) {
-      if (!files || files.length === 0) {
-        selectedFilesEl.style.display = 'none';
-        selectedFilesEl.innerHTML = '';
-        return;
-      }
-
-      selectedFilesEl.style.display = 'block';
-      selectedFilesEl.innerHTML = '';
-
-      files.forEach((file, idx) => {
-        const row = document.createElement('div');
-        row.className = 'file-list-item';
-
-        const left = document.createElement('div');
-        left.textContent = desiredNames[idx] || file.name;
-
-        const right = document.createElement('div');
-        const badge = document.createElement('span');
-        badge.className = 'badge';
-        badge.textContent = `${Math.round(file.size / 1024)} KB`;
-        right.appendChild(badge);
-
-        row.appendChild(left);
-        row.appendChild(right);
-        selectedFilesEl.appendChild(row);
-      });
-    }
-
-    async function loadExistingNames() {
-      const res = await fetch(existingNamesUrl, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) return new Set();
-      const data = await res.json();
-      return new Set((data.names || []).map(baseName));
-    }
-
-    function computeConflicts(files) {
-      const names = files.map(f => baseName(f.name));
-
-      const seen = new Set();
-      const dupInBatch = new Set();
-      names.forEach(n => {
-        if (seen.has(n)) dupInBatch.add(n);
-        else seen.add(n);
-      });
-
-      const indexes = [];
-      names.forEach((n, idx) => {
-        if (existingNames.has(n) || dupInBatch.has(n)) indexes.push(idx);
-      });
-
-      const conflictNames = [...new Set(indexes.map(i => names[i]))].sort();
-      return { indexes, conflictNames };
-    }
-
-    function renderConflictList(conflictNames) {
-      conflictListEl.innerHTML = '';
-      conflictNames.forEach(name => {
-        const li = document.createElement('li');
-        li.textContent = name;
-        conflictListEl.appendChild(li);
-      });
-    }
-
-    function clearSelection() {
-      imagesInput.value = '';
-      desiredNames = [];
-      desiredNamesInput.value = '';
-      refreshSelectedFilesUI([]);
-    }
-
-    function openRenameStep(files) {
-      renameErrorEl.style.display = 'none';
-      renameErrorEl.textContent = '';
-
-      const fileIndex = conflictIndexes[renameCursor];
-      const file = files[fileIndex];
-
-      const { base, ext } = splitExt(file.name);
-
-      renameCurrentNameEl.textContent = baseName(file.name);
-      renameExtHintEl.textContent = `Extension conservée: ${ext || '(aucune)'}`;
-      renameProgressEl.textContent = `Image ${renameCursor + 1} / ${conflictIndexes.length}`;
-
-      renameInputEl.value = base;
-      renameInputEl.focus();
-
-      renamePreviewEl.innerHTML = '';
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(file);
-      img.onload = () => URL.revokeObjectURL(img.src);
-      renamePreviewEl.appendChild(img);
-
-      showBackdrop(renameBackdrop);
-    }
-
-    function validateNewName(files, fileIndex, newBase) {
-      const original = baseName(files[fileIndex].name);
-      const { ext } = splitExt(original);
-
-      const cleaned = normalizeWantedBase(newBase);
-      if (!cleaned) return { ok: false, error: 'Nom invalide.' };
-      if (cleaned.includes('/') || cleaned.includes('\\\\')) return { ok: false, error: 'Le nom ne doit pas contenir de / ou \\.' };
-
-      const newName = cleaned + ext;
-
-      if (existingNames.has(newName)) {
-        return { ok: false, error: `Le nom ${newName} existe déjà.` };
-      }
-
-      const names = files.map((f, i) => baseName(desiredNames[i] || f.name));
-      names[fileIndex] = newName;
-
-      const seen = new Set();
-      for (const n of names) {
-        if (seen.has(n)) return { ok: false, error: `Le nom ${newName} crée un doublon dans la sélection.` };
-        seen.add(n);
-      }
-
-      return { ok: true, newName };
-    }
-
-    imagesInput.addEventListener('change', async () => {
-      const files = Array.from(imagesInput.files || []);
-      desiredNames = files.map(f => baseName(f.name));
-      desiredNamesInput.value = JSON.stringify(desiredNames);
-      refreshSelectedFilesUI(files);
-
-      if (files.length === 0) return;
-
-      existingNames = await loadExistingNames();
-      const { indexes, conflictNames } = computeConflicts(files);
-
-      conflictIndexes = indexes;
-      renameCursor = 0;
-
-      if (conflictIndexes.length > 0) {
-        renderConflictList(conflictNames);
-        showBackdrop(conflictBackdrop);
-      }
-    });
-
-    conflictCancelBtn.addEventListener('click', () => {
-      hideBackdrop(conflictBackdrop);
-      clearSelection();
-    });
-
-    conflictRenameBtn.addEventListener('click', () => {
-      hideBackdrop(conflictBackdrop);
-      const files = Array.from(imagesInput.files || []);
-      if (!files.length || conflictIndexes.length === 0) return;
-      openRenameStep(files);
-    });
-
-    renameAbortBtn.addEventListener('click', () => {
-      hideBackdrop(renameBackdrop);
-      clearSelection();
-    });
-
-    renameNextBtn.addEventListener('click', () => {
-      const files = Array.from(imagesInput.files || []);
-      if (!files.length) {
-        hideBackdrop(renameBackdrop);
-        return;
-      }
-
-      const fileIndex = conflictIndexes[renameCursor];
-      const result = validateNewName(files, fileIndex, renameInputEl.value);
-      if (!result.ok) {
-        renameErrorEl.textContent = result.error;
-        renameErrorEl.style.display = 'block';
-        return;
-      }
-
-      desiredNames[fileIndex] = result.newName;
-      desiredNamesInput.value = JSON.stringify(desiredNames);
-      refreshSelectedFilesUI(files);
-
-      renameCursor += 1;
-      if (renameCursor >= conflictIndexes.length) {
-        hideBackdrop(renameBackdrop);
-
-        const updatedFiles = Array.from(imagesInput.files || []);
-        const nowNames = updatedFiles.map((f, i) => baseName(desiredNames[i] || f.name));
-        const seen = new Set();
-        const dup = new Set();
-        nowNames.forEach(n => {
-          if (seen.has(n)) dup.add(n);
-          else seen.add(n);
-        });
-        const stillConflicts = nowNames.filter(n => existingNames.has(n) || dup.has(n));
-        if (stillConflicts.length) {
-          renderConflictList([...new Set(stillConflicts)].sort());
-          showBackdrop(conflictBackdrop);
-        }
-        return;
-      }
-
-      openRenameStep(files);
-    });
-
-    document.getElementById('importForm').addEventListener('submit', (e) => {
-      const files = Array.from(imagesInput.files || []);
-      if (!files.length) {
-        e.preventDefault();
-        alert('Veuillez sélectionner au moins une image.');
-      }
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (renameBackdrop.style.display === 'flex') hideBackdrop(renameBackdrop);
-        else if (conflictBackdrop.style.display === 'flex') hideBackdrop(conflictBackdrop);
-      }
-    });
-  </script>
+  <script
+    src="{% static 'js/import_images_admin.js' %}"
+    defer
+    data-existing-names-url="{% url 'admin_produits:admin_import_images_produits_existing_names' %}"></script>
 </body>
 
 </html>
