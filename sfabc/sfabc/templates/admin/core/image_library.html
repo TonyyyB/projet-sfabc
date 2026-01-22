@@ -18,6 +18,13 @@
       <h1>Bibliothèque d'images</h1>
     </header>
 
+    <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
+      <a href="{% url 'admin_core:admin_import_images_site' %}" class="btn btn-primary">
+        <span class="material-symbols-outlined">upload_file</span>
+        Importer des images
+      </a>
+    </div>
+
     {% if messages %}
         <div class="messages">
           {% for message in messages %}
@@ -33,6 +40,13 @@
 
     <form method="post" action="{% url 'admin_core:admin_image_bulk_delete' %}" id="bulkDeleteForm">
       {% csrf_token %}
+
+      <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
+        <button type="button" class="btn btn-secondary" id="selectAllUnusedBtn">
+          <span class="material-symbols-outlined">select_all</span>
+          Sélectionner toutes les non utilisées
+        </button>
+      </div>
 
       <div class="actions" id="bulkActions" style="display: none; justify-content: flex-end; margin-bottom: 14px;">
         <button type="submit" class="btn btn-danger" id="bulkDeleteBtn">
@@ -86,32 +100,7 @@
     </div>
   </div>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const bulkActions = document.getElementById('bulkActions');
-      const bulkForm = document.getElementById('bulkDeleteForm');
-      const selects = Array.from(document.querySelectorAll('.image-select'));
-
-      function refreshBulkActions() {
-        const checkedCount = selects.filter(c => c.checked).length;
-        bulkActions.style.display = checkedCount > 0 ? 'flex' : 'none';
-      }
-
-      selects.forEach(c => c.addEventListener('change', refreshBulkActions));
-      refreshBulkActions();
-
-      bulkForm.addEventListener('submit', function (e) {
-        const checkedCount = selects.filter(c => c.checked).length;
-        if (checkedCount === 0) {
-          e.preventDefault();
-          return;
-        }
-        if (!confirm(`Supprimer ${checkedCount} image(s) sélectionnée(s) ?`)) {
-          e.preventDefault();
-        }
-      });
-    });
-  </script>
+  <script src="{% static 'js/image_library_bulk.js' %}" defer></script>
 </body>
 
 </html>
