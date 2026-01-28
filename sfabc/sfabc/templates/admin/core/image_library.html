@@ -41,6 +41,8 @@
     <form method="post" action="{% url 'admin_core:admin_image_bulk_delete' %}" id="bulkDeleteForm">
       {% csrf_token %}
 
+      <input type="hidden" name="select_all_unused" id="selectAllUnusedFlag" value="0" />
+
       <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
         <button type="button" class="btn btn-secondary" id="selectAllUnusedBtn">
           <span class="material-symbols-outlined">select_all</span>

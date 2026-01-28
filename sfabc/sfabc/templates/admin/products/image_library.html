@@ -41,6 +41,8 @@
     <form method="post" action="{% url 'admin_produits:admin_produit_image_bulk_delete' %}" id="bulkDeleteForm">
       {% csrf_token %}
 
+      <input type="hidden" name="select_all_unused" id="selectAllUnusedFlag" value="0" />
+
       <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
         <button type="button" class="btn btn-secondary" id="selectAllUnusedBtn">
           <span class="material-symbols-outlined">select_all</span>
@@ -75,10 +77,10 @@
               <span class="material-symbols-outlined">edit</span>
               Renommer
             </a>
-
-            <label class="btn {% if data.is_used %}btn-secondary{% else %}btn-danger{% endif %}"
-                   style="display: inline-flex; gap: 8px; align-items: center; cursor: {% if data.is_used %}not-allowed{% else %}pointer{% endif %};"
-                   title="{% if data.is_used %}Image utilisée: suppression impossible{% else %}Sélectionner pour suppression{% endif %}">
+            {% if not data.is_used %}
+            <label class="btn btn-danger"
+                   style="display: inline-flex; gap: 8px; align-items: center; cursor: pointer;"
+                   title="Sélectionner pour suppression">
               <input
                 type="checkbox"
                 class="image-select"
@@ -89,6 +91,7 @@
               />
               Sélectionner
             </label>
+            {% endif %}
           </div>
         </div>
         {% endfor %}

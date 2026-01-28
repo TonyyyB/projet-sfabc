@@ -7,63 +7,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Import CSV - Produits</title>
   <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/import_produits_admin.css' %}" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  <style>
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      background: rgba(0,0,0,0.02);
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .table th, .table td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(0,0,0,0.08);
-      vertical-align: top;
-    }
-    .table th {
-      text-align: left;
-      background: rgba(184, 166, 126, 0.18);
-      font-weight: 600;
-    }
-    .pill {
-      display: inline-block;
-      font-size: 0.85rem;
-      padding: 2px 8px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.06);
-    }
-    .pill.warn { background: rgba(176, 0, 32, 0.12); }
-    .hint { color: #666; font-size: 0.95rem; }
-
-    .photos-list {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    .photo-item {
-      padding: 8px;
-      border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 10px;
-      background: rgba(255,255,255,0.6);
-    }
-    .photo-title {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-    .image-selector-container { margin-top: 6px; }
-    .image-preview-container { display: none; margin-top: 8px; }
-  </style>
 </head>
 
 <body>
-  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span
-      class="material-symbols-outlined">arrow_back</span></a>
+  <a
+    href="{% url 'admin_core:admin_dashboard' %}"
+    class="logout-btn"
+    onclick="return confirm('Attention : les modifications sur cette page ne seront pas enregistrées. Continuer ?');"
+  ><span class="material-symbols-outlined">arrow_back</span></a>
 
   <div class="container">
     <header>
@@ -71,16 +24,16 @@
     </header>
 
     {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-        <span class="material-symbols-outlined">
-          {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-        </span>
-        {{ message }}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            <span class="material-symbols-outlined">
+              {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+            </span>
+            {{ message }}
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     {% endif %}
 
     {% if step == 'upload' %}
@@ -93,15 +46,19 @@
         </div>
 
         <p class="hint">
-          Colonnes attendues :
-          <span class="pill">Famille</span>
-          <span class="pill">Nom</span>
-          <span class="pill">Photos</span>
-          <span class="pill">Description</span>
-          <span class="pill">Prix</span>.
+          Format recommandé (tableur-friendly) :
           <br />
-          Le champ <span class="pill">Photos</span> (optionnel) contient une liste de noms de fichiers séparés par <span class="pill">;</span>.
-          Si le CSV utilise <span class="pill">;</span> comme séparateur de colonnes, le champ <span class="pill">Photos</span> doit être entre guillemets.
+          <span class="pill">Nom</span>
+          <span class="pill">Prix</span>
+          <span class="pill">Famille</span>
+          <span class="pill">Description</span>
+          <span class="pill">ProduitDuMoment</span>
+          <span class="pill">PhotoDuMoment</span>
+          puis toutes les colonnes suivantes = <span class="pill">Photos</span> (dans l'ordre).
+          <br />
+          Le CSV peut être séparé par <span class="pill">,</span> ou <span class="pill">;</span>, avec ou sans guillemets.
+          <br />
+          Dans la description, <span class="pill">\n</span> est interprété comme saut de ligne.
         </p>
 
         <form method="post" enctype="multipart/form-data">
@@ -124,99 +81,283 @@
     {% endif %}
 
     {% if step == 'resolve' %}
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-icon">
-            <span class="material-symbols-outlined">fact_check</span>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="step" value="import" />
+        <input type="hidden" name="rows_json" value='{{ rows_json|escape }}' />
+        <input type="hidden" id="added_families_json" name="added_families_json" value='{{ added_families_json|default:"[]"|escape }}' />
+
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <span class="material-symbols-outlined">fact_check</span>
+            </div>
+            <h2 class="section-title">Validation</h2>
           </div>
-          <h2 class="section-title">Vérifier et associer les images</h2>
+
+          <p class="hint">
+            {% if missing_familles and missing_familles > 0 %}
+              <span class="pill">{{ missing_familles }} famille(s) absente(s)</span> — elles seront créées au moment de l'import.
+            {% endif %}
+            {% if missing_images and missing_images > 0 %}
+              <span class="pill warn">{{ missing_images }} image(s) introuvable(s)</span> — sélectionner une image existante ou en importer une.
+            {% else %}
+              <span class="pill ok">Toutes les images référencées ont été trouvées</span>
+            {% endif %}
+            {% if warnings_total and warnings_total > 0 %}
+              <span class="pill warn">{{ warnings_total }} warning(s)</span> — n'empêchent pas l'import.
+            {% endif %}
+          </p>
+
+          {% if validation_errors %}
+            <div class="validation">
+              <strong>Erreurs bloquantes</strong>
+              <ul>
+                {% for e in validation_errors %}
+                  <li>{{ e }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
         </div>
 
-        <p class="hint">
-          {% if missing_familles and missing_familles > 0 %}
-            <span class="pill">{{ missing_familles }} famille(s) absente(s)</span> — elles seront créées automatiquement.
-          {% endif %}
-          {% if missing_images and missing_images > 0 %}
-            <span class="pill warn">{{ missing_images }} image(s) introuvable(s)</span> — sélectionner une image existante ou en importer une.
-          {% else %}
-            Toutes les images référencées ont été trouvées.
-          {% endif %}
-        </p>
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <span class="material-symbols-outlined">category</span>
+            </div>
+            <h2 class="section-title">Familles</h2>
+          </div>
 
-        <form method="post">
-          {% csrf_token %}
-          <input type="hidden" name="step" value="import" />
-          <input type="hidden" name="rows_json" value='{{ rows_json|escape }}' />
+          <p class="hint">
+            Les familles sont regroupées automatiquement (casse/accents ignorés). Renomme le <span class="pill">Nom final</span> et/ou fusionne des groupes.
+          </p>
 
-          <table class="table">
-            <thead>
-              <tr>
-                <th style="width: 18%">Famille</th>
-                <th style="width: 18%">Nom</th>
-                <th style="width: 14%">Prix</th>
-                <th style="width: 30%">Description</th>
-                <th style="width: 20%">Photos</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in rows %}
-              <tr>
-                <td><div style="font-weight: 600;">{{ row.famille }}</div></td>
-                <td><div style="font-weight: 600;">{{ row.nom }}</div></td>
-                <td><div>{{ row.prix }}</div></td>
-                <td><div style="white-space: pre-wrap;">{{ row.description }}</div></td>
-                <td>
-                  {% if row.photos and row.photos|length > 0 %}
-                    <div class="photos-list">
-                      {% for photo in row.photos %}
-                        <div class="photo-item">
-                          <div class="photo-title">
-                            <span>Photo {{ forloop.counter }}</span>
+          <div id="familiesContainer" class="grid">
+            {% for g in family_groups %}
+              <div class="family-row" data-family-key="{{ g.key }}">
+                <div>
+                  <div class="family-title" data-role="family-title">{{ g.default }}</div>
+                  <div class="family-meta">
+                    {% if g.exists %}
+                      <span class="pill ok">Existe déjà</span>
+                    {% else %}
+                      <span class="pill">Sera créée</span>
+                    {% endif %}
+                  </div>
+                  <div class="family-help">Variantes détectées dans le CSV ↓</div>
+                  {% if g.variants and g.variants|length > 0 %}
+                    <div class="family-variants">
+                      {% for v in g.variants %}
+                        <span class="pill">{{ v }}</span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div>
+                  <label class="form-label">Nom final</label>
+                  <input type="text" class="family-final-input" data-family-key="{{ g.key }}" name="family-{{ g.key }}-final" value="{{ g.default }}" />
+                </div>
+
+                <div>
+                  <label class="form-label">Fusionner dans</label>
+                  <select name="family-{{ g.key }}-merge_into" class="merge-select" data-family-key="{{ g.key }}">
+                    <option value="">(ne pas fusionner)</option>
+                    {% for opt in family_groups %}
+                      <option value="{{ opt.key }}" {% if opt.key == g.key %}disabled{% endif %}>{{ opt.default }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div style="margin-top: 14px;">
+            <div class="row-fields" style="grid-template-columns: 2fr 1fr; align-items: end;">
+              <div>
+                <label class="form-label">Ajouter une famille</label>
+                <input type="text" id="newFamilyName" placeholder="Ex: Aiments" />
+                <div class="muted">Ajoutée à la liste et disponible dans les produits.</div>
+              </div>
+              <div>
+                <button type="button" id="addFamilyBtn" class="btn btn-secondary" style="width: 100%;">
+                  <span class="material-symbols-outlined">add</span>
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {% if merge_suggestions and merge_suggestions|length > 0 %}
+            <div style="margin-top: 16px;">
+              <div class="muted" style="margin-bottom: 8px;">Suggestions de fusion (facultatif) :</div>
+              <div class="grid">
+                {% for s in merge_suggestions %}
+                  <div class="card">
+                    <div style="display:flex; justify-content: space-between; align-items: center; gap: 10px;">
+                      <div>
+                        <div style="font-weight:700;">{{ s.a }} ↔ {{ s.b }}</div>
+                        <div class="muted">Similarité: {{ s.ratio }}</div>
+                      </div>
+                      <button type="button" class="btn btn-secondary apply-merge" data-from="{{ s.from }}" data-to="{{ s.to }}">
+                        <span class="material-symbols-outlined">merge</span>
+                        Fusionner
+                      </button>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="section-card">
+          <div class="section-header">
+            <div class="section-icon">
+              <span class="material-symbols-outlined">inventory_2</span>
+            </div>
+            <h2 class="section-title">Produits</h2>
+          </div>
+
+          <p class="hint">
+            Vous pouvez corriger les champs avant import. Les photos restent dans l'ordre du CSV.
+          </p>
+
+          <div class="grid">
+            {% for row in rows %}
+              <div class="card" data-row-index="{{ forloop.counter0 }}">
+                <div class="card-header">
+                  <div>
+                    <div class="card-title">Ligne {{ forloop.counter }}</div>
+                    <div class="card-subtitle">{{ row.nom }}</div>
+                  </div>
+                  {% if row.produit_du_moment %}
+                    <span class="pill">Produit du moment</span>
+                  {% endif %}
+                </div>
+
+                {% if row.warnings and row.warnings|length > 0 %}
+                  <div class="warnings">
+                    <strong>Warnings</strong>
+                    <ul>
+                      {% for w in row.warnings %}
+                        <li>{{ w }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                {% endif %}
+
+                <div class="row-fields">
+                  <div>
+                    <label class="form-label">Nom</label>
+                    <input type="text" name="rows-{{ forloop.counter0 }}-nom" value="{{ row.nom }}" required />
+                  </div>
+
+                  <div>
+                    <label class="form-label">Prix</label>
+                    <input type="text" name="rows-{{ forloop.counter0 }}-prix" value="{{ row.prix }}" placeholder="ex: 12.50" />
+                  </div>
+
+                  <div>
+                    <label class="form-label">Famille</label>
+                    <select class="family-select" name="rows-{{ forloop.counter0 }}-famille_key" data-selected="{{ row.famille_key }}">
+                      <option value="">(non définie)</option>
+                      {% for g in family_groups %}
+                        <option value="{{ g.key }}" {% if g.key == row.famille_key %}selected{% endif %}>{{ g.default }}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="form-label">Options</label>
+                    <label style="display:flex; gap: 8px; align-items:center;">
+                      <input type="checkbox" name="rows-{{ forloop.counter0 }}-produit_du_moment" {% if row.produit_du_moment %}checked{% endif %} />
+                      Produit du moment
+                    </label>
+                  </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                  <label class="form-label">Description</label>
+                  <textarea name="rows-{{ forloop.counter0 }}-description">{{ row.description }}</textarea>
+                </div>
+
+                <input type="hidden" name="rows-{{ forloop.counter0 }}-photo_du_moment" value="{% if row.photos and row.photos|length > 0 %}{% if row.photo_du_moment %}{{ row.photo_du_moment }}{% else %}1{% endif %}{% endif %}" />
+
+                {% if row.photos and row.photos|length > 0 %}
+                  <div class="photos-list">
+                    {% for photo in row.photos %}
+                      <div class="photo-item">
+                        <div class="photo-title">
+                          <span>Photo {{ forloop.counter }}</span>
+                          <span
+                            class="pill {% if photo.requested and not photo.image %}warn{% endif %}"
+                            data-role="photo-filename"
+                            data-requested="{{ photo.requested|default:'' }}"
+                            data-missing="{% if photo.requested and not photo.image %}1{% else %}0{% endif %}"
+                          >
                             {% if photo.requested %}
-                              {% if photo.image %}
-                                <span class="pill">{{ photo.requested }}</span>
-                              {% else %}
-                                <span class="pill warn">Introuvable: {{ photo.requested }}</span>
-                              {% endif %}
+                              {% if photo.image %}{{ photo.requested }}{% else %}Introuvable: {{ photo.requested }}{% endif %}
                             {% else %}
-                              <span class="pill">(vide)</span>
+                              (vide)
                             {% endif %}
+                          </span>
+                        </div>
+
+                        <label style="display:flex; gap: 8px; align-items:center; margin-bottom: 6px;">
+                          <input
+                            type="checkbox"
+                            class="pdm-checkbox"
+                            data-row-index="{{ forloop.parentloop.counter0 }}"
+                            data-photo-index="{{ forloop.counter }}"
+                            {% if row.photo_du_moment %}
+                              {% if row.photo_du_moment == forloop.counter %}checked{% endif %}
+                            {% else %}
+                              {% if forloop.first %}checked{% endif %}
+                            {% endif %}
+                          />
+                          Image du moment
+                        </label>
+
+                        <div class="image-selector-container">
+                          <div class="image-select-container">
+                            <button type="button" class="image-select-btn" data-image-type="produit">
+                              <span class="material-symbols-outlined">image</span>
+                              Choisir / importer
+                            </button>
+
+                            <select name="rows-{{ forloop.parentloop.counter0 }}-photo-{{ forloop.counter0 }}-image_existing" style="display:none;">
+                              <option value=""></option>
+                              {% if photo.image %}
+                                <option value="{{ photo.image.id }}" selected>{{ photo.image.name }}</option>
+                              {% endif %}
+                            </select>
                           </div>
 
-                          <div class="image-selector-container">
-                            <div class="image-select-container">
-                              <button type="button" class="image-select-btn" data-image-type="produit">
-                                <span class="material-symbols-outlined">image</span>
-                                Choisir / importer
-                              </button>
-
-                              <select name="rows-{{ forloop.parentloop.counter0 }}-photo-{{ forloop.counter0 }}-image_existing" style="display:none;">
-                                <option value=""></option>
-                                {% if photo.image %}
-                                  <option value="{{ photo.image.id }}" selected>{{ photo.image.name }}</option>
-                                {% endif %}
-                              </select>
-                            </div>
-
-                            <div class="image-preview-container" {% if photo.image %}style="display:block; margin-top: 8px;"{% endif %}>
-                              <div class="image-preview">
-                                {% if photo.image %}
-                                  <img src="{{ photo.image.url }}" alt="{{ photo.image.name }}" height="80" />
-                                {% endif %}
-                              </div>
+                          <div class="image-preview-container" {% if photo.image %}style="display:block;"{% endif %}>
+                            <div class="image-preview">
+                              {% if photo.image %}
+                                <img src="{{ photo.image.url }}" alt="{{ photo.image.name }}" height="90" />
+                              {% endif %}
                             </div>
                           </div>
                         </div>
-                      {% endfor %}
-                    </div>
-                  {% else %}
+
+                        <div class="photo-actions">
+                          <span class="muted">Ordre CSV: {{ forloop.counter }}</span>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                {% else %}
+                  <div style="margin-top: 10px;">
                     <span class="pill">Aucune photo</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+                  </div>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
 
           <div class="actions" style="margin-top: 16px; justify-content: flex-end;">
             <a href="{% url 'admin_produits:admin_import_produits' %}" class="btn btn-secondary">
@@ -228,10 +369,11 @@
               Importer
             </button>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
 
       <script src="{% static 'js/image_selector.js' %}"></script>
+      <script src="{% static 'js/import_produits_admin.js' %}"></script>
     {% endif %}
   </div>
 </body>

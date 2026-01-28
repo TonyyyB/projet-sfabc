@@ -21,6 +21,12 @@ class ProduitForm(forms.ModelForm):
             self.fields["famille"].empty_label = "— Choisir une famille —"
             self.fields["famille"].queryset = Famille.objects.all().order_by("nom_famille")
 
+        if "description_produit" in self.fields:
+            self.fields["description_produit"].help_text = (
+                "Mise en forme: retours à la ligne supportés."
+                "Utilisez *italique* et **gras**."
+            )
+
     class Meta:
         model = Produit
         fields = [
@@ -41,7 +47,7 @@ class ImageProduitForm(forms.ModelForm):
         # Sinon Django attend un fichier dans request.FILES et lève
         # "No file was submitted. Check the encoding type on the form.".
         # On pilote `instance.image` via `image_existing` / `upload`.
-        fields = ["is_produit_du_moment"]
+        fields = ["ordre", "is_image_du_moment"]
 
     # Sélection d'une image existante (bibliothèque) + upload optionnel
     image_existing = forms.ModelChoiceField(
@@ -84,7 +90,7 @@ class ImageProduitForm(forms.ModelForm):
         if (
             self.instance.pk is None
             and not self.instance.image
-            and (selected is not None or upload is not None or cleaned.get("is_produit_du_moment"))
+            and (selected is not None or upload is not None or cleaned.get("is_image_du_moment"))
         ):
             raise forms.ValidationError("Sélectionnez une image (ou uploadez-en une).")
 

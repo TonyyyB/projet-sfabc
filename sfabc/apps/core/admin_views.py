@@ -2,12 +2,18 @@ import os
 import traceback
 import json
 import io
+import zipfile
 import unicodedata
+import re
+
+from PIL import Image as PILImage
+from PIL import UnidentifiedImageError
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.paginator import Paginator
 from django.db import models, transaction
 from django.db.models import Max
@@ -48,6 +54,69 @@ def _safe_basename(filename: str) -> str:
     return name
 
 
+_IMAGE_CONTENT_TYPE_TO_EXT = {
+    "image/jpeg": ".jpg",
+    "image/jpg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+    "image/webp": ".webp",
+    "image/bmp": ".bmp",
+    "image/tiff": ".tif",
+    "image/avif": ".avif",
+    "image/svg+xml": ".svg",
+}
+
+_ALLOWED_IMAGE_EXTS = {
+    ".jpg",
+    ".jpeg",
+    ".png",
+    ".gif",
+    ".webp",
+    ".bmp",
+    ".tif",
+    ".tiff",
+    ".svg",
+    ".avif",
+}
+
+
+def _guess_image_extension(upload) -> str:
+    """Devine une extension à partir du content-type / entête fichier.
+
+    Retourne une string avec le point (ex: '.jpg') ou '' si inconnu.
+    """
+    content_type = (getattr(upload, "content_type", "") or "").lower().split(";")[0].strip()
+    if content_type in _IMAGE_CONTENT_TYPE_TO_EXT:
+        return _IMAGE_CONTENT_TYPE_TO_EXT[content_type]
+
+    pos = None
+    try:
+        if hasattr(upload, "tell"):
+            pos = upload.tell()
+        if hasattr(upload, "seek"):
+            upload.seek(0)
+        img = PILImage.open(upload)
+        fmt = (img.format or "").upper()
+        img.close()
+        fmt_to_ext = {
+            "JPEG": ".jpg",
+            "PNG": ".png",
+            "GIF": ".gif",
+            "WEBP": ".webp",
+            "BMP": ".bmp",
+            "TIFF": ".tif",
+        }
+        return fmt_to_ext.get(fmt, "")
+    except (UnidentifiedImageError, OSError, ValueError):
+        return ""
+    finally:
+        try:
+            if pos is not None and hasattr(upload, "seek"):
+                upload.seek(pos)
+        except Exception:
+            pass
+
+
 def _existing_site_image_filenames() -> set[str]:
     """Renvoie l'ensemble des noms (basename) déjà présents pour Image_Site (BD uniquement)."""
     existing = set(
@@ -55,6 +124,109 @@ def _existing_site_image_filenames() -> set[str]:
         for img in Image_Site.objects.exclude(image="")
     )
     return {name for name in existing if name}
+
+
+_ZIP_IMAGE_EXTS = {
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".bmp",
+    ".tif",
+    ".tiff",
+    ".svg",
+}
+
+
+def _zip_member_to_safe_filename(member_name: str) -> str | None:
+    """Transforme un chemin de zip en un nom de fichier plat et sûr.
+
+    - Ignore les dossiers et fichiers non-image.
+    - Aplati l'arborescence: dossier/sous/img.png -> dossier_sous_img.png
+    """
+    if not member_name:
+        return None
+    normalized = str(member_name).replace("\\", "/")
+    if normalized.endswith("/"):
+        return None
+    if normalized.startswith("__MACOSX/"):
+        return None
+
+    parts = [p for p in normalized.split("/") if p and p not in {".", ".."}]
+    if not parts:
+        return None
+
+    leaf = parts[-1]
+    _, ext = os.path.splitext(leaf)
+    if ext.lower() not in _ZIP_IMAGE_EXTS:
+        return None
+
+    cleaned_parts: list[str] = []
+    for p in parts:
+        p = unicodedata.normalize("NFKC", str(p)).replace("\u00A0", " ")
+        p = re.sub(r"\s+", "_", p.strip())
+        if p:
+            cleaned_parts.append(p)
+    if not cleaned_parts:
+        return None
+
+    base_leaf, ext = os.path.splitext(cleaned_parts[-1])
+    cleaned_parts[-1] = base_leaf or "image"
+
+    filename = "_".join(cleaned_parts) + ext
+    # sécurité: plus de séparateurs
+    filename = filename.replace("/", "_").replace("\\", "_")
+
+    # limiter la longueur (sur la plupart des FS: 255)
+    if len(filename) > 240:
+        base, ext = os.path.splitext(filename)
+        base = base[: max(1, 240 - len(ext))]
+        filename = f"{base}{ext}"
+
+    return _safe_basename(filename)
+
+
+def _extract_images_from_zip(zip_upload) -> list[SimpleUploadedFile]:
+    """Extrait récursivement toutes les images d'un zip uploadé.
+
+    Retourne une liste de SimpleUploadedFile (comme des fichiers envoyés via <input type=file>).
+    """
+    if not zip_upload:
+        return []
+
+    # bornes anti-zip-bomb raisonnables pour un import admin
+    max_files = 500
+    max_total_uncompressed = 200 * 1024 * 1024  # 200MB
+
+    try:
+        zip_bytes = zip_upload.read()
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        raise ValueError("Impossible de lire le ZIP.") from exc
+
+    extracted: list[SimpleUploadedFile] = []
+    total_uncompressed = 0
+
+    try:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+                safe_name = _zip_member_to_safe_filename(info.filename)
+                if not safe_name:
+                    continue
+
+                total_uncompressed += int(getattr(info, "file_size", 0) or 0)
+                if total_uncompressed > max_total_uncompressed:
+                    raise ValueError("ZIP trop volumineux (taille décompressée).")
+
+                extracted.append(SimpleUploadedFile(safe_name, zf.read(info)))
+                if len(extracted) > max_files:
+                    raise ValueError("ZIP contient trop d'images.")
+    except zipfile.BadZipFile as exc:
+        raise ValueError("Fichier ZIP invalide.") from exc
+
+    return extracted
 
 
 def _normalize_header(value: str) -> str:
@@ -139,142 +311,6 @@ def _parse_apropos_csv(file_bytes: bytes) -> list[dict]:
 
     return rows
 
-
-@login_required
-def import_apropos(request):
-    """Import CSV pour A_Propos avec résolution d'images manquantes via ImageSelector."""
-    if request.method == "POST":
-        step = request.POST.get("step", "parse")
-
-        if step == "parse":
-            csv_file = request.FILES.get("csv_file")
-            if not csv_file:
-                messages.error(request, "Veuillez sélectionner un fichier CSV.")
-                return redirect("admin_core:admin_import_apropos")
-
-            try:
-                rows = _parse_apropos_csv(csv_file.read())
-            except Exception as exc:  # pylint: disable=broad-exception-caught
-                messages.error(request, f"CSV invalide: {exc}")
-                return redirect("admin_core:admin_import_apropos")
-
-            if not rows:
-                messages.warning(request, "Aucune ligne importable n'a été trouvée.")
-                return redirect("admin_core:admin_import_apropos")
-
-            # Pré-résolution des images existantes par nom exact
-            images = Image_Site.objects.all()
-            by_name = {os.path.basename(img.image.name): img for img in images if img.image.name}
-
-            positions = ["left", "center", "right"]
-            resolved_rows = []
-            missing_count = 0
-
-            for r in rows:
-                resolved_photos = []
-                for pos, name in zip(positions, r["photos"], strict=False):
-                    filename = os.path.basename(name) if name else ""
-                    img = by_name.get(filename) if filename else None
-                    if filename and img is None:
-                        missing_count += 1
-                    resolved_photos.append({
-                        "position": pos,
-                        "requested": filename,
-                        "image": (
-                            {
-                                "id": img.id_image,
-                                "name": str(img),
-                                "url": img.image.url,
-                            }
-                            if img else None
-                        ),
-                    })
-
-                resolved_rows.append({
-                    "titre": r["titre"],
-                    "description": r["description"],
-                    "photos": resolved_photos,
-                })
-
-            return render(request, "admin/core/import_apropos.html", {
-                "step": "resolve",
-                "rows": resolved_rows,
-                "rows_json": json.dumps(rows, ensure_ascii=False),
-                "missing_count": missing_count,
-            })
-
-        if step == "import":
-            rows_json = request.POST.get("rows_json", "")
-            try:
-                rows = json.loads(rows_json) if rows_json else []
-            except json.JSONDecodeError:
-                rows = []
-
-            if not isinstance(rows, list) or not rows:
-                messages.error(request, "Import impossible: données manquantes. Veuillez relancer l'import.")
-                return redirect("admin_core:admin_import_apropos")
-
-            positions = ["left", "center", "right"]
-            ordre_start = (A_Propos.objects.aggregate(max_ordre=Max("ordre_ap"))["max_ordre"] or 0) + 1
-            created = 0
-            unresolved: list[str] = []
-
-            with transaction.atomic():
-                for idx, r in enumerate(rows):
-                    titre = str(r.get("titre", "")).strip()
-                    description = str(r.get("description", "")).strip()
-
-                    page = A_Propos.objects.create(
-                        ordre_ap=ordre_start + idx,
-                        titre_ap=titre,
-                        description_ap=description,
-                    )
-
-                    # 3 positions
-                    for pos in positions:
-                        field_name = f"rows-{idx}-{pos}-image"
-                        image_id = request.POST.get(field_name) or ""
-                        image_id = image_id.strip()
-                        requested_name = ""
-                        photos = r.get("photos") or []
-                        if isinstance(photos, list):
-                            pos_index = positions.index(pos)
-                            if pos_index < len(photos):
-                                requested_name = str(photos[pos_index] or "").strip()
-
-                        if not requested_name and not image_id:
-                            continue
-
-                        if not image_id:
-                            unresolved.append(f"{titre} ({pos}): {requested_name}")
-                            continue
-
-                        try:
-                            img = Image_Site.objects.get(pk=int(image_id))
-                        except Exception:  # pylint: disable=broad-exception-caught
-                            unresolved.append(f"{titre} ({pos}): {requested_name}")
-                            continue
-
-                        Image_A_Propos.objects.create(
-                            page_ap=page,
-                            image=img,
-                            position=pos,
-                            titre_image=None,
-                        )
-
-                    created += 1
-
-            messages.success(request, f"{created} section(s) « À propos » importée(s).")
-            if unresolved:
-                messages.warning(
-                    request,
-                    "Certaines images n'ont pas été associées (image introuvable ou non sélectionnée).",
-                )
-            return redirect("admin_core:admin_apropos_list")
-
-    return render(request, "admin/core/import_apropos.html", {"step": "upload"})
-
-
 @login_required
 def import_images_site_existing_names(request):
     """API: renvoie la liste des noms de fichiers déjà importés (basename)."""
@@ -285,12 +321,31 @@ def import_images_site_existing_names(request):
 def import_images_site(request):
     """Importe plusieurs images du site en une fois, en conservant strictement les noms."""
 
+    def _filename_no_spaces(name: str) -> bool:
+        return not re.search(r"\s", (name or ""))
+
     def _wants_json() -> bool:
         accept = (request.headers.get("Accept") or "").lower()
         return request.headers.get("X-Requested-With") == "XMLHttpRequest" or "application/json" in accept
 
     if request.method == "POST":
-        files = request.FILES.getlist("images")
+        image_files = request.FILES.getlist("images")
+        zip_upload = request.FILES.get("zip_file")
+        zip_files: list[SimpleUploadedFile] = []
+
+        if zip_upload:
+            try:
+                zip_files = _extract_images_from_zip(zip_upload)
+            except ValueError as exc:
+                if _wants_json():
+                    return JsonResponse(
+                        {"ok": False, "error": str(exc), "conflicts": []},
+                        status=400,
+                    )
+                messages.error(request, str(exc))
+                return redirect("admin_core:admin_import_images_site")
+
+        files = [*image_files, *zip_files]
         if not files:
             if _wants_json():
                 return JsonResponse(
@@ -311,27 +366,59 @@ def import_images_site(request):
         # Construire les noms finaux à enregistrer (en gardant l'extension originale si besoin)
         final_names: list[str] = []
         conflicts: list[str] = []
+        invalid_names: list[str] = []
 
         for idx, upload in enumerate(files):
+            # Convention: pas d'espaces dans les noms (on remplace automatiquement à l'import)
             original_name = _safe_basename(upload.name)
+            original_name = unicodedata.normalize("NFKC", str(original_name)).replace("\u00A0", " ")
+            original_name = re.sub(r"\s+", "_", original_name)
             base, ext = os.path.splitext(original_name)
+            if ext == "":
+                ext = _guess_image_extension(upload)
+                if ext:
+                    original_name = f"{base}{ext}"
 
             wanted = None
-            if isinstance(desired_names, list) and idx < len(desired_names):
-                wanted = str(desired_names[idx] or "").strip()
+            # `desired_names` ne s'applique qu'aux fichiers envoyés via le champ `images`.
+            if idx < len(image_files) and isinstance(desired_names, list) and idx < len(desired_names):
+                wanted = str(desired_names[idx] or "").replace("\u00A0", " ").strip()
 
             if wanted:
                 wanted = _safe_basename(wanted)
-                wanted_base, wanted_ext = os.path.splitext(wanted)
-                # si pas d'extension fournie, garder celle d'origine
-                if wanted_ext == "":
-                    filename = f"{wanted_base}{ext}"
+                if not _filename_no_spaces(wanted):
+                    invalid_names.append(wanted)
+                    continue
+
+                _wanted_base, wanted_ext = os.path.splitext(wanted)
+                # Si l'utilisateur met un '.' dans le nom (ex: "photo.v1"),
+                # on ne doit pas perdre l'extension d'origine.
+                if wanted_ext == "" or wanted_ext.lower() not in _ALLOWED_IMAGE_EXTS:
+                    filename = f"{wanted}{ext}" if ext else wanted
                 else:
                     filename = wanted
             else:
                 filename = original_name
 
             final_names.append(filename)
+
+        if invalid_names:
+            invalid_names = sorted(set(invalid_names))
+            if _wants_json():
+                return JsonResponse(
+                    {
+                        "ok": False,
+                        "error": "Import bloqué: les noms ne doivent pas contenir d'espaces (utilisez des '_').",
+                        "conflicts": invalid_names,
+                    },
+                    status=400,
+                )
+            messages.error(
+                request,
+                "Import annulé: les noms ne doivent pas contenir d'espaces (utilisez des '_'). "
+                f"Conflits: {', '.join(invalid_names)}",
+            )
+            return redirect("admin_core:admin_import_images_site")
 
         # Détecter doublons dans le batch
         counts: dict[str, int] = {}
@@ -784,6 +871,14 @@ def service_edit(request, pk):
 def upload_image(request):
     """Upload une image (site ou produit) et renvoie ses métadonnées en JSON pour l'UI admin."""
     image = request.FILES["image"]
+    # Convention: éviter les espaces dans les noms de fichiers.
+    # On remplace par '_' dès l'upload (UI + import CSV s'attendent à cette normalisation).
+    try:
+        name = os.path.basename(str(image.name))
+        name = unicodedata.normalize("NFKC", name).replace("\u00A0", " ")
+        image.name = re.sub(r"\s+", "_", name)
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
     image_type = request.POST.get("type", "site")
     product_id = request.POST.get("product_id", None)
 
@@ -879,6 +974,28 @@ def image_bulk_delete(request):
     if request.method != "POST":
         return redirect("admin_core:admin_image_library")
 
+    if request.POST.get("select_all_unused") == "1":
+        used_ids: set[int] = set()
+
+        used_ids.update(
+            Site.objects.exclude(logo__isnull=True).values_list("logo_id", flat=True)
+        )
+        used_ids.update(
+            Site.objects.exclude(bandeau__isnull=True).values_list("bandeau_id", flat=True)
+        )
+        used_ids.update(Image_A_Propos.objects.values_list("image_id", flat=True))
+        used_ids.update(Image_Service.objects.values_list("image_id", flat=True))
+
+        qs = Image_Site.objects.all()
+        if used_ids:
+            qs = qs.exclude(pk__in=used_ids)
+
+        deleted_count = qs.count()
+        if deleted_count:
+            qs.delete()
+            messages.success(request, f"{deleted_count} image(s) supprimée(s).")
+        return redirect("admin_core:admin_image_library")
+
     raw_ids = request.POST.getlist("selected_images")
     try:
         ids = [int(x) for x in raw_ids]
@@ -946,18 +1063,57 @@ def image_rename(request, pk):
 
 @login_required
 def image_api(request):
-    """API: renvoie la liste des images du site (id/nom/url) pour le sélecteur."""
-    images = Image_Site.objects.all().order_by('image')
-    image_data = []
+    """API: renvoie une page d'images du site (id/nom/url) pour le sélecteur.
 
-    for img in images:
+    Params GET:
+    - page: int (1..)
+    - page_size: int (optionnel)
+    - q: str (optionnel) recherche par nom/path d'image
+    """
+    q = (request.GET.get("q") or "").strip()
+
+    try:
+        page = int(request.GET.get("page") or 1)
+    except (TypeError, ValueError):
+        page = 1
+    page = max(page, 1)
+
+    try:
+        page_size = int(request.GET.get("page_size") or 60)
+    except (TypeError, ValueError):
+        page_size = 60
+    page_size = max(1, min(page_size, 200))
+
+    qs = Image_Site.objects.all()
+    if q:
+        # ImageField stocke un chemin (string) : on filtre dessus.
+        qs = qs.filter(image__icontains=q)
+
+    qs = qs.order_by("image")
+    paginator = Paginator(qs, page_size)
+    page_obj = paginator.get_page(page)
+
+    image_data: list[dict] = []
+    for img in page_obj.object_list:
         image_data.append({
-            'id': img.id_image,
-            'name': str(img),
-            'url': img.image.url
+            "id": img.id_image,
+            "name": str(img),
+            "url": img.image.url,
         })
 
-    return JsonResponse({'images': image_data})
+    return JsonResponse(
+        {
+            "images": image_data,
+            "pagination": {
+                "page": page_obj.number,
+                "page_size": page_size,
+                "num_pages": paginator.num_pages,
+                "count": paginator.count,
+                "has_next": page_obj.has_next(),
+                "has_previous": page_obj.has_previous(),
+            },
+        }
+    )
 
 @login_required
 def service_image_form(request):

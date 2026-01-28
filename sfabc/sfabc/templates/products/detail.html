@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load text_format %}
 {% block script %}
 
 {% endblock %}
@@ -33,7 +34,7 @@
     <div class="product-details">
       <div class="product-caracteristics">
         <h3>Caractéristiques:</h3>
-        <p>{{ produit.description_produit }}</p>
+        <p>{{ produit.description_produit|mini_markdown }}</p>
       </div>
       <div class="product-price">
         {% if produit.prix_produit %}
