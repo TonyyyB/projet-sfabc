@@ -426,6 +426,13 @@ hr {
   border-bottom-color: #5a432875 !important;
 }
 
+.reponse {
+  margin-top: 10px;
+  margin-left: 1em;
+  margin-bottom: 10px;
+  padding-left: 1em;
+}
+
 .sortable-links{
   display: flex;
   flex-wrap: nowrap;

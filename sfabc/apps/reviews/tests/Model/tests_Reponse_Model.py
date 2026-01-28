@@ -8,18 +8,17 @@ class ReponseModelTest(TestCase):
     def setUp(self):
         self.famille = Famille.objects.create(nom_famille="nom test famille")
         self.produit = Produit.objects.create(nom_produit="nom test produit", prix_produit=3.99, description_produit="description test produit", famille=self.famille)
-        self.avis = Avis.objects.create(produit=self.produit, pseudonyme="test pseudonyme avis", valeur=2, message="test message avis")
-        self.reponse = Reponse.objects.create(avis=self.avis, message="test message reponse")
+        self.reponse = Reponse.objects.create(message="test message reponse")
+        self.avis = Avis.objects.create(produit=self.produit, pseudonyme="test pseudonyme avis", valeur=2, message="test message avis", reponse=self.reponse)
     
 
     def test_reponse_creation(self):
-        self.assertEqual(self.reponse.avis,    self.avis)
         self.assertEqual(self.reponse.date,    date.today())
         self.assertEqual(self.reponse.message, "test message reponse")
 
 
     def test_string_repr(self):
-        self.assertEqual(str(self.reponse), "Réponse à test pseudonyme avis sur nom test produit, famille nom test famille: 3.99€ : 2/5")
+        self.assertEqual(str(self.reponse), "Réponse : test message reponse")
 
 
     def test_reponse_updating(self):
