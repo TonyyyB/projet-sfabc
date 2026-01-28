@@ -24,3 +24,26 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         flake8 $(git ls-files '*.py')
+  
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12"]
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    - name: installation des dépendances
+      run: pip install -r requirements.txt
+    - name: Lancer les tests
+      run: |
+        cd ./sfabc
+        python3 manage.py test
+    - name: coverage
+      run: |
+        coverage run --source='apps' manage.py test ./apps/core/tests ./apps/products/tests ./apps/reviews/tests
+        coverage report
