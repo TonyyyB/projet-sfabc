@@ -46,8 +46,10 @@ jobs:
         python3 manage.py migrate
     - name: Lancer les tests
       run: |
+        cd ./sfabc
         python3 manage.py test
     - name: coverage
       run: |
+        cd ./sfabc
         coverage run --source='apps' manage.py test ./apps/core/tests ./apps/products/tests ./apps/reviews/tests
         coverage report
