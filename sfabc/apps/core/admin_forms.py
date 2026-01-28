@@ -28,6 +28,9 @@ class SiteForm(forms.ModelForm):
         fields = [
             "background",
             "foreground",
+            "bouton_color",
+            "product_image_container_background_color",
+            "title_font",
             "police",
             "bandeau_hauteur",
             "logo",
@@ -36,6 +39,9 @@ class SiteForm(forms.ModelForm):
         widgets = {
             "background": ColorWidget,
             "foreground": ColorWidget,
+            "bouton_color": ColorWidget,
+            "product_image_container_background_color": ColorWidget,
+            "title_font": ColorWidget,
             "police": forms.Select(choices=POLICES),
             "bandeau_hauteur": forms.NumberInput(attrs={"min": 50, "max": 400}),
         }

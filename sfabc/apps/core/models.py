@@ -103,6 +103,9 @@ class Site(models.Model):
     id = models.AutoField(primary_key=True)
     background = ColorField(default="#F6F2E8")
     foreground = ColorField(default="#B8A67E")
+    bouton_color = ColorField(default="#5A4328")
+    product_image_container_background_color = ColorField(default="#ffffff")
+    title_font = ColorField(default="#ffffff")
     police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
     logo = models.ForeignKey(
@@ -119,6 +122,7 @@ class Site(models.Model):
         null=True,
         blank=True,
     )
+
 
     def save(self, *args, **kwargs):
         """Force l'unicité (pk=1) afin de conserver un singleton de configuration du site."""

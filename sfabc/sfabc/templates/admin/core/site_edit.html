@@ -47,17 +47,38 @@
             Couleurs du site
           </h2>
           <div class="form-group">
-            <label class="form-label">{{ form.background.label }}</label>
+            <label class="form-label">Couleur de fond</label>
             {{ form.background }}
             {% if form.background.errors %}
               <div class="form-error">{{ form.background.errors }}</div>
             {% endif %}
           </div>
           <div class="form-group">
-            <label class="form-label">{{ form.foreground.label }}</label>
+            <label class="form-label">Couleur de texte</label>
             {{ form.foreground }}
             {% if form.foreground.errors %}
               <div class="form-error">{{ form.foreground.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Couleur du bouton</label>
+            {{ form.bouton_color }}
+            {% if form.bouton_color.errors %}
+              <div class="form-error">{{ form.bouton_color.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Couleur de fond du conteneur d'image</label>
+            {{ form.product_image_container_background_color }}
+            {% if form.product_image_container_background_color.errors %}
+              <div class="form-error">{{ form.product_image_container_background_color.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Couleur de la police du titre</label>
+            {{ form.title_font }}
+            {% if form.title_font.errors %}
+              <div class="form-error">{{ form.title_font.errors }}</div>
             {% endif %}
           </div>
         </div>
@@ -68,7 +89,7 @@
             Typographie
           </h2>
           <div class="form-group">
-            <label class="form-label">{{ form.police.label }}</label>
+            <label class="form-label">Police de caractères</label>
             {{ form.police }}
             {% if form.police.errors %}
               <div class="form-error">{{ form.police.errors }}</div>
@@ -82,7 +103,7 @@
             Bandeau
           </h2>
           <div class="form-group">
-            <label class="form-label">{{ form.bandeau_hauteur.label }}</label>
+            <label class="form-label">Hauteur du bandeau</label>
             {{ form.bandeau_hauteur }}
             {% if form.bandeau_hauteur.errors %}
               <div class="form-error">{{ form.bandeau_hauteur.errors }}</div>
