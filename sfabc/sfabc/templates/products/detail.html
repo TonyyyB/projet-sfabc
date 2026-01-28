@@ -108,6 +108,12 @@
                 <div class="card-body rev-content">{{ rev.message }}</div>
             {% endif %}
             <div class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.date }}</div>
+            <div class="reponse">
+              {% if rev.reponse %}
+                <p>{{ rev.reponse.message }}</p>
+                <p class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.reponse.date }}</p>
+              {% endif %}
+            </div>
         </div>
     {% endfor %}
   </div>
