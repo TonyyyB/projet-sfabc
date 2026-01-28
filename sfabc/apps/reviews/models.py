@@ -2,6 +2,19 @@ from django.db import models
 from apps.products.models import Produit
 
 # Create your models here.
+
+
+class Reponse(models.Model):
+    """Modèle représentant une réponse à un avis. Il est lié à un avis, a une date et un message"""
+    id_reponse = models.AutoField(primary_key=True)
+    date = models.DateField(auto_now_add=True)
+    message = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        """Représentation lisible d'une réponse."""
+        return f"Réponse : {self.message}"
+
+
 NOTES = {
     1: "1",
     2: "2",
@@ -18,6 +31,7 @@ class Avis(models.Model):
     date = models.DateField(auto_now_add=True)
     valeur = models.IntegerField(choices=NOTES)
     message = models.TextField(null=True, blank=True)
+    reponse = models.ForeignKey(Reponse, on_delete=models.CASCADE, related_name="avis", blank=True, null=True)
 
     def __str__(self):
         """Représentation lisible d'un avis (pseudonyme, produit, note)."""
@@ -36,14 +50,3 @@ class Avis(models.Model):
         """Renvoie le nom du produit associé à l'avis (raccourci template/admin)."""
         return self.produit.nom_produit
 
-
-class Reponse(models.Model):
-    """Modèle représentant une réponse à un avis. Il est lié à un avis, a une date et un message"""
-    id_reponse = models.AutoField(primary_key=True)
-    avis = models.ForeignKey(Avis, on_delete=models.CASCADE, related_name="reponse")
-    date = models.DateField(auto_now_add=True)
-    message = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        """Représentation lisible d'une réponse."""
-        return f"Réponse à {self.avis}"
