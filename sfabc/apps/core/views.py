@@ -21,7 +21,7 @@ class Home(ListView):
         return Produit.objects.filter(is_produit_du_moment=True).prefetch_related(
             Prefetch(
                 "images",
-                queryset=Image_Produit.objects.filter(is_produit_du_moment=True),
+                queryset=Image_Produit.objects.filter(is_image_du_moment=True),
                 to_attr="images_list",
             )
         )

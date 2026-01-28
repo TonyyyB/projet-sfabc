@@ -16,6 +16,19 @@
     <h1>Produits</h1>
   </header>
 
+  {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            <span class="material-symbols-outlined">
+              {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
+            </span>
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
   <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">
     + Ajouter un produit
   </a>

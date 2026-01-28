@@ -52,6 +52,7 @@
         <div class="form-group">
           <label class="form-label">Fichiers</label>
           <input type="file" name="images" id="imagesInput" multiple accept="image/*" style="display:none;" />
+          <input type="file" name="zip_file" id="zipInput" accept=".zip,application/zip" style="display:none;" />
           <input type="hidden" name="desired_names" id="desiredNamesInput" value="" />
         </div>
 
@@ -60,10 +61,15 @@
             <span class="material-symbols-outlined">cloud_upload</span>
             Déposer des images ici (ou cliquer)
           </div>
-          <p class="dropzone-hint">Glisser-déposer des images, puis modifier les noms directement dans la liste.</p>
+          <p class="dropzone-hint">Glisser-déposer des images.</p>
         </div>
 
         <div id="clientValidation" class="client-validation" style="display:none;"></div>
+
+        <div id="uploadProgress" class="upload-progress" style="display:none;" aria-live="polite">
+          <div class="upload-progress-bar"><div id="uploadProgressBar"></div></div>
+          <div id="uploadProgressText" class="upload-progress-text"></div>
+        </div>
 
         <div id="selectedFiles" class="file-list" style="display:none;"></div>
 

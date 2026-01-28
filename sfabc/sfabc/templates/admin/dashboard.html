@@ -101,7 +101,7 @@
           </div>
 
           <div class="actions">
-            <a href="" class="btn btn-danger"><span class="material-symbols-outlined">delete</span> Gérer les avis</a>
+            <a href="" class="btn btn-primary"><span class="material-symbols-outlined">star_shine</span> Gérer les avis</a>
           </div>
         </div>
 
@@ -122,20 +122,14 @@
           </div>
 
           <div class="actions">
+            <a href="{% url 'admin_produits:admin_import_produits' %}" class="btn btn-primary">
+              <span class="material-symbols-outlined">inventory_2</span> Importer des produits
+            </a>
             <a href="{% url 'admin_core:admin_import_images_site' %}" class="btn btn-secondary">
               <span class="material-symbols-outlined">image</span> Images pour le site
             </a>
             <a href="{% url 'admin_produits:admin_import_images_produits' %}" class="btn btn-secondary">
               <span class="material-symbols-outlined">photo_library</span> Images pour les produits
-            </a>
-            <a href="{% url 'admin_core:admin_import_apropos' %}" class="btn btn-primary">
-              <span class="material-symbols-outlined">description</span> A propos
-            </a>
-            <a href="#" class="btn btn-primary" onclick="return false;">
-              <span class="material-symbols-outlined">build</span> Services
-            </a>
-            <a href="{% url 'admin_produits:admin_import_produits' %}" class="btn btn-primary">
-              <span class="material-symbols-outlined">inventory_2</span> Produits
             </a>
           </div>
         </div>

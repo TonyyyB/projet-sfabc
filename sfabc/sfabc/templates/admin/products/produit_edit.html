@@ -82,6 +82,9 @@
   <div class="form-group">
     <label class="form-label">{{ form.description_produit.label }}</label>
     {{ form.description_produit }}
+    {% if form.description_produit.help_text %}
+      <div class="form-help">{{ form.description_produit.help_text }}</div>
+    {% endif %}
   </div>
 
   <div class="form-group">
@@ -108,11 +111,17 @@
           <div class="field-errors">{{ f.non_field_errors }}</div>
         {% endif %}
 
-        {% if not f.instance.pk %}
-          <label class="delete-btn" onclick="removeImage(this)">
+        <div class="image-card-toolbar">
+          <button type="button" class="move-btn" onclick="moveImage(this, -1)" title="Déplacer à gauche">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <button type="button" class="move-btn" onclick="moveImage(this, 1)" title="Déplacer à droite">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+          <button type="button" class="delete-btn" onclick="removeImage(this)" title="Supprimer">
             <span class="material-symbols-outlined">close</span>
-          </label>
-        {% endif %}
+          </button>
+        </div>
 
         <div class="form-group">
           <div class="image-selector-container">
@@ -144,15 +153,17 @@
         </div>
 
         <div class="form-group">
+          <label class="form-label">Ordre</label>
+          {{ f.ordre }}
+        </div>
+
+        <div class="form-group">
           <label class="form-label">Image du moment</label>
-          {{ f.is_produit_du_moment }}
+          {{ f.is_image_du_moment }}
         </div>
 
         {% if produit %}
-          <div class="form-group">
-            <label class="form-label">Supprimer</label>
-            {{ f.DELETE }}
-          </div>
+          <div style="display:none;">{{ f.DELETE }}</div>
         {% endif %}
       </div>
     {% endfor %}
@@ -242,6 +253,19 @@ document.getElementById('addImageBtn').addEventListener('click', async function 
   }
   const grid = document.getElementById('imageGrid');
   grid.insertAdjacentHTML('beforeend', data.html);
+  // Assigner un ordre par défaut à la nouvelle carte (fin de liste)
+  const newCard = grid.lastElementChild;
+  if (newCard) {
+    const input = newCard.querySelector('input[name$="-ordre"]');
+    if (input) {
+      const all = Array.from(grid.querySelectorAll('input[name$="-ordre"]'));
+      const max = all
+        .map(el => parseInt(el.value || '0', 10))
+        .filter(n => Number.isFinite(n))
+        .reduce((a, b) => Math.max(a, b), 0);
+      input.value = String(max + 1);
+    }
+  }
   imageIndex++;
   const totalFormsInput = document.querySelector('input[name="images-TOTAL_FORMS"]');
   if (totalFormsInput) totalFormsInput.value = imageIndex;
@@ -249,18 +273,18 @@ document.getElementById('addImageBtn').addEventListener('click', async function 
 
 /* UNE SEULE IMAGE DU MOMENT */
 document.addEventListener('change', function (e) {
-  // On ne limite qu'au formset des images (noms: images-0-is_produit_du_moment, ...)
+  // On ne limite qu'au formset des images (noms: images-0-is_image_du_moment, ...)
   // Le checkbox du produit (name="is_produit_du_moment") doit rester indépendant.
   const isImageMomentCheckbox = (
     e.target instanceof HTMLInputElement
     && e.target.type === 'checkbox'
     && typeof e.target.name === 'string'
     && e.target.name.startsWith('images-')
-    && e.target.name.endsWith('is_produit_du_moment')
+    && e.target.name.endsWith('is_image_du_moment')
   );
 
   if (isImageMomentCheckbox && e.target.checked) {
-    document.querySelectorAll('input[type="checkbox"][name^="images-"][name$="is_produit_du_moment"]').forEach(cb => {
+    document.querySelectorAll('input[type="checkbox"][name^="images-"][name$="is_image_du_moment"]').forEach(cb => {
       if (cb !== e.target) cb.checked = false;
     });
   }
@@ -268,13 +292,70 @@ document.addEventListener('change', function (e) {
 
 function removeImage(btn) {
   const card = btn.closest('.image-card');
+  if (!card) return;
+
+  const ok = window.confirm('Supprimer cette image ?');
+  if (!ok) return;
+
   const del = card.querySelector('input[name$="-DELETE"]');
   if (del) {
     del.checked = true;
     card.style.display = 'none';
-  } else {
-    card.remove();
+    card.classList.add('is-deleted');
+    updateImageOrders();
+    return;
   }
+
+  card.remove();
+  updateImageOrders();
+}
+
+function moveImage(btn, direction) {
+  const card = btn.closest('.image-card');
+  if (!card) return;
+
+  const grid = document.getElementById('imageGrid');
+  if (!grid) return;
+
+  const cards = Array.from(grid.querySelectorAll('.image-card')).filter(c => {
+    if (c.classList.contains('extra-form')) return false;
+    if (c.classList.contains('is-deleted')) return false;
+    const del = c.querySelector('input[name$="-DELETE"]');
+    if (del && del.checked) return false;
+    return c.style.display !== 'none';
+  });
+
+  const idx = cards.indexOf(card);
+  if (idx === -1) return;
+
+  if (direction < 0 && idx > 0) {
+    grid.insertBefore(card, cards[idx - 1]);
+    updateImageOrders();
+  }
+
+  if (direction > 0 && idx < cards.length - 1) {
+    const after = cards[idx + 1];
+    grid.insertBefore(after, card);
+    updateImageOrders();
+  }
+}
+
+function updateImageOrders() {
+  const grid = document.getElementById('imageGrid');
+  if (!grid) return;
+
+  const cards = Array.from(grid.querySelectorAll('.image-card')).filter(c => {
+    if (c.classList.contains('extra-form')) return false;
+    if (c.classList.contains('is-deleted')) return false;
+    const del = c.querySelector('input[name$="-DELETE"]');
+    if (del && del.checked) return false;
+    return c.style.display !== 'none';
+  });
+
+  cards.forEach((card, i) => {
+    const input = card.querySelector('input[name$="-ordre"]');
+    if (input) input.value = String(i + 1);
+  });
 }
 
 // ===== AJOUT FAMILLE (AJAX) =====

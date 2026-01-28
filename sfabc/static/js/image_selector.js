@@ -14,6 +14,21 @@ class ImageSelector {
         this.newImagePreview = null;
         this.uploadInput = null;
 
+        // Pagination / recherche côté serveur
+        this.page = 1;
+        this.pageSize = 60;
+        this.numPages = 1;
+        this.totalCount = 0;
+        this.query = '';
+        this.isLoading = false;
+        this.paginationEl = null;
+        this.prevBtn = null;
+        this.nextBtn = null;
+        this.pageInfoEl = null;
+        this.pageSizeSelect = null;
+        this._searchDebounceTimer = null;
+        this._abortController = null;
+
         this.init();
     }
 
@@ -37,6 +52,24 @@ class ImageSelector {
 
                     <div class="image-search-container">
                         <input type="text" class="image-search-input" placeholder="Rechercher une image...">
+                    </div>
+
+                    <div class="image-pagination" aria-label="Pagination images">
+                        <button type="button" class="image-page-btn" id="imagePrevPage" aria-label="Page précédente">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <div class="image-page-info" id="imagePageInfo">Page 1 / 1</div>
+                        <button type="button" class="image-page-btn" id="imageNextPage" aria-label="Page suivante">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                        <div class="image-page-size">
+                            <label for="imagePageSizeSelect">/ page</label>
+                            <select id="imagePageSizeSelect">
+                                <option value="30">30</option>
+                                <option value="60" selected>60</option>
+                                <option value="120">120</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="image-modal-body">
@@ -69,6 +102,12 @@ class ImageSelector {
         this.previewComparison = document.getElementById('imagePreviewComparison');
         this.currentImagePreview = document.getElementById('currentImagePreview');
         this.newImagePreview = document.getElementById('newImagePreview');
+
+        this.paginationEl = this.modal.querySelector('.image-pagination');
+        this.prevBtn = document.getElementById('imagePrevPage');
+        this.nextBtn = document.getElementById('imageNextPage');
+        this.pageInfoEl = document.getElementById('imagePageInfo');
+        this.pageSizeSelect = document.getElementById('imagePageSizeSelect');
     }
 
     getCSRFToken() {
@@ -90,6 +129,28 @@ class ImageSelector {
         // Recherche en temps réel
         this.searchInput.addEventListener('input', (e) => {
             this.filterImages(e.target.value);
+        });
+
+        // Pagination
+        this.prevBtn?.addEventListener('click', () => {
+            if (this.page > 1 && !this.isLoading) {
+                this.page -= 1;
+                this.loadImages();
+            }
+        });
+        this.nextBtn?.addEventListener('click', () => {
+            if (this.page < this.numPages && !this.isLoading) {
+                this.page += 1;
+                this.loadImages();
+            }
+        });
+        this.pageSizeSelect?.addEventListener('change', () => {
+            const v = parseInt(this.pageSizeSelect.value, 10);
+            if (!Number.isNaN(v) && v > 0) {
+                this.pageSize = v;
+                this.page = 1;
+                this.loadImages();
+            }
         });
 
         // Échap pour fermer
@@ -131,10 +192,6 @@ class ImageSelector {
                     throw new Error("Réponse d'upload invalide");
                 }
 
-                this.images.unshift(uploadedImage);
-                this.filteredImages = [...this.images];
-                this.renderImages();
-
                 // Sélectionner immédiatement l'image uploadée et fermer le modal.
                 if (this.callback) {
                     this.callback(uploadedImage);
@@ -151,28 +208,91 @@ class ImageSelector {
         });
     }
 
+    setLoading(isLoading) {
+        this.isLoading = isLoading;
+        if (this.prevBtn) this.prevBtn.disabled = isLoading || this.page <= 1;
+        if (this.nextBtn) this.nextBtn.disabled = isLoading || this.page >= this.numPages;
+        // Important: ne pas désactiver l'input de recherche, sinon le navigateur retire le focus.
+        if (this.pageSizeSelect) this.pageSizeSelect.disabled = isLoading;
+        if (this.grid) {
+            this.grid.classList.toggle('is-loading', isLoading);
+        }
+    }
+
+    updatePaginationUI() {
+        if (this.pageInfoEl) {
+            const countTxt = this.totalCount ? ` • ${this.totalCount} image(s)` : '';
+            this.pageInfoEl.textContent = `Page ${this.page} / ${this.numPages}${countTxt}`;
+        }
+        if (this.prevBtn) this.prevBtn.disabled = this.isLoading || this.page <= 1;
+        if (this.nextBtn) this.nextBtn.disabled = this.isLoading || this.page >= this.numPages;
+        if (this.pageSizeSelect) {
+            this.pageSizeSelect.value = String(this.pageSize);
+        }
+    }
+
     async loadImages() {
         try {
-            // Récupérer les images depuis l'API Django ou une URL
-            const url = this.imageType === 'site' ? '/admin/images/api/' : '/admin/produits/images/api/';
-            console.log(url);
-            console.log(this.imageType);
-            const response = await fetch(url);
+            const keepSearchFocus = document.activeElement === this.searchInput;
+            this.setLoading(true);
+
+            // Annuler la requête précédente si nécessaire (utile quand on tape vite dans la recherche)
+            try {
+                this._abortController?.abort();
+            } catch (e) {
+                // ignore
+            }
+            this._abortController = new AbortController();
+
+            // Récupérer les images depuis l'API Django (pagination + recherche)
+            const baseUrl = this.imageType === 'site' ? '/admin/images/api/' : '/admin/produits/images/api/';
+            const params = new URLSearchParams();
+            params.set('page', String(this.page || 1));
+            params.set('page_size', String(this.pageSize || 60));
+            if (this.query) params.set('q', this.query);
+
+            const url = `${baseUrl}?${params.toString()}`;
+
+            const response = await fetch(url, { signal: this._abortController.signal });
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des images');
             }
             const data = await response.json();
             this.images = data.images || [];
             this.filteredImages = [...this.images];
-            this.renderImages();
-        } catch (error) {
-            console.error('Erreur lors du chargement des images:', error);
-            // Fallback: utiliser des données statiques si l'API n'est pas disponible
-            this.images = [
 
-            ];
-            this.filteredImages = [...this.images];
+            const p = data.pagination || {};
+            this.page = parseInt(p.page || this.page || 1, 10) || 1;
+            this.numPages = parseInt(p.num_pages || 1, 10) || 1;
+            this.totalCount = parseInt(p.count || 0, 10) || 0;
             this.renderImages();
+            this.updatePaginationUI();
+
+            // Restaurer le focus sur la recherche si elle l'avait avant le refresh.
+            if (keepSearchFocus && this.searchInput && this.modal?.style?.display === 'block') {
+                this.searchInput.focus({ preventScroll: true });
+                try {
+                    const len = this.searchInput.value.length;
+                    this.searchInput.setSelectionRange(len, len);
+                } catch (e) {
+                    // ignore
+                }
+            }
+        } catch (error) {
+            // Ignore les annulations (ex: utilisateur qui retape avant la fin)
+            if (error && (error.name === 'AbortError' || String(error).includes('AbortError'))) {
+                return;
+            }
+
+            console.error('Erreur lors du chargement des images:', error);
+            this.images = [];
+            this.filteredImages = [];
+            this.numPages = 1;
+            this.totalCount = 0;
+            this.renderImages();
+            this.updatePaginationUI();
+        } finally {
+            this.setLoading(false);
         }
     }
 
@@ -197,6 +317,19 @@ class ImageSelector {
             item.addEventListener('click', () => this.selectImage(image, item));
             this.grid.appendChild(item);
         });
+    }
+
+    filterImages(query) {
+        // Recherche côté serveur (debounce)
+        this.query = String(query || '').trim();
+        this.page = 1;
+
+        if (this._searchDebounceTimer) {
+            clearTimeout(this._searchDebounceTimer);
+        }
+        this._searchDebounceTimer = setTimeout(() => {
+            this.loadImages();
+        }, 250);
     }
 
     selectImage(image, element) {
@@ -233,17 +366,15 @@ class ImageSelector {
         this.currentImage = currentImage;
         this.selectedImage = null;
         this.searchInput.value = '';
-        this.filteredImages = [...this.images];
+        this.query = '';
+        this.page = 1;
+        this.filteredImages = [];
 
         // Mettre à jour l'aperçu de l'image actuelle
         //this.updateCurrentImagePreview(currentImage);
 
-        // Charger les images si ce n'est pas déjà fait
-        if (this.images.length === 0) {
-            this.loadImages();
-        } else {
-            this.renderImages();
-        }
+        // Charger la première page (toujours serveur)
+        this.loadImages();
 
         // Afficher le modal
         this.modal.style.display = 'block';
@@ -276,6 +407,29 @@ function openImageSelector(callback, currentImage = null, imageType = 'site', pr
 
 // Attacher les événements aux boutons de sélection d'images
 document.addEventListener('DOMContentLoaded', function () {
+    const displayName = (name) => {
+        const s = String(name || '').trim();
+        if (!s) return '';
+        const parts = s.split('/');
+        return parts[parts.length - 1] || s;
+    };
+
+    const updateClosestPhotoPill = (buttonEl, newName) => {
+        try {
+            const photoItem = buttonEl?.closest?.('.photo-item');
+            if (!photoItem) return;
+            const pill = photoItem.querySelector('[data-role="photo-filename"]') || photoItem.querySelector('.photo-title .pill');
+            if (!pill) return;
+            pill.textContent = newName || pill.textContent;
+            pill.classList.remove('warn');
+            if (pill.getAttribute('data-missing') === '1') {
+                pill.setAttribute('data-missing', '0');
+            }
+        } catch (e) {
+            // ignore
+        }
+    };
+
     // Attacher aux boutons avec la classe image-select-btn
     document.addEventListener('click', function (e) {
         if (e.target.closest('.image-select-btn')) {
@@ -314,6 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             openImageSelector(function (selectedImage) {
                 if (targetInput) {
+                    const prettyName = displayName(selectedImage?.name);
                     let option = targetInput.querySelector(
                         `option[value="${selectedImage.id}"]`
                     );
@@ -323,10 +478,22 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!option) {
                         option = document.createElement("option");
                         option.value = selectedImage.id;
-                        option.textContent = selectedImage.name;
+                        option.textContent = prettyName || selectedImage.name;
                         targetInput.appendChild(option);
+                    } else {
+                        // Keep text in sync (useful after upload)
+                        option.textContent = prettyName || selectedImage.name;
                     }
                     targetInput.value = selectedImage.id;
+                    try {
+                        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (e) {
+                        // ignore
+                    }
+
+                    // Import produits page: update the filename pill immediately
+                    updateClosestPhotoPill(button, prettyName || selectedImage.name);
+
                     // Mettre à jour l'aperçu si disponible
                     if (card) {
                         const previewContainers = card.querySelectorAll('.image-preview-container');
@@ -334,7 +501,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         if (previewContainer) {
                             previewContainer.style.display = "block";
                             previewContainer.querySelector('.image-preview').innerHTML =
-                                `<img src="${selectedImage.url}" alt="${selectedImage.name}" height="80">`;
+                                `<img src="${selectedImage.url}" alt="${prettyName || selectedImage.name}" height="80">`;
                         }
                     }
                 }

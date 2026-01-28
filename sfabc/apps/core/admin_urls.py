@@ -9,7 +9,6 @@ from .admin_views import (
     apropos_move,
     import_images_site,
     import_images_site_existing_names,
-    import_apropos,
     edit_site,
     image_api,
     image_delete,
@@ -60,5 +59,4 @@ urlpatterns = [
         import_images_site_existing_names,
         name="admin_import_images_site_existing_names",
     ),
-    path("import/a-propos/", import_apropos, name="admin_import_apropos"),
 ]
