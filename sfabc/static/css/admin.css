@@ -194,6 +194,15 @@ h1 {
   transform: scale(1.2);
 }
 
+.arrows .arrow-disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.arrows .arrow-disabled:hover {
+  transform: none;
+}
+
 .image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
