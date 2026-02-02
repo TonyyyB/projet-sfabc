@@ -1127,12 +1127,20 @@ def service_image_form(request):
 
         # Construire le HTML simplement sans f-strings complexes
         html = '<div class="image-card">'
-        # Pas besoin de form.id pour les nouvelles entrées
-        html += '<label class="delete-btn" onclick="removeImage(this)">'
+
+        html += '<div class="image-card-toolbar">'
+        html += '<button type="button" class="move-btn" onclick="moveImage(this, -1)" title="Déplacer à gauche">'
+        html += '<span class="material-symbols-outlined">chevron_left</span>'
+        html += '</button>'
+        html += '<button type="button" class="move-btn" onclick="moveImage(this, 1)" title="Déplacer à droite">'
+        html += '<span class="material-symbols-outlined">chevron_right</span>'
+        html += '</button>'
+        html += '<button type="button" class="delete-btn" onclick="removeImage(this)" title="Supprimer">'
         html += '<span class="material-symbols-outlined">close</span>'
-        html += '</label>'
+        html += '</button>'
+        html += '</div>'
+
         html += '<div class="form-group">'
-        html += '<label class="form-label">Image existante</label>'
         html += '<div class="image-selector-container">'
         html += '<div class="image-select-container">'
         html += '<button type="button" class="image-select-btn">'
@@ -1150,6 +1158,12 @@ def service_image_form(request):
         html += '<label class="form-label">Titre de l\'image</label>'
         html += str(form['titre_image'])
         html += '</div>'
+
+        html += '<div class="form-group">'
+        html += '<label class="form-label">Ordre</label>'
+        html += str(form['ordre'])
+        html += '</div>'
+
         html += '</div>'
 
         return JsonResponse({'html': html})

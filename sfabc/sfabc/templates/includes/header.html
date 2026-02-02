@@ -8,13 +8,13 @@
         <!-- Top section -->
         <div class="top-section">
           <!-- Barre de recherche -->
-          <form class="search-form" role="search" method="get" name="search" action="{% url 'products:liste_produits' %}">
+          <form id="headerSearch" class="search-form" role="search" method="get" name="search" action="{% url 'products:liste_produits' %}">
             <div class="input-group">
               <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" name="search" />
               <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
             </div>
           </form>
-        </div>
+          </div>
 
         <!-- Bottom section -->
         <div class="bottom-section">
@@ -53,6 +53,14 @@
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
     </div>
     <div class="offcanvas-body">
+      <div class="mb-3 offcanvas-primary-links">
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:home' %}">Accueil</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'products:liste_produits' %}">Produits</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:services' %}">Services</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:a_propos' %}">À propos</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:contact' %}">Contact</a>
+        <hr />
+      </div>
       <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'products:liste_produits' %}">Tous les produits</a>
       {% for menu, submenus in menus.items %}
         <div class="mb-2">

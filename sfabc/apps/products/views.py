@@ -98,7 +98,7 @@ class ProduitListView(ListView):
         default_page = 1
         page = self.request.GET.get('page', default_page)
 
-        items_per_page = 24
+        items_per_page = 12
         paginator = Paginator(context["produits"], items_per_page)
 
         try:

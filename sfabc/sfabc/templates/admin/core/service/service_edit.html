@@ -83,17 +83,26 @@
           <div class="image-grid" id="imageGrid">
             {% for f in formset %}
               <div class="image-card">
-                {{ f.id }}
+                {% for hidden in f.hidden_fields %}
+                  {{ hidden }}
+                {% endfor %}
                 {% if f.non_field_errors %}
                   <div class="field-errors">
                     {{ f.non_field_errors }}
                   </div>
                 {% endif %}
-                {% if not f.instance.pk %}
-                  <label class="delete-btn" for="{{ f.DELETE.id_for_label }}" onclick="removeImage(this)">
+
+                <div class="image-card-toolbar">
+                  <button type="button" class="move-btn" onclick="moveImage(this, -1)" title="Déplacer à gauche">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <button type="button" class="move-btn" onclick="moveImage(this, 1)" title="Déplacer à droite">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                  </button>
+                  <button type="button" class="delete-btn" onclick="removeImage(this)" title="Supprimer">
                     <span class="material-symbols-outlined">close</span>
-                  </label>
-                {% endif %}
+                  </button>
+                </div>
 
                 <div class="form-group">
                   <div class="image-selector-container">
@@ -135,11 +144,16 @@
                   {% endif %}
                 </div>
 
+                <div class="form-group">
+                  <label class="form-label">Ordre</label>
+                  {{ f.ordre }}
+                  {% if f.ordre.errors %}
+                    <div class="form-error">{{ f.ordre.errors }}</div>
+                  {% endif %}
+                </div>
+
                 {% if service is not None %}
-                  <div class="form-group">
-                    <label class="form-label">Supprimer l'image</label>
-                    {{ f.DELETE }}
-                  </div>
+                  <div style="display:none;">{{ f.DELETE }}</div>
                 {% endif %}
               </div>
             {% endfor %}
@@ -198,6 +212,20 @@
       
       const grid = document.getElementById('imageGrid');
       grid.insertAdjacentHTML('beforeend', data.html);
+
+      // Assigner un ordre par défaut à la nouvelle carte (fin de liste)
+      const newCard = grid.lastElementChild;
+      if (newCard) {
+        const input = newCard.querySelector('input[name$="-ordre"]');
+        if (input) {
+          const all = Array.from(grid.querySelectorAll('input[name$="-ordre"]'));
+          const max = all
+            .map(el => parseInt(el.value || '0', 10))
+            .filter(n => Number.isFinite(n))
+            .reduce((a, b) => Math.max(a, b), 0);
+          input.value = String(max + 1);
+        }
+      }
       
       imageIndex++;
       
@@ -206,6 +234,8 @@
       if (totalFormsInput) {
         totalFormsInput.value = imageIndex;
       }
+
+      updateImageOrders();
     });
 
     function removeImage(btn) {
@@ -214,9 +244,60 @@
       if (deleteInput) {
         deleteInput.checked = true;
         card.style.display = 'none';
+        card.classList.add('is-deleted');
       } else {
         card.remove();
       }
+
+      updateImageOrders();
+    }
+
+    function moveImage(btn, direction) {
+      const card = btn.closest('.image-card');
+      if (!card) return;
+
+      const grid = document.getElementById('imageGrid');
+      if (!grid) return;
+
+      const cards = Array.from(grid.querySelectorAll('.image-card')).filter(c => {
+        if (c.classList.contains('extra-form')) return false;
+        if (c.classList.contains('is-deleted')) return false;
+        const del = c.querySelector('input[name$="-DELETE"]');
+        if (del && del.checked) return false;
+        return c.style.display !== 'none';
+      });
+
+      const idx = cards.indexOf(card);
+      if (idx === -1) return;
+
+      if (direction < 0 && idx > 0) {
+        grid.insertBefore(card, cards[idx - 1]);
+        updateImageOrders();
+      }
+
+      if (direction > 0 && idx < cards.length - 1) {
+        const after = cards[idx + 1];
+        grid.insertBefore(after, card);
+        updateImageOrders();
+      }
+    }
+
+    function updateImageOrders() {
+      const grid = document.getElementById('imageGrid');
+      if (!grid) return;
+
+      const cards = Array.from(grid.querySelectorAll('.image-card')).filter(c => {
+        if (c.classList.contains('extra-form')) return false;
+        if (c.classList.contains('is-deleted')) return false;
+        const del = c.querySelector('input[name$="-DELETE"]');
+        if (del && del.checked) return false;
+        return c.style.display !== 'none';
+      });
+
+      cards.forEach((card, i) => {
+        const input = card.querySelector('input[name$="-ordre"]');
+        if (input) input.value = String(i + 1);
+      });
     }
 
     document.addEventListener("DOMContentLoaded", function () {
@@ -227,6 +308,8 @@
           }
         });
       });
+
+      updateImageOrders();
     });
   </script>
   <script src="{% static 'js/image_selector.js' %}"></script>

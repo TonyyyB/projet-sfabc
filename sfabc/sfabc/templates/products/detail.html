@@ -2,7 +2,8 @@
 {% load static %}
 {% load text_format %}
 {% block script %}
-
+  {{ block.super }}
+  <script src="{% static 'js/product_detail_carousel.js' %}"></script>
 {% endblock %}
 {% block content %}
   <div class="product-detail">
@@ -26,7 +27,7 @@
 
       {% if images|length > 1 %}
         <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="next">
-          <span class="material-symbols-outlined">chevron_forward</span>
+          <span class="material-symbols-outlined">arrow_forward_ios</span>
           <span class="visually-hidden">Next</span>
         </button>
       {% endif %}

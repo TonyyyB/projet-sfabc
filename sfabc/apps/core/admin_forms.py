@@ -85,10 +85,11 @@ class ImageServiceForm(forms.ModelForm):
 
     class Meta:
         model = Image_Service
-        fields = ["image", "titre_image"]
+        fields = ["image", "titre_image", "ordre"]
         widgets = {
             "titre_image": forms.TextInput(attrs={"class": "input"}),
             "image": forms.Select(attrs={"class": "select-image"}),
+            "ordre": forms.NumberInput(attrs={"min": 1}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -96,6 +97,7 @@ class ImageServiceForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['image'].required = False
         self.fields['titre_image'].required = False
+        self.fields['ordre'].required = False
 
     def clean(self):
         """Valide la cohérence image/upload (choix exclusif) et autorise les formulaires vides si non supprimés."""
