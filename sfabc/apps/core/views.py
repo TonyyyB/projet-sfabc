@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django.views.generic import FormView, ListView
 
-from apps.core.models import A_Propos, Image_A_Propos, Service
+from apps.core.models import A_Propos, Image_A_Propos, Image_Service, Service
 from apps.products.models import Image_Produit, Produit
 
 from .forms import ContactForm
@@ -103,8 +103,13 @@ class ServiceView(ListView):
 
 
     def get_queryset(self):
-        """Retourne les services ordonnés, en préchargeant les relations d'images."""
-        return Service.objects.order_by("ordre_service").prefetch_related("image")
+        """Retourne les services ordonnés, en préchargeant les images de service dans l'ordre."""
+        return Service.objects.order_by("ordre_service").prefetch_related(
+            Prefetch(
+                "service",
+                queryset=Image_Service.objects.select_related("image").order_by("ordre", "pk"),
+            )
+        )
 
 
     def get_context_data(self, **kwargs):

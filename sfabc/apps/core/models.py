@@ -90,9 +90,11 @@ class Image_Service(models.Model):
     )
     service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="service")
     titre_image = models.CharField(max_length=100, null=True, blank=True)
+    ordre = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ('image', 'service')
+        ordering = ["ordre", "pk"]
 
     def __str__(self):
         """Représentation lisible du lien image ↔ service."""
