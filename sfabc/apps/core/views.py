@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django.views.generic import FormView, ListView
 
-from apps.core.models import A_Propos, Image_A_Propos, Image_Service, Service
+from apps.core.models import A_Propos, Groupe_A_Propos, Image_A_Propos, Image_Service, Service
 from apps.products.models import Image_Produit, Produit
 
 from .forms import ContactForm
@@ -59,32 +59,38 @@ class ContactView(FormView):
         return super().form_valid(form)
 
 class AProposView(ListView):
-    """Vue listant les sections "À propos" avec images par emplacement."""
-    model = A_Propos
-    context_object_name = "sections_ap"
+    """Vue listant les groupes "À propos" et leurs sections (avec images par emplacement)."""
+    model = Groupe_A_Propos
+    context_object_name = "groups"
     template_name = "pages/about.html"
 
 
     def get_queryset(self):
-        """
-        Retourne les sections "À propos" ordonnées, avec préchargement des images par position
-        (gauche/centre/droite).
-        """
-        return A_Propos.objects.order_by("ordre_ap").prefetch_related(
+        """Retourne les groupes ordonnés, avec leurs sections (ordonnées) + images préchargées."""
+
+        sections_qs = A_Propos.objects.order_by("ordre_ap", "pk").prefetch_related(
             Prefetch(
                 "images",
                 queryset=Image_A_Propos.objects.select_related("image").filter(position="left"),
-                to_attr="images_left"
+                to_attr="images_left",
             ),
             Prefetch(
                 "images",
                 queryset=Image_A_Propos.objects.select_related("image").filter(position="center"),
-                to_attr="images_center"
+                to_attr="images_center",
             ),
             Prefetch(
                 "images",
                 queryset=Image_A_Propos.objects.select_related("image").filter(position="right"),
-                to_attr="images_right"
+                to_attr="images_right",
+            ),
+        )
+
+        return (
+            Groupe_A_Propos.objects
+            .order_by("ordre_groupe", "pk")
+            .prefetch_related(
+                Prefetch("sections", queryset=sections_qs, to_attr="sections_list")
             )
         )
 

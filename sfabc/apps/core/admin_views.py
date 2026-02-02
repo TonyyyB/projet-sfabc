@@ -16,13 +16,14 @@ from django.contrib.auth.decorators import login_required
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.paginator import Paginator
 from django.db import models, transaction
-from django.db.models import Max
+from django.db.models import Max, Prefetch
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from apps.core.models import (
     A_Propos,
+    Groupe_A_Propos,
     Image_A_Propos,
     Image_Service,
     Image_Site,
@@ -34,6 +35,7 @@ from apps.reviews.models import Avis
 
 from .admin_forms import (
     AProposForm,
+    GroupeAProposForm,
     ImageServiceForm,
     ImageServiceFormSet,
     ImageSiteForm,
@@ -602,9 +604,125 @@ EMPLACEMENT_AP = {
 
 @login_required
 def apropos_list(request):
-    """Liste les sections "À propos" triées par ordre d'affichage."""
-    pages = A_Propos.objects.order_by("ordre_ap")
-    return render(request, "admin/core/apropos/apropos_list.html", {"pages": pages})
+    """Liste les sections "À propos" groupées, triées par ordre d'affichage."""
+    groups = (
+        Groupe_A_Propos.objects
+        .order_by("ordre_groupe", "pk")
+        .prefetch_related(
+            Prefetch(
+                "sections",
+                queryset=A_Propos.objects.order_by("ordre_ap", "pk"),
+                to_attr="sections_ordered",
+            )
+        )
+    )
+    group_form = GroupeAProposForm()
+    return render(
+        request,
+        "admin/core/apropos/apropos_list.html",
+        {"groups": groups, "group_form": group_form},
+    )
+
+
+@login_required
+@transaction.atomic
+def apropos_group_add(request):
+    """Crée un groupe "À propos" (ordre auto)."""
+    if request.method != "POST":
+        return redirect("admin_core:admin_apropos_list")
+
+    form = GroupeAProposForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Veuillez corriger le nom du groupe.")
+        return redirect("admin_core:admin_apropos_list")
+
+    group = form.save(commit=False)
+    max_ordre = Groupe_A_Propos.objects.aggregate(max_ordre=Max("ordre_groupe"))["max_ordre"] or 0
+    group.ordre_groupe = max_ordre + 1
+    try:
+        group.save()
+        messages.success(request, "Groupe « À propos » créé.")
+    except Exception:  # pylint: disable=broad-exception-caught
+        messages.error(request, "Impossible de créer ce groupe (nom/ordre déjà utilisé).")
+    return redirect("admin_core:admin_apropos_list")
+
+
+@login_required
+@transaction.atomic
+def apropos_group_move(request, pk, direction):
+    """Change l'ordre d'un groupe "À propos" (up/down)."""
+    group = get_object_or_404(Groupe_A_Propos, pk=pk)
+    if direction == "up":
+        swap = (
+            Groupe_A_Propos.objects
+            .filter(ordre_groupe__lt=group.ordre_groupe)
+            .order_by("-ordre_groupe")
+            .first()
+        )
+    else:  # down
+        swap = (
+            Groupe_A_Propos.objects
+            .filter(ordre_groupe__gt=group.ordre_groupe)
+            .order_by("ordre_groupe")
+            .first()
+        )
+
+    if swap:
+        old_a = group.ordre_groupe
+        old_b = swap.ordre_groupe
+        # Swap sûr avec contrainte unique (évite l'état intermédiaire invalide)
+        tmp = (Groupe_A_Propos.objects.aggregate(max_ordre=Max("ordre_groupe"))["max_ordre"] or 0) + 1
+        Groupe_A_Propos.objects.filter(pk=group.pk).update(ordre_groupe=tmp)
+        Groupe_A_Propos.objects.filter(pk=swap.pk).update(ordre_groupe=old_a)
+        Groupe_A_Propos.objects.filter(pk=group.pk).update(ordre_groupe=old_b)
+
+    return redirect("admin_core:admin_apropos_list")
+
+
+@login_required
+def apropos_group_edit(request, pk):
+    """Édite un groupe "À propos" (nom uniquement)."""
+    group = get_object_or_404(Groupe_A_Propos, pk=pk)
+    if request.method == "POST":
+        form = GroupeAProposForm(request.POST, instance=group)
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, "Groupe mis à jour.")
+                return redirect("admin_core:admin_apropos_list")
+            except Exception:  # pylint: disable=broad-exception-caught
+                messages.error(request, "Impossible de modifier ce groupe (nom déjà utilisé).")
+    else:
+        form = GroupeAProposForm(instance=group)
+
+    return render(
+        request,
+        "admin/core/apropos/groupe_edit.html",
+        {"form": form, "group": group},
+    )
+
+
+@login_required
+@transaction.atomic
+def apropos_group_delete(request, pk):
+    """Supprime un groupe "À propos" s'il est vide."""
+    group = get_object_or_404(Groupe_A_Propos, pk=pk)
+
+    if group.sections.exists():
+        messages.warning(request, "Ce groupe contient des sections et ne peut pas être supprimé.")
+        return redirect("admin_core:admin_apropos_list")
+
+    try:
+        deleted_order = group.ordre_groupe
+        group.delete()
+        Groupe_A_Propos.objects.filter(ordre_groupe__gt=deleted_order).update(
+            ordre_groupe=models.F("ordre_groupe") - 1
+        )
+        messages.success(request, "Groupe supprimé.")
+    except Exception:  # pylint: disable=broad-exception-caught
+        messages.error(request, "Impossible de supprimer ce groupe.")
+
+    return redirect("admin_core:admin_apropos_list")
 
 @login_required
 @transaction.atomic
@@ -615,22 +733,30 @@ def apropos_move(request, pk, direction):
     if direction == "up":
         swap = (
             A_Propos.objects
-            .filter(ordre_ap__lt=page.ordre_ap)
+            .filter(groupe=page.groupe, ordre_ap__lt=page.ordre_ap)
             .order_by("-ordre_ap")
             .first()
         )
     else:  # down
         swap = (
             A_Propos.objects
-            .filter(ordre_ap__gt=page.ordre_ap)
+            .filter(groupe=page.groupe, ordre_ap__gt=page.ordre_ap)
             .order_by("ordre_ap")
             .first()
         )
 
     if swap:
-        page.ordre_ap, swap.ordre_ap = swap.ordre_ap, page.ordre_ap
-        page.save()
-        swap.save()
+        old_a = page.ordre_ap
+        old_b = swap.ordre_ap
+        # Swap sûr avec contrainte unique (groupe, ordre_ap)
+        tmp = (
+            A_Propos.objects.filter(groupe=page.groupe)
+            .aggregate(max_ordre=Max("ordre_ap"))["max_ordre"]
+            or 0
+        ) + 1
+        A_Propos.objects.filter(pk=page.pk).update(ordre_ap=tmp)
+        A_Propos.objects.filter(pk=swap.pk).update(ordre_ap=old_a)
+        A_Propos.objects.filter(pk=page.pk).update(ordre_ap=old_b)
 
     return redirect("admin_core:admin_apropos_list")
 
@@ -665,7 +791,7 @@ def apropos_edit(request, pk=None):
             page = form.save(commit=False)
 
             if page.pk is None:
-                max_ordre = A_Propos.objects.aggregate(
+                max_ordre = A_Propos.objects.filter(groupe=page.groupe).aggregate(
                     max_ordre=Max("ordre_ap")
                 )["max_ordre"] or 0
                 page.ordre_ap = max_ordre + 1
@@ -690,7 +816,7 @@ def apropos_edit(request, pk=None):
                     )
 
             messages.success(request, "Section « À propos » enregistrée.")
-            return redirect("admin_core:admin_apropos_edit", pk=page.pk)
+            return redirect("admin_core:admin_apropos_list")
         messages.error(request, "Veuillez corriger les erreurs ci-dessous.")
         print("FORM PRINCIPAL ERRORS:", form.errors)
 
@@ -699,7 +825,16 @@ def apropos_edit(request, pk=None):
             print(f"SLOT {pos} NON FIELD ERRORS:", sf.non_field_errors())
             print(f"SLOT {pos} CLEANED:", getattr(sf, "cleaned_data", None))
     else:
-        form = AProposForm(instance=page)
+        initial = {}
+        if page is None:
+            try:
+                group_id = int(request.GET.get("groupe") or 0)
+            except (TypeError, ValueError):
+                group_id = 0
+            if group_id:
+                initial["groupe"] = group_id
+
+        form = AProposForm(instance=page, initial=initial)
         slot_forms = [
             (
                 pos,
@@ -733,11 +868,13 @@ def apropos_delete(request, pk):
     """Supprime une section "À propos" puis réajuste les ordres pour conserver une séquence 1..N."""
     page = get_object_or_404(A_Propos, pk=pk)
     deleted_order = page.ordre_ap
+    group = page.groupe
     page.delete()
 
     # Réajuster les ordres pour garder 1..N
     A_Propos.objects.filter(
-        ordre_ap__gt=deleted_order
+        groupe=group,
+        ordre_ap__gt=deleted_order,
     ).update(ordre_ap=models.F("ordre_ap") - 1)
 
     messages.success(request, "Section « À propos » supprimée.")

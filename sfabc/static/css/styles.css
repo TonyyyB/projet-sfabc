@@ -118,6 +118,40 @@ main {
   display: none;
 }
 
+/* --- À propos (groupes) --- */
+.about-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.apropos-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1.5rem 0 1rem;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #b8a67e;
+  text-align: center;
+}
+
+.apropos-group-title::before,
+.apropos-group-title::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: #b8a67e;
+  opacity: 0.8;
+}
+
+@media (max-width: 576px) {
+  .apropos-group-title {
+    font-size: 1.5rem;
+  }
+}
+
 .product-even {
   margin-left: 48px;
   text-align: right;

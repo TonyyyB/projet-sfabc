@@ -6,10 +6,30 @@ from django.utils.html import mark_safe
 from colorfield.fields import ColorField
 
 # Create your models here.
+class Groupe_A_Propos(models.Model):
+    """Modèle représentant un groupe de sections "À propos"."""
+
+    id_groupe_ap = models.AutoField(primary_key=True)
+    ordre_groupe = models.PositiveIntegerField(unique=True)
+    titre_groupe = models.CharField(max_length=200, unique=True)
+
+    def __str__(self):
+        return self.titre_groupe
+
+    class Meta:
+        verbose_name_plural = "Groupes à propos"
+        ordering = ["ordre_groupe", "pk"]
+
+
 class A_Propos(models.Model):
     """Modèle représentant une section de la page "À propos"."""
     id_ap = models.AutoField(primary_key=True)
-    ordre_ap = models.PositiveIntegerField(unique=True)
+    groupe = models.ForeignKey(
+        Groupe_A_Propos,
+        on_delete=models.PROTECT,
+        related_name="sections",
+    )
+    ordre_ap = models.PositiveIntegerField()
     titre_ap = models.CharField(max_length=1000)
     description_ap = models.TextField()
 
@@ -20,12 +40,19 @@ class A_Propos(models.Model):
 
     class Meta:
         verbose_name_plural = "A propos"
+        ordering = ["groupe__ordre_groupe", "ordre_ap", "pk"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["groupe", "ordre_ap"],
+                name="unique_ordre_ap_par_groupe",
+            )
+        ]
 
 class Service(models.Model):
     """Modèle représentant un service affiché sur le site."""
     id_service = models.AutoField(primary_key=True)
     titre_service = models.CharField(max_length=200)
-    description_service = models.TextField()
+    description_service = models.TextField(blank=True, null=True)
     ordre_service = models.IntegerField()
     image = models.ManyToManyField("Image_Site",through="Image_Service")
 

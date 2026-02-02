@@ -1,6 +1,6 @@
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from apps.core.models import A_Propos, Service, Image_Site
+from apps.core.models import A_Propos, Groupe_A_Propos, Service, Image_Site
 from django.core.files.uploadedfile import SimpleUploadedFile
 import tempfile
 import shutil
@@ -25,13 +25,18 @@ class ContactViewTest(TestCase):
 
 class AProposViewTest(TestCase):
     def setUp(self):
-        self.ap = A_Propos.objects.create(ordre_ap=1, titre_ap="test titre a propos", description_ap="test description a propos")
+        self.group, _ = Groupe_A_Propos.objects.get_or_create(
+            titre_groupe="Mon entreprise",
+            defaults={"ordre_groupe": 1},
+        )
+        self.ap = A_Propos.objects.create(groupe=self.group, ordre_ap=1, titre_ap="test titre a propos", description_ap="test description a propos")
 
 
     def test_a_propos_view(self):
         response = self.client.get(reverse('core:a_propos'))
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'pages/about.html')
+        self.assertContains(response, 'Mon entreprise')
         # Vérifie que le titre et la description du a propos soient affichés
         self.assertContains(response, 'test titre a propos')
         self.assertContains(response, 'test description a propos')

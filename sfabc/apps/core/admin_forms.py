@@ -3,7 +3,7 @@ from django.forms import inlineformset_factory
 
 from colorfield.widgets import ColorWidget
 
-from .models import A_Propos, Image_Service, Image_Site, Service, Site
+from .models import A_Propos, Groupe_A_Propos, Image_Service, Image_Site, Service, Site
 
 class ImageSiteForm(forms.ModelForm):
     """Formulaire admin pour uploader une Image_Site."""
@@ -41,13 +41,30 @@ class SiteForm(forms.ModelForm):
         }
 
 
+class GroupeAProposForm(forms.ModelForm):
+    """Formulaire admin pour créer/modifier un groupe "À propos"."""
+
+    class Meta:
+        model = Groupe_A_Propos
+        fields = ["titre_groupe"]
+        widgets = {
+            "titre_groupe": forms.TextInput(attrs={"class": "input"}),
+        }
+
+
 class AProposForm(forms.ModelForm):
     """Formulaire admin pour créer/modifier une section "À propos"."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Afficher les groupes dans l'ordre défini.
+        self.fields["groupe"].queryset = Groupe_A_Propos.objects.order_by("ordre_groupe", "pk")
+
     class Meta:
         model = A_Propos
-        fields = ["titre_ap", "description_ap"]
+        fields = ["groupe", "titre_ap", "description_ap"]
         widgets = {
+            "groupe": forms.Select(attrs={"class": "input"}),
             "titre_ap": forms.TextInput(attrs={"class": "input"}),
             "description_ap": forms.Textarea(attrs={"rows": 6}),
         }

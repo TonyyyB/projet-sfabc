@@ -1,5 +1,5 @@
 from django.test import TestCase, override_settings
-from apps.core.models import A_Propos
+from apps.core.models import A_Propos, Groupe_A_Propos
 import tempfile
 import shutil
 
@@ -10,7 +10,16 @@ TEMP_MEDIA_ROOT = tempfile.mkdtemp()
 @override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class AProposModelTest(TestCase):
     def setUp(self):
-        self.ap = A_Propos.objects.create(titre_ap="titre test a propos", description_ap="description test a propos", ordre_ap=1)
+        self.group, _ = Groupe_A_Propos.objects.get_or_create(
+            titre_groupe="Général",
+            defaults={"ordre_groupe": 1},
+        )
+        self.ap = A_Propos.objects.create(
+            groupe=self.group,
+            titre_ap="titre test a propos",
+            description_ap="description test a propos",
+            ordre_ap=1,
+        )
 
 
     def tearDown(self):
