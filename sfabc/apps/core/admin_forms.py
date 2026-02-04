@@ -31,6 +31,7 @@ class SiteForm(forms.ModelForm):
             "bouton_color",
             "product_image_container_background_color",
             "title_font",
+            "font_color",
             "police",
             "bandeau_hauteur",
             "logo",
@@ -42,6 +43,7 @@ class SiteForm(forms.ModelForm):
             "bouton_color": ColorWidget,
             "product_image_container_background_color": ColorWidget,
             "title_font": ColorWidget,
+            "font_color": ColorWidget,
             "police": forms.Select(choices=POLICES),
             "bandeau_hauteur": forms.NumberInput(attrs={"min": 50, "max": 400}),
         }

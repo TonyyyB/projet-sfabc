@@ -12,6 +12,7 @@ def style_processor(request):
     btn_color = "#5A4328"
     product_image_container_bg_color = "#ffffff"
     title_font_color = "#ffffff"
+    font_color = "#000000"
     if site is not None:
         body_bg = site.background
         body_fg = site.foreground
@@ -22,6 +23,7 @@ def style_processor(request):
         product_image_container_bg_color = site.product_image_container_background_color
         title_font_color = site.title_font
         hauteur_bandeau = site.bandeau_hauteur
+        font_color = site.font_color
         
     body_fg_rgb = str(tuple(int(body_fg.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)))[1:-1]
     style = ":root{\n"
@@ -31,6 +33,7 @@ def style_processor(request):
     style += f'\t--btn-color: {btn_color};\n'
     style += f'\t--product-image-container-bg-color: {product_image_container_bg_color};\n'
     style += f'\t--title-font-color: {title_font_color};\n'
+    style += f'\t--font-color: {font_color} !important;\n'
     style += "}\n"
     style += ".background-img {\n"
     style += f"\theight: {hauteur_bandeau}px;\n"

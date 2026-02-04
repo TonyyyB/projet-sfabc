@@ -106,6 +106,7 @@ class Site(models.Model):
     bouton_color = ColorField(default="#5A4328")
     product_image_container_background_color = ColorField(default="#ffffff")
     title_font = ColorField(default="#ffffff")
+    font_color = ColorField(default="#000000")
     police = models.CharField(max_length=200, default="Alata")
     bandeau_hauteur = models.IntegerField(default=140)
     logo = models.ForeignKey(

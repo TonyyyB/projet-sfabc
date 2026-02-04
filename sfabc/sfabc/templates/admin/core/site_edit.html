@@ -54,7 +54,7 @@
             {% endif %}
           </div>
           <div class="form-group">
-            <label class="form-label">Couleur de texte</label>
+            <label class="form-label">Couleur d'avant plan</label>
             {{ form.foreground }}
             {% if form.foreground.errors %}
               <div class="form-error">{{ form.foreground.errors }}</div>
@@ -81,7 +81,13 @@
               <div class="form-error">{{ form.title_font.errors }}</div>
             {% endif %}
           </div>
-        </div>
+          <div class="form-group">
+            <label class="form-label">Couleur de la police du texte</label>
+            {{ form.font_color }}
+            {% if form.font_color.errors %}
+              <div class="form-error">{{ form.font_color.errors }}</div>
+            {% endif %}
+          </div>
 
         <div class="form-section">
           <h2>

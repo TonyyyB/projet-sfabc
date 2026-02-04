@@ -37,7 +37,7 @@ main {
 }
 
 .produits a {
-  color: #000000;
+  color: var(--font-color);
   text-decoration: none;
 }
 
@@ -164,11 +164,6 @@ main {
     display: inline-block;
   }
 
-  .produits a {
-    color: #000000;
-    text-decoration: none;
-  }
-
   .produit {
     background-color: white;
     border: 2px solid var(bs);
@@ -246,7 +241,7 @@ main {
 
 .btn-contact {
   color: #EEE7D8 !important;
-  background-color: var(t--btn-color) !important;
+  background-color: var(--btn-color) !important;
 }
 
 .color-text-contact {
@@ -367,22 +362,22 @@ hr {
 .review{
   margin: 25px;
   border: solid 1px !important;
-  border-color: var(t--btn-color) !important;
+  border-color: var(--btn-color) !important;
   background-color: #ffffff !important;
-  box-shadow: inset 0 2px 4px var(t--btn-color);
+  box-shadow: inset 0 2px 4px var(--btn-color);
 }
 
 .product-reviews-form{
   margin: 25px;
   border: solid 1px !important;
-  border-color: var(t--btn-color) !important;
+  border-color: var(--btn-color) !important;
   background-color: #ffffff !important;
-  box-shadow: inset 0 2px 4px var(t--btn-color);
+  box-shadow: inset 0 2px 4px var(--btn-color);
 }
 
 .rev-stars{
   font-size: large;
-  color: var(t--btn-color);
+  color: var(--btn-color);
 }
 
 .rev-title{
@@ -400,7 +395,7 @@ hr {
 }
 
 .rev-header{
-  border-bottom-color: var(t--btn-color) !important;
+  border-bottom-color: var(--btn-color) !important;
 }
 
 .sortable-links{
@@ -432,7 +427,7 @@ hr {
 }
 
 .rev-return{
-  color: black;
+  color: var(--font-color);
 }
 
 .end-revs{
@@ -444,7 +439,7 @@ hr {
 
 .page-link{
   border : none !important;
-  color: black !important;
+  color: var(--font-color) !important;
   background-color: transparent !important;
 }
 
@@ -551,7 +546,7 @@ span.page-link{
 }
 
 .rev-direction{
-  color: black;
+  color: var(--font-color);
 }
 
 .stars-input {
@@ -573,13 +568,13 @@ span.page-link{
 
 .star-label:hover,
 .star-label:hover ~ .star-label {
-  color: var(t--btn-color);
+  color: var(--btn-color);
   content: "★";
 }
 
 .stars-input input:checked + .star-label,
 .stars-input input:checked + .star-label ~ .star-label {
-  color: var(t--btn-color);
+  color: var(--btn-color);
 }
 
 .star-label::before {
