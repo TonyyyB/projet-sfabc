@@ -1,28 +1,23 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin — Déconnexion</title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  </head>
-  <body>
-    <div class="container" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
-      <div class="section-card" style="max-width:480px; width:100%;">
-        <header>
-          <h1>Déconnexion réussie</h1>
-          <p class="subtitle">Vous avez été déconnecté de l'administration.</p>
-        </header>
+{% extends 'admin/base_admin.html' %}
 
-        <div class="message success" style="margin-top:18px;">À bientôt !</div>
+{% block title %}
+  Admin — Déconnexion
+{% endblock %}
 
-        <div class="form-actions" style="margin-top:20px;">
-          <a class="btn-submit" href="{% url 'core:admin_login' %}">Se reconnecter</a>
-          <a class="btn-cancel" href="{% url 'core:home' %}">Retour au site</a>
-        </div>
+{% block main %}
+  <div class="container" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+    <div class="section-card" style="max-width:480px; width:100%;">
+      <header>
+        <h1>Déconnexion réussie</h1>
+        <p class="subtitle">Vous avez été déconnecté de l'administration.</p>
+      </header>
+
+      <div class="message success" style="margin-top:18px;">À bientôt !</div>
+
+      <div class="form-actions" style="margin-top:20px;">
+        <a class="btn-submit" href="{% url 'admin_core:admin_login' %}">Se reconnecter</a>
+        <a class="btn-cancel" href="{% url 'admin_core:admin_dashboard' %}">Retour au site</a>
       </div>
     </div>
-  </body>
-</html>
+  </div>
+{% endblock %}

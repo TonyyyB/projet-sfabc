@@ -23,4 +23,6 @@ urlpatterns = [
     path('admin-raw/', admin.site.urls),
     path("", include("apps.core.urls", namespace="core")),
     path("produits/", include("apps.products.urls", namespace="products")),
+    path("admin/", include("apps.core.admin_urls", namespace="admin_core")),
+    path("admin/produits/", include("apps.products.admin_urls", namespace="admin_produits"))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,75 +1,121 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Gérer À propos</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
-<body>
+{% extends 'admin/base_admin.html' %}
 
-<a href="{% url 'core:admin_dashboard' %}" class="logout-btn">
-  <span class="material-symbols-outlined">arrow_back</span>
-</a>
+{% block title %}
+  Gérer À propos
+{% endblock %}
 
-<div class="container">
-  <header>
-    <h1>Sections « À propos »</h1>
-  </header>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  <a href="{% url 'core:admin_apropos_add' %}" class="btn btn-primary">
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Sections « À propos »' %}
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'admin_core:admin_apropos_add' %}" class="btn btn-primary">
     <span class="material-symbols-outlined">add</span>
     Ajouter une section
   </a>
 
-  {% for page in pages %}
-    <div class="list-item">
+  <div class="section-card" style="margin-top: 1rem;">
+    <h2 style="margin-top: 0;">Groupes</h2>
+    <form method="post" action="{% url 'admin_core:admin_apropos_group_add' %}" class="form-group" style="display:flex; gap: 0.75rem; align-items: end; flex-wrap: wrap;">
+      {% csrf_token %}
+      <div style="flex: 1; min-width: 260px;">
+        <label class="form-label">{{ group_form.titre_groupe.label }}</label>
+        {{ group_form.titre_groupe }}
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <span class="material-symbols-outlined">add</span>
+        Ajouter un groupe
+      </button>
+    </form>
+  </div>
+
+  {% for group in groups %}
+    <div class="list-item" style="border-left: 4px solid #B8A67E;">
       <div class="list-header">
         <div>
-          <h2>{{ page.titre_ap }}</h2>
-          <p>{{ page.description_ap|truncatewords:20 }}</p>
+          <h2 style="margin-bottom: 0.25rem;">{{ group.titre_groupe }}</h2>
+          <p style="margin: 0; opacity: 0.8;">{{ group.sections_ordered|length }} section(s)</p>
         </div>
 
-        <div class="arrows">
-          <a href="{% url 'core:admin_apropos_move' page.pk 'up' %}">
-            <span class="material-symbols-outlined">arrow_upward</span>
-          </a>
-          <a href="{% url 'core:admin_apropos_move' page.pk 'down' %}">
-            <span class="material-symbols-outlined">arrow_downward</span>
-          </a>
+        <div class="arrows" style="display:flex; gap: 0.35rem; align-items: center;">
+          {% if forloop.first %}
+            <span class="material-symbols-outlined arrow-disabled" title="Déjà en haut">arrow_upward</span>
+          {% else %}
+            <a href="{% url 'admin_core:admin_apropos_group_move' group.pk 'up' %}" title="Monter"><span class="material-symbols-outlined">arrow_upward</span></a>
+          {% endif %}
+          {% if forloop.last %}
+            <span class="material-symbols-outlined arrow-disabled" title="Déjà en bas">arrow_downward</span>
+          {% else %}
+            <a href="{% url 'admin_core:admin_apropos_group_move' group.pk 'down' %}" title="Descendre"><span class="material-symbols-outlined">arrow_downward</span></a>
+          {% endif %}
+          <a href="{% url 'admin_core:admin_apropos_group_edit' group.pk %}" class="btn btn-primary" style="padding: 0.4rem 0.65rem;"><span class="material-symbols-outlined">edit</span></a>
+          <a href="{% url 'admin_core:admin_apropos_group_delete' group.pk %}" class="btn btn-danger" style="padding: 0.4rem 0.65rem;" data-confirm="Êtes-vous sûr de vouloir supprimer le groupe « {{ group.titre_groupe }} » ?"><span class="material-symbols-outlined">delete</span></a>
         </div>
       </div>
 
-      <div class="actions">
-        <a href="{% url 'core:admin_apropos_edit' page.pk %}" class="btn btn-primary">
-          <span class="material-symbols-outlined">edit</span>
-          Modifier
-        </a>
-
-        <a href="{% url 'core:admin_apropos_delete' page.pk %}"
-           class="btn btn-danger"
-           data-confirm="Êtes-vous sûr de vouloir supprimer cette section « À propos » ? Cette action est irréversible.">
-          <span class="material-symbols-outlined">delete</span>
-          Supprimer
+      <div class="actions" style="margin-top: 0.5rem;">
+        <a href="{% url 'admin_core:admin_apropos_add' %}?groupe={{ group.pk }}" class="btn btn-primary">
+          <span class="material-symbols-outlined">add</span>
+          Ajouter une section dans ce groupe
         </a>
       </div>
+
+      {% for page in group.sections_ordered %}
+        <div class="list-item" style="margin-top: 0.75rem;">
+          <div class="list-header">
+            <div>
+              <h2>{{ page.titre_ap }}</h2>
+              <p>{{ page.description_ap|truncatewords:20 }}</p>
+            </div>
+
+            <div class="arrows">
+              {% if forloop.first %}
+                <span class="material-symbols-outlined arrow-disabled" title="Déjà en haut">arrow_upward</span>
+              {% else %}
+                <a href="{% url 'admin_core:admin_apropos_move' page.pk 'up' %}" title="Monter dans le groupe"><span class="material-symbols-outlined">arrow_upward</span></a>
+              {% endif %}
+              {% if forloop.last %}
+                <span class="material-symbols-outlined arrow-disabled" title="Déjà en bas">arrow_downward</span>
+              {% else %}
+                <a href="{% url 'admin_core:admin_apropos_move' page.pk 'down' %}" title="Descendre dans le groupe"><span class="material-symbols-outlined">arrow_downward</span></a>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="actions">
+            <a href="{% url 'admin_core:admin_apropos_edit' page.pk %}" class="btn btn-primary">
+              <span class="material-symbols-outlined">edit</span>
+              Modifier
+            </a>
+
+            <a href="{% url 'admin_core:admin_apropos_delete' page.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer cette section « À propos » ? Cette action est irréversible.">
+              <span class="material-symbols-outlined">delete</span>
+              Supprimer
+            </a>
+          </div>
+        </div>
+      {% empty %}
+        <p style="margin: 0.75rem 0 0; opacity: 0.8;">Aucune section dans ce groupe.</p>
+      {% endfor %}
     </div>
   {% endfor %}
-</div>
+{% endblock %}
 
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll("[data-confirm]").forEach(function (el) {
-      el.addEventListener("click", function (e) {
-        const message = el.getAttribute("data-confirm");
-        if (!confirm(message)) {
-          e.preventDefault();
-        }
-      });
-    });
-  });
-</script>
-
-</body>
-</html>
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('[data-confirm]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          const message = el.getAttribute('data-confirm')
+          if (!confirm(message)) {
+            e.preventDefault()
+          }
+        })
+      })
+    })
+  </script>
+{% endblock %}
