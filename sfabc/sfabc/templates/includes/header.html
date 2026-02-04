@@ -10,7 +10,7 @@
           <!-- Barre de recherche -->
           <form class="search-form" role="search" method="get" name="search" action="{% url 'products:liste_produits' %}">
             <div class="input-group">
-              <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" name="search" />
+              <input class="form-control bg-body font_color" type="search" placeholder="Rechercher..." aria-label="Search" name="search" />
               <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
             </div>
           </form>
@@ -47,26 +47,26 @@
   </header>
 
   <!-- Menu Offcanvas -->
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel" style="background-color: var(--bs-body-bg); border-left: 5px solid rgb(var(--bs-dark-rgb));">
+  <div class="offcanvas offcanvas-end font_color" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel" style="background-color: var(--bs-body-bg); border-left: 5px solid rgb(var(--bs-dark-rgb));">
     <div class="offcanvas-header">
       <h5 class="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
     </div>
     <div class="offcanvas-body">
-      <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'products:liste_produits' %}">Tous les produits</a>
+      <a class="btn w-100 d-flex justify-content-between align-items-center text-start font_color" href="{% url 'products:liste_produits' %}">Tous les produits</a>
       {% for menu, submenus in menus.items %}
         <div class="mb-2">
           <!-- Bouton des menus avec fleche -->
-          <button class="btn w-100 d-flex justify-content-between align-items-center text-start" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter }}" aria-expanded="false">
+          <button class="btn w-100 d-flex justify-content-between align-items-center text-start font_color" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter }}" aria-expanded="false">
             {{ menu }}
             <i class="bi bi-chevron-right"></i>
           </button>
 
           <!-- Sous-menus -->
           <div class="collapse mt-1" id="collapse-{{ forloop.counter }}">
-            <ul class="list-group list-group-flush">
+            <ul class="list-group list-group-flush font_color">
               {% for sub, url_name in submenus.items %}
-                <li class="list-group-item ms-3" style="background-color: var(--bs-body-bg); border: none;">
+                <li class="list-group-item ms-3 font_color" style="background-color: var(--bs-body-bg); border: none;">
                   <a href="{%url 'products:detail_produit' url_name %}" class="text-decoration-none" style="color: var(--bs-dark);">{{ sub }}</a>
                 </li>
               {% endfor %}

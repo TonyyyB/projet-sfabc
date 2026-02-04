@@ -31,11 +31,11 @@
       {% endif %}
     </div>
     <div class="product-details">
-      <div class="product-caracteristics">
+      <div class="product-caracteristics font_color">
         <h3>Caractéristiques:</h3>
         <p>{{ produit.description_produit }}</p>
       </div>
-      <div class="product-price">
+      <div class="product-price font_color">
         {% if produit.prix_produit %}
           <h4>Prix: {{ produit.prix_produit }}€</h4>
         {% endif %}
@@ -67,11 +67,11 @@
       <form method="post" action="{% url 'products:reviews:add_review' produit.id_produit %}">
         {% csrf_token %}
 
-        <div class="card-header d-flex justify-content-between align-items-center rev-header">
+        <div class="card-header d-flex justify-content-between align-items-center rev-header ">
           <input 
             type="text" 
             name="pseudonyme" 
-            class="form-control me-2" 
+            class="form-control me-2 font_color" 
             placeholder="Votre pseudo" 
             required
           />
@@ -84,10 +84,10 @@
           </div>
         </div>
 
-        <div class="card-body rev-content">
+        <div class="card-body rev-content ">
           <textarea
             name="message" 
-            class="form-control" 
+            class="form-control font_color" 
             rows="3" 
             placeholder="Votre avis (facultatif)" 
           ></textarea>
@@ -100,14 +100,14 @@
     </div>
     {% for rev in avis|slice:":5" %}
         <div class="card review">
-            <div class="card-header d-flex justify-content-between align-items-center rev-header">
+            <div class="card-header d-flex justify-content-between align-items-center rev-header font_color">
                 <p class="rev-title">{{ rev.pseudonyme }}</p>
                 <p class="rev-stars">{{ rev.stars }}</p>
             </div>
             {% if rev.message %}
-                <div class="card-body rev-content">{{ rev.message }}</div>
+                <div class="card-body rev-content font_color">{{ rev.message }}</div>
             {% endif %}
-            <div class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.date }}</div>
+            <div class="card-footer rev-footer font_color">Publié le : {{ rev.date }}</div>
         </div>
     {% endfor %}
   </div>

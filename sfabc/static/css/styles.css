@@ -8,6 +8,7 @@ body {
   flex-direction: column;
 }
 
+
 main {
   position: relative;
   padding : 20px;
@@ -37,7 +38,7 @@ main {
 }
 
 .produits a {
-  color: var(--font-color);
+  color: var(--font-color) !important;
   text-decoration: none;
 }
 
@@ -238,14 +239,13 @@ main {
   z-index: -1;
 }
 
-
-.btn-contact {
-  color: #EEE7D8 !important;
-  background-color: var(--btn-color) !important;
+.font_color {
+  color: var(--font-color) !important;
 }
 
-.color-text-contact {
-  color: var(--bs-dark-rgb) !important;
+.btn-contact {
+  color: var(--font-color) !important;
+  background-color: var(--btn-color) !important;
 }
 
 .color-placeholder-contact::placeholder {
@@ -427,7 +427,7 @@ hr {
 }
 
 .rev-return{
-  color: var(--font-color);
+  color: var(--font-color) !important;
 }
 
 .end-revs{
@@ -546,7 +546,7 @@ span.page-link{
 }
 
 .rev-direction{
-  color: var(--font-color);
+  color: var(--font-color) !important;
 }
 
 .stars-input {
@@ -620,4 +620,13 @@ span.page-link{
   border-radius: 50%;
   width: 48px;
   height: 48px;
+}
+
+.font_color {
+  color: var(--font-color) !important;
+}
+
+.font_color::placeholder {
+  color: var(--font-color) !important;
+  opacity: 0.5 !important;
 }

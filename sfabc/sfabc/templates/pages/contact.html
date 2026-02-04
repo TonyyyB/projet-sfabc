@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="d-flex flex-column align-items-center m-3">
-    <form method="post" action="" class="w-25">
+    <form method="post" action="" class="w-25 font_color">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        <p class="text-center color-text-contact mb-5">Les champs marqués d’un * sont obligatoires.</p>
+        <p class="text-center mb-5">Les champs marqués d’un * sont obligatoires.</p>
         <div class="mb-5">
             
             <input type="text" name="name" placeholder="Vos nom et prénom*"  value="{{ form.name.value|default_if_none:'' }}" class="form-control border border-3 border-dark color-border-contact  color-placeholder-contact">

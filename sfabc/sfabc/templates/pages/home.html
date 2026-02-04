@@ -3,7 +3,7 @@
 {% for prdt in produits_moment %}
     <div class="product-container">
         {% if forloop.counter|divisibleby:2 %}
-        <div class="product-even">
+        <div class="product-even font_color">
             <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
                 <h3>{{ prdt.nom_produit }}</h3>
                 <p>{{ prdt.description_produit }}</p>
@@ -20,8 +20,8 @@
                 <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
             </a>
         </div>
-        <div class="product-odd">
-            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+        <div class="product-odd font_color">
+            <a class="lien-produit " href="{%url 'products:detail_produit' prdt.id_produit %}">
                 <h3>{{ prdt.nom_produit }}</h3>
                 <p>{{ prdt.description_produit }}</p>
             </a>

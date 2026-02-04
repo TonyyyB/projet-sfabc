@@ -3,7 +3,7 @@
 
 {% for service in services %}
     <div class="d-flex justify-content-center">
-        <section class="service p-5  {% if not forloop.last %}border-bottom border-1 border-black {%endif%} d-flex w-75 " id="service-{{ service.id_service }}">
+        <section class="service p-5  {% if not forloop.last %}border-bottom border-1 border-black {%endif%} d-flex w-75 font_color" id="service-{{ service.id_service }}">
         {% if service.service.count > 0 %}
             <div id="carouselService-{{ service.id_service }}" class="carousel slide w-50" data-bs-ride="carousel">
                 <div class="carousel-inner">
