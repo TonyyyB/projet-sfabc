@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_core:admin_service_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_core:admin_service_list' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
@@ -31,14 +31,14 @@
         Informations du service
       </h2>
       <div class="form-group">
-        <label class="form-label">{{ form.titre_service.label }}</label>
+        <label class="form-label">Titre du service</label>
         {{ form.titre_service }}
         {% if form.titre_service.errors %}
           <div class="form-error">{{ form.titre_service.errors }}</div>
         {% endif %}
       </div>
       <div class="form-group">
-        <label class="form-label">{{ form.description_service.label }}</label>
+        <label class="form-label">Description du service</label>
         {{ form.description_service }}
         {% if form.description_service.errors %}
           <div class="form-error">{{ form.description_service.errors }}</div>

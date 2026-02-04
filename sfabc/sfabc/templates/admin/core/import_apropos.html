@@ -50,7 +50,7 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
@@ -186,7 +186,7 @@
 
           <div class="actions" style="margin-top: 16px; justify-content: flex-end;">
             <a href="{% url 'admin_core:admin_import_apropos' %}" class="btn btn-secondary">
-              <span class="material-symbols-outlined">arrow_back</span>
+              Retour
               Recommencer
             </a>
             <button type="submit" class="btn btn-primary">

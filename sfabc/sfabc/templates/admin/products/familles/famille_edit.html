@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_produits:admin_famille_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_produits:admin_famille_list' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
@@ -26,7 +26,7 @@
   </div>
 
   <div class="section-card">
-    <h2>Produits de cette famille</h2>
+    <h2>Produits dans cette famille</h2>
 
     {% for produit in produits %}
       <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" style="text-decoration: none; color: inherit;">
