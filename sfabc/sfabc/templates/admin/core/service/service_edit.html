@@ -50,14 +50,14 @@
             Informations du service
           </h2>
           <div class="form-group">
-            <label class="form-label">{{ form.titre_service.label }}</label>
+            <label class="form-label">Titre du service</label>
             {{ form.titre_service }}
             {% if form.titre_service.errors %}
               <div class="form-error">{{ form.titre_service.errors }}</div>
             {% endif %}
           </div>
           <div class="form-group">
-            <label class="form-label">{{ form.description_service.label }}</label>
+            <label class="form-label">Description du service</label>
             {{ form.description_service }}
             {% if form.description_service.errors %}
               <div class="form-error">{{ form.description_service.errors }}</div>

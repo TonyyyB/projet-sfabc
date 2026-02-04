@@ -16,8 +16,8 @@
           {% if page %}
             Modifier
           {% else %}
-            Créer
-          {% endif %}une section
+            Ajouter
+          {% endif %}une section "À propos"
         </h1>
       </header>
 
@@ -43,14 +43,14 @@
             Contenu de la section
           </h2>
           <div class="form-group">
-            <label class="form-label">{{ form.titre_ap.label }}</label>
+            <label class="form-label">Titre de la section</label>
             {{ form.titre_ap }}
             {% if form.titre_ap.errors %}
               <div class="form-error">{{ form.titre_ap.errors }}</div>
             {% endif %}
           </div>
           <div class="form-group">
-            <label class="form-label">{{ form.description_ap.label }}</label>
+            <label class="form-label">Contenu de la section</label>
             {{ form.description_ap }}
             {% if form.description_ap.errors %}
               <div class="form-error">{{ form.description_ap.errors }}</div>
