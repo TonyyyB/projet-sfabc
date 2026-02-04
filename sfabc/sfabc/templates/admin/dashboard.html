@@ -8,9 +8,20 @@
   <a href="{% url 'admin_core:admin_logout' %}" class="logout-btn">Déconnexion</a>
 {% endblock %}
 
-{% block header %}
-  {% include 'admin/header_admin.html' with page_title='Tableau de bord SFABC' %}
-{% endblock %}
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Sections "À propos"</span>
+              <span class="stat-value">{{ nb_pages_apropos }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Services</span>
+              <span class="stat-value">{{ nb_services }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Images du site</span>
+              <span class="stat-value">{{ nb_images_site }}</span>
+            </div>
+          </div>
 
 {% block content %}
   <div class="sections">
