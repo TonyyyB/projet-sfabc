@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="d-flex flex-column align-items-center m-3">
-    <form method="post" action="" class="w-25">
+<div class="container my-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
+            <form method="post" action="" class="w-100">
         {% csrf_token %}
         {{ form.non_field_errors }}
         <p class="text-center color-text-contact mb-5">Les champs marqués d’un * sont obligatoires.</p>
@@ -31,7 +33,9 @@
             <button type="submit" class="btn btn-contact w-50">Envoyer</button> 
         </div>
         
-    </form>
+            </form>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

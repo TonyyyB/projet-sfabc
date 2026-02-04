@@ -1,31 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load text_format %}
 {% block script %}
-
+  {{ block.super }}
+  <script src="{% static 'js/product_detail_carousel.js' %}"></script>
 {% endblock %}
 {% block content %}
   <div class="product-detail">
-    <div class="carousel-layout">
+    <div class="custom-carousel">
       {% if images|length > 1 %}
-        <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="prev">
+        <button class="nav-arrow" type="button" data-carousel-prev>
           <span class="material-symbols-outlined">arrow_back_ios_new</span>
           <span class="visually-hidden">Previous</span>
         </button>
       {% endif %}
 
-      <div class="carousel slide carousel-dark carousel-container" id="carousel" data-bs-ride="carousel">
-        <div class="carousel-inner">
+      <div class="carousel-track">
+        <div class="carousel-slides">
           {% for image in images %}
-            <div class="carousel-item {% if forloop.first %}active{% endif %}">
-              <img src="{{ image.image.url }}" alt="Image de {{ produit.nom_produit }}" class="carousel-img" />
+            <div class="carousel-slide">
+              <img src="{{ image.image.url }}" alt="Image de {{ produit.nom_produit }}" />
             </div>
           {% endfor %}
         </div>
       </div>
 
       {% if images|length > 1 %}
-        <button class="nav-arrow" type="button" data-bs-target="#carousel" data-bs-slide="next">
-          <span class="material-symbols-outlined">chevron_forward</span>
+        <button class="nav-arrow" type="button" data-carousel-next>
+          <span class="material-symbols-outlined">arrow_forward_ios</span>
           <span class="visually-hidden">Next</span>
         </button>
       {% endif %}
@@ -33,7 +35,7 @@
     <div class="product-details">
       <div class="product-caracteristics">
         <h3>Caractéristiques:</h3>
-        <p>{{ produit.description_produit }}</p>
+        <p>{{ produit.description_produit|mini_markdown }}</p>
       </div>
       <div class="product-price">
         {% if produit.prix_produit %}

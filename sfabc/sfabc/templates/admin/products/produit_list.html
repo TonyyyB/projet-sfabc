@@ -1,24 +1,19 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Produits</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
-<body>
+{% extends 'admin/base_admin.html' %}
 
-<a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% block title %}
+  Produits
+{% endblock %}
 
-<div class="container">
-  <header>
-    <h1>Produits</h1>
-  </header>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">
-    + Ajouter un produit
-  </a>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Produits' %}
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">+ Ajouter un produit</a>
 
   {% for produit in produits %}
     <div class="list-item">
@@ -33,13 +28,14 @@
       </div>
     </div>
   {% endfor %}
-</div>
+{% endblock %}
 
-<script>
-document.querySelectorAll('[data-confirm]').forEach(el => {
-  el.onclick = e => { if (!confirm("Supprimer ce produit ?")) e.preventDefault(); }
-})
-</script>
-
-</body>
-</html>
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('[data-confirm]').forEach((el) => {
+      el.onclick = (e) => {
+        if (!confirm('Supprimer ce produit ?')) e.preventDefault()
+      }
+    })
+  </script>
+{% endblock %}

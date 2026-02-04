@@ -1,85 +1,89 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Bibliothèque d'images</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
+{% block title %}Bibliothèque d'images{% endblock %}
 
-<body>
-  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span
-      class="material-symbols-outlined">arrow_back</span></a>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  <div class="container">
-    <header>
-      <h1>Bibliothèque d'images</h1>
-    </header>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title="Bibliothèque d'images" %}
+{% endblock %}
 
-    {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-              <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-              </span>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+{% block content %}
 
-    <div class="image-grid" id="imageGrid">
-      {% for data in image_data %}
-      <div class="image-card">
-        <img src="{{ data.image.image.url }}" alt="{{ data.image }}">
-        <div class="image-name">{{ data.image }}</div>
-        <div class="usages">
-          {% if data.usages %}
-            Utilisée dans :<br>
-            {% for usage in data.usages %}
-              <a href="{{ usage.url }}" class="usage-link">{{ usage.text }}</a><br>
-            {% endfor %}
-          {% else %}
-            Non utilisée
-          {% endif %}
-        </div>
-        <div class="actions">
-          <a href="{% url 'admin_core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
-            <span class="material-symbols-outlined">edit</span>
-            Renommer
-          </a>
-          {% if not data.is_used %}
-          <a href="{% url 'admin_core:admin_image_delete' data.image.id_image %}"
-             class="btn btn-danger"
-             data-confirm="Êtes-vous sûr de vouloir supprimer cette image ?">
-            <span class="material-symbols-outlined">delete</span>
-            Supprimer
-          </a>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
+    <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
+      <a href="{% url 'admin_core:admin_import_images_site' %}" class="btn btn-primary">
+        <span class="material-symbols-outlined">upload_file</span>
+        Importer des images
+      </a>
     </div>
+
+    <form method="post" action="{% url 'admin_core:admin_image_bulk_delete' %}" id="bulkDeleteForm">
+      {% csrf_token %}
+
+      <input type="hidden" name="select_all_unused" id="selectAllUnusedFlag" value="0" />
+
+      <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
+        <button type="button" class="btn btn-secondary" id="selectAllUnusedBtn">
+          <span class="material-symbols-outlined">select_all</span>
+          Sélectionner toutes les non utilisées
+        </button>
+      </div>
+
+      <div class="actions" id="bulkActions" style="display: none; justify-content: flex-end; margin-bottom: 14px;">
+        <button type="submit" class="btn btn-danger" id="bulkDeleteBtn">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer la sélection
+        </button>
+      </div>
+
+      <div class="image-grid" id="imageGrid">
+        {% for data in image_data %}
+        <div class="image-card">
+          <img src="{{ data.image.image.url }}" alt="{{ data.image }}">
+          <div class="image-name">{{ data.image }}</div>
+
+          <div class="usages">
+            {% if data.usages %}
+              Utilisée dans :<br>
+              {% for usage in data.usages %}
+                <a href="{{ usage.url }}" class="usage-link">{{ usage.text }}</a><br>
+              {% endfor %}
+            {% else %}
+              Non utilisée
+            {% endif %}
+          </div>
+
+          <div class="actions">
+            <a href="{% url 'admin_core:admin_image_rename' data.image.id_image %}" class="btn btn-secondary">
+              <span class="material-symbols-outlined">edit</span>
+              Renommer
+            </a>
+
+            <label class="btn {% if data.is_used %}btn-secondary{% else %}btn-danger{% endif %}" style="display: inline-flex; gap: 8px; align-items: center; cursor: {% if data.is_used %}not-allowed{% else %}pointer{% endif %};" title="{% if data.is_used %}Image utilisée: suppression impossible{% else %}Sélectionner pour suppression{% endif %}">
+              <input
+                type="checkbox"
+                class="image-select"
+                name="selected_images"
+                value="{{ data.image.id_image }}"
+                {% if data.is_used %}disabled{% endif %}
+                style="margin: 0; width: 1.05em; height: 1.05em;"
+              />
+              Sélectionner
+            </label>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </form>
 
     <div class="pagination-container">
       {% include 'includes/pagination.html' %}
     </div>
-  </div>
+{% endblock %}
 
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      document.querySelectorAll("[data-confirm]").forEach(function (el) {
-        el.addEventListener("click", function (e) {
-          if (!confirm(el.dataset.confirm)) {
-            e.preventDefault();
-          }
-        });
-      });
-    });
-  </script>
-</body>
-
-</html>
+{% block extra_js %}
+  <script src="{% static 'js/image_library_bulk.js' %}" defer></script>
+{% endblock %}

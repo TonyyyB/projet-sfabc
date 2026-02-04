@@ -1,31 +1,18 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <title>Ajouter une famille</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
-<body>
+{% extends 'admin/base_admin.html' %}
 
-<a href="{% url 'admin_produits:admin_famille_list' %}" class="logout-btn">
-  <span class="material-symbols-outlined">arrow_back</span>
-</a>
+{% block title %}
+  Ajouter une famille
+{% endblock %}
 
-<div class="container">
-  <header>
-    <h1>Ajouter une famille</h1>
-  </header>
+{% block top_action %}
+  <a href="{% url 'admin_produits:admin_famille_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  {% if messages %}
-    <div class="section-card">
-      {% for message in messages %}
-        {{ message }}
-      {% endfor %}
-    </div>
-  {% endif %}
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Ajouter une famille' %}
+{% endblock %}
 
+{% block content %}
   <div class="section-card">
     <form method="post">
       {% csrf_token %}
@@ -37,7 +24,4 @@
       </button>
     </form>
   </div>
-</div>
-
-</body>
-</html>
+{% endblock %}

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,6 +27,10 @@ SECRET_KEY = 'django-insecure-kov%t&_@z5&dcx)(9cwxua-z@9oys#ewyl8yg8+7eocuckp0od
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 4 * 60 * 60
+
 
 
 # Application definition
@@ -78,11 +83,14 @@ WSGI_APPLICATION = 'sfabc.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        'OPTIONS': {
+            # éviter certains blocages en cas de FS lent/chargé
+            'timeout': 20,
+        },
     }
 }
 
@@ -126,6 +134,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]   # fichiers statiques dans /static/
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
+DATA_UPLOAD_MAX_NUMBER_FILES = 2000
 
 # Custom login for admin area
 LOGIN_URL = '/admin/login/'

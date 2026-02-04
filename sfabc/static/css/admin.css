@@ -194,6 +194,15 @@ h1 {
   transform: scale(1.2);
 }
 
+.arrows .arrow-disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.arrows .arrow-disabled:hover {
+  transform: none;
+}
+
 .image-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -205,6 +214,32 @@ h1 {
   border-radius: 8px;
   padding: 1rem;
   background: #f9f9f9;
+  position: relative;
+}
+
+.image-card-toolbar {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.image-card-toolbar .delete-btn {
+  float: none;
+}
+
+.move-btn {
+  background: #5a4328;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.move-btn:hover {
+  filter: brightness(0.95);
 }
 
 .delete-btn {
@@ -289,6 +324,13 @@ select.form-control {
   font-size: 0.9em;
   margin-top: 5px;
   display: block;
+}
+
+.form-help {
+  color: #6b5a45;
+  font-size: 0.95em;
+  margin-top: 8px;
+  line-height: 1.35;
 }
 
 .field-errors {
@@ -1051,6 +1093,61 @@ form > *:last-child {
   outline: none;
   border-color: #b8a67e;
   box-shadow: 0 0 0 4px rgba(184, 166, 126, 0.15);
+}
+
+.image-pagination {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 32px 0 32px;
+}
+
+.image-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 38px;
+  border-radius: 10px;
+  border: 2px solid #e1e5e9;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #5a4328;
+}
+
+.image-page-btn:hover:not(:disabled) {
+  border-color: #b8a67e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.image-page-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.image-page-info {
+  font-size: 0.95em;
+  color: #5a4328;
+  font-weight: 600;
+  min-width: 160px;
+  text-align: center;
+}
+
+.image-page-size {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #5a4328;
+}
+
+.image-page-size select {
+  padding: 8px 10px;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  background: white;
 }
 
 .image-modal-body {

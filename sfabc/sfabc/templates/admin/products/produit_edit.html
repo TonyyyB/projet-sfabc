@@ -1,248 +1,453 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>
-    {% if produit %}Modifier{% else %}Ajouter{% endif %} un produit
-  </title>
 
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-</head>
+{% block title %}
+  {% if produit %}
+    Modifier
+  {% else %}
+    Ajouter
+  {% endif %}un produit
+{% endblock %}
 
-<body>
+{% block top_action %}
+  <a href="{% url 'admin_produits:admin_produit_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-<a href="{% url 'admin_produits:admin_produit_list' %}" class="logout-btn"> 
-  <span class="material-symbols-outlined">arrow_back</span>
-</a>
+{% block header %}
+  {% if produit %}
+    {% include 'admin/header_admin.html' with page_title='Modifier un produit' %}
+  {% else %}
+    {% include 'admin/header_admin.html' with page_title='Ajouter un produit' %}
+  {% endif %}
+{% endblock %}
 
-<div class="container">
-
-<header>
-  <h1>{% if produit %}Modifier{% else %}Ajouter{% endif %} un produit</h1>
-</header>
-
-{% if messages %}
-        <div class="section-card">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-{% if produit %}
-  <div class="section-card" style="padding: 12px; margin-bottom: 16px;">
-    <div class="actions" style="display:flex; gap:10px; flex-wrap: wrap;">
-      {% if produit.famille %}
-        <a href="{% url 'admin_produits:admin_famille_edit' produit.famille.pk %}" class="btn btn-primary">
-          <span class="material-symbols-outlined">category</span>
-          Famille du produit
-        </a>
-      {% endif %}
-    </div>
-  </div>
-{% endif %}
-
-<form method="post" enctype="multipart/form-data" class="section-card">
-{% csrf_token %}
-
-{% if form.non_field_errors %}
-  <div class="field-errors">{{ form.non_field_errors }}</div>
-{% endif %}
-
-{% if formset.non_form_errors %}
-  <div class="field-errors">{{ formset.non_form_errors }}</div>
-{% endif %}
-
-<!-- ================= PRODUIT ================= -->
-<div class="form-section">
-  <h2><span class="material-symbols-outlined">inventory_2</span> Informations</h2>
-
-  <div class="form-group">
-    <label class="form-label">{{ form.nom_produit.label }}</label>
-    {{ form.nom_produit }}
-  </div>
-
-  <div class="form-group">
-    <label class="form-label">{{ form.prix_produit.label }}</label>
-    {{ form.prix_produit }}
-  </div>
-
-  <div class="form-group">
-    <label class="form-label">{{ form.famille.label }}</label>
-    {{ form.famille }}
-  </div>
-
-  <div class="form-group">
-    <label class="form-label">{{ form.description_produit.label }}</label>
-    {{ form.description_produit }}
-  </div>
-
-  <div class="form-group">
-    <label class="form-label">
-      {{ form.is_produit_du_moment }} Produit du moment
-    </label>
-  </div>
-</div>
-
-<!-- ================= IMAGES ================= -->
-<div class="form-section">
-  <h2><span class="material-symbols-outlined">image</span> Images du produit</h2>
-
-  {{ formset.management_form }}
-
-  <div class="image-grid" id="imageGrid">
-    {% for f in formset %}
-      <div class="image-card">
-        {% for hidden in f.hidden_fields %}
-          {{ hidden }}
-        {% endfor %}
-
-        {% if f.non_field_errors %}
-          <div class="field-errors">{{ f.non_field_errors }}</div>
-        {% endif %}
-
-        {% if not f.instance.pk %}
-          <label class="delete-btn" onclick="removeImage(this)">
-            <span class="material-symbols-outlined">close</span>
-          </label>
-        {% endif %}
-
-        <div class="form-group">
-          <div class="image-selector-container">
-            <div class="image-select-container">
-              <button type="button" class="image-select-btn" data-image-type="produit" data-product-id="{% if produit %}{{ produit.pk }}{% endif %}">
-                <span class="material-symbols-outlined">image</span>
-                {% if f.instance.image %}
-                  Modifier l'image sélectionnée
-                {% else %}
-                  Sélectionner une image
-                {% endif %}
-              </button>
-              {{ f.image_existing }}
-            </div>
-          </div>
-
-          {% if f.image_existing.errors %}
-            <div class="form-error">{{ f.image_existing.errors }}</div>
-          {% endif %}
-
-          <div class="image-preview-container" style="margin-top: 15px; display:none;">
-            <div class="image-preview">
-              {% if f.instance.image %}
-                <img src="{{ f.instance.image.url }}" alt="Image produit" height="80">
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Image du moment</label>
-          {{ f.is_produit_du_moment }}
-        </div>
-
-        {% if produit %}
-          <div class="form-group">
-            <label class="form-label">Supprimer</label>
-            {{ f.DELETE }}
-          </div>
+{% block content %}
+  {% if produit %}
+    <div class="section-card" style="padding: 12px; margin-bottom: 16px;">
+      <div class="actions" style="display:flex; gap:10px; flex-wrap: wrap;">
+        {% if produit.famille %}
+          <a href="{% url 'admin_produits:admin_famille_edit' produit.famille.pk %}" class="btn btn-primary">
+            <span class="material-symbols-outlined">category</span>
+            Famille du produit
+          </a>
         {% endif %}
       </div>
-    {% endfor %}
+    </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="field-errors">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% if formset.non_form_errors %}
+      <div class="field-errors">{{ formset.non_form_errors }}</div>
+    {% endif %}
+
+    <!-- ================= PRODUIT ================= -->
+    <div class="form-section">
+      <h2><span class="material-symbols-outlined">inventory_2</span> Informations</h2>
+
+      <div class="form-group">
+        <label class="form-label">{{ form.nom_produit.label }}</label>
+        {{ form.nom_produit }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ form.prix_produit.label }}</label>
+        {{ form.prix_produit }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ form.famille.label }}</label>
+        <div style="display:flex; align-items:center; gap:10px;">
+          {{ form.famille }}
+          <button type="button" id="addFamilleBtn" class="btn-submit" style="padding: 8px 10px; min-width: auto;" title="Ajouter une famille"><span class="material-symbols-outlined" style="font-size: 20px; line-height: 1;">add</span></button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ form.description_produit.label }}</label>
+        {{ form.description_produit }}
+        {% if form.description_produit.help_text %}
+          <div class="form-help">{{ form.description_produit.help_text }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ form.is_produit_du_moment }} Produit du moment</label>
+      </div>
+    </div>
+
+    <!-- ================= IMAGES ================= -->
+    <div class="form-section">
+      <h2><span class="material-symbols-outlined">image</span> Images du produit</h2>
+
+      {{ formset.management_form }}
+
+      <div class="image-grid" id="imageGrid">
+        {% for f in formset %}
+          <div class="image-card">
+            {% for hidden in f.hidden_fields %}
+              {{ hidden }}
+            {% endfor %}
+
+            {% if f.non_field_errors %}
+              <div class="field-errors">{{ f.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="image-card-toolbar">
+              <button type="button" class="move-btn" onclick="moveImage(this, -1)" title="Déplacer à gauche"><span class="material-symbols-outlined">chevron_left</span></button>
+              <button type="button" class="move-btn" onclick="moveImage(this, 1)" title="Déplacer à droite"><span class="material-symbols-outlined">chevron_right</span></button>
+              <button type="button" class="delete-btn" onclick="removeImage(this)" title="Supprimer"><span class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <div class="form-group">
+              <div class="image-selector-container">
+                <div class="image-select-container">
+                  <button type="button" class="image-select-btn" data-image-type="produit" data-product-id="{% if produit %}{{ produit.pk }}{% endif %}">
+                    <span class="material-symbols-outlined">image</span>
+                    {% if f.instance.image %}
+                      Modifier l'image sélectionnée
+                    {% else %}
+                      Sélectionner une image
+                    {% endif %}
+                  </button>
+                  {{ f.image_existing }}
+                </div>
+
+                <div class="image-preview-container" style="margin-top: 15px; display:none;">
+                  <div class="image-preview">
+                    {% if f.instance.image %}
+                      <img src="{{ f.instance.image.url }}" alt="Image produit" height="80" />
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              {% if f.image_existing.errors %}
+                <div class="form-error">{{ f.image_existing.errors }}</div>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Ordre</label>
+              {{ f.ordre }}
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Image du moment</label>
+              {{ f.is_image_du_moment }}
+            </div>
+
+            {% if produit %}
+              <div style="display:none;">{{ f.DELETE }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <button type="button" class="btn-submit" id="addImageBtn">
+        <span class="material-symbols-outlined">add</span>
+        Ajouter une image
+      </button>
+    </div>
+
+    <!-- ================= ACTIONS ================= -->
+    <div class="form-actions">
+      <a href="{% url 'admin_produits:admin_produit_list' %}" class="btn-cancel">Annuler</a>
+      <button type="submit" class="btn-submit"><span class="material-symbols-outlined">save</span> Enregistrer</button>
+    </div>
+  </form>
+
+  <!-- ================= MODAL AJOUT FAMILLE ================= -->
+  <div id="familleModal" class="image-modal" style="display:none;">
+    <div class="image-modal-content" style="max-width: 520px;">
+      <div class="image-modal-header">
+        <h2>
+          <span class="material-symbols-outlined">category</span>
+          Ajouter une famille
+        </h2>
+        <button type="button" class="image-modal-close" id="familleModalClose">&times;</button>
+      </div>
+      <div class="image-modal-body" style="padding: 20px;">
+        <div class="form-group" style="margin:0;">
+          <label class="form-label" for="familleNameInput">Nom de la famille</label>
+          <input id="familleNameInput" type="text" maxlength="100" placeholder="Ex: Boissons" style="width: 100%;" />
+          <div id="familleModalError" class="form-error" style="display:none; margin-top: 10px;"></div>
+        </div>
+      </div>
+      <div class="image-modal-footer">
+        <button type="button" class="btn-cancel" id="familleCancelBtn">
+          <span class="material-symbols-outlined">cancel</span>
+          Annuler
+        </button>
+        <button type="button" class="btn-submit" id="familleCreateBtn">
+          <span class="material-symbols-outlined">check</span>
+          Créer
+        </button>
+      </div>
+    </div>
   </div>
 
-  <button type="button" class="btn-submit" id="addImageBtn">
-    <span class="material-symbols-outlined">add</span>
-    Ajouter une image
-  </button>
-</div>
+  <!-- ================= JS ================= -->
+{% endblock %}
 
-<!-- ================= ACTIONS ================= -->
-<div class="form-actions">
-  <a href="{% url 'admin_produits:admin_produit_list' %}" class="btn-cancel">Annuler</a>
-  <button type="submit" class="btn-submit">
-    <span class="material-symbols-outlined">save</span> Enregistrer
-  </button>
-</div>
-
-</form>
-</div>
-
-<!-- ================= JS ================= -->
-<script>
-let imageIndex = parseInt('{{ total_forms|default:0 }}', 10) || 0;
-const isEdit = '{{ produit|yesno:"true,false" }}' === 'true';
-
-document.addEventListener('DOMContentLoaded', function() {
-  // Masquer le dernier formulaire vide en édition (extra=1)
-  if (isEdit) {
-    const cards = document.querySelectorAll('#imageGrid .image-card');
-    if (cards.length > 0) {
-      const lastCard = cards[cards.length - 1];
-      const idInput = lastCard.querySelector('input[name$="-id"], input[name$="-id_image"]');
-      if (!idInput || !idInput.value) {
-        lastCard.style.display = 'none';
-        lastCard.classList.add('extra-form');
+{% block extra_js %}
+  <script>
+    let imageIndex = parseInt('{{ total_forms|default:0 }}', 10) || 0
+    const isEdit = '{{ produit|yesno:"true,false" }}' === 'true'
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      // Masquer le dernier formulaire vide en édition (extra=1)
+      if (isEdit) {
+        const cards = document.querySelectorAll('#imageGrid .image-card')
+        if (cards.length > 0) {
+          const lastCard = cards[cards.length - 1]
+          const idInput = lastCard.querySelector('input[name$="-id"], input[name$="-id_image"]')
+          if (!idInput || !idInput.value) {
+            lastCard.style.display = 'none'
+            lastCard.classList.add('extra-form')
+          }
+        }
+      }
+    
+      // Afficher les previews déjà présentes (images existantes)
+      document.querySelectorAll('.image-preview-container').forEach((container) => {
+        const img = container.querySelector('img')
+        if (img && img.getAttribute('src')) {
+          container.style.display = 'block'
+        }
+      })
+    })
+    
+    document.getElementById('addImageBtn').addEventListener('click', async function () {
+      const response = await fetch('{% url "admin_produits:admin_produit_image_form" %}?index=' + imageIndex)
+      const data = await response.json()
+      if (data.error) {
+        console.error(data.error)
+        return
+      }
+      const grid = document.getElementById('imageGrid')
+      grid.insertAdjacentHTML('beforeend', data.html)
+      // Assigner un ordre par défaut à la nouvelle carte (fin de liste)
+      const newCard = grid.lastElementChild
+      if (newCard) {
+        const input = newCard.querySelector('input[name$="-ordre"]')
+        if (input) {
+          const all = Array.from(grid.querySelectorAll('input[name$="-ordre"]'))
+          const max = all
+            .map((el) => parseInt(el.value || '0', 10))
+            .filter((n) => Number.isFinite(n))
+            .reduce((a, b) => Math.max(a, b), 0)
+          input.value = String(max + 1)
+        }
+      }
+      imageIndex++
+      const totalFormsInput = document.querySelector('input[name="images-TOTAL_FORMS"]')
+      if (totalFormsInput) totalFormsInput.value = imageIndex
+    })
+    
+    /* UNE SEULE IMAGE DU MOMENT */
+    document.addEventListener('change', function (e) {
+      // On ne limite qu'au formset des images (noms: images-0-is_image_du_moment, ...)
+      // Le checkbox du produit (name="is_produit_du_moment") doit rester indépendant.
+      const isImageMomentCheckbox = e.target instanceof HTMLInputElement && e.target.type === 'checkbox' && typeof e.target.name === 'string' && e.target.name.startsWith('images-') && e.target.name.endsWith('is_image_du_moment')
+    
+      if (isImageMomentCheckbox && e.target.checked) {
+        document.querySelectorAll('input[type="checkbox"][name^="images-"][name$="is_image_du_moment"]').forEach((cb) => {
+          if (cb !== e.target) cb.checked = false
+        })
+      }
+    })
+    
+    function removeImage(btn) {
+      const card = btn.closest('.image-card')
+      if (!card) return
+    
+      const ok = window.confirm('Supprimer cette image ?')
+      if (!ok) return
+    
+      const del = card.querySelector('input[name$="-DELETE"]')
+      if (del) {
+        del.checked = true
+        card.style.display = 'none'
+        card.classList.add('is-deleted')
+        updateImageOrders()
+        return
+      }
+    
+      card.remove()
+      updateImageOrders()
+    }
+    
+    function moveImage(btn, direction) {
+      const card = btn.closest('.image-card')
+      if (!card) return
+    
+      const grid = document.getElementById('imageGrid')
+      if (!grid) return
+    
+      const cards = Array.from(grid.querySelectorAll('.image-card')).filter((c) => {
+        if (c.classList.contains('extra-form')) return false
+        if (c.classList.contains('is-deleted')) return false
+        const del = c.querySelector('input[name$="-DELETE"]')
+        if (del && del.checked) return false
+        return c.style.display !== 'none'
+      })
+    
+      const idx = cards.indexOf(card)
+      if (idx === -1) return
+    
+      if (direction < 0 && idx > 0) {
+        grid.insertBefore(card, cards[idx - 1])
+        updateImageOrders()
+      }
+    
+      if (direction > 0 && idx < cards.length - 1) {
+        const after = cards[idx + 1]
+        grid.insertBefore(after, card)
+        updateImageOrders()
       }
     }
-  }
-
-  // Afficher les previews déjà présentes (images existantes)
-  document.querySelectorAll('.image-preview-container').forEach(container => {
-    const img = container.querySelector('img');
-    if (img && img.getAttribute('src')) {
-      container.style.display = 'block';
+    
+    function updateImageOrders() {
+      const grid = document.getElementById('imageGrid')
+      if (!grid) return
+    
+      const cards = Array.from(grid.querySelectorAll('.image-card')).filter((c) => {
+        if (c.classList.contains('extra-form')) return false
+        if (c.classList.contains('is-deleted')) return false
+        const del = c.querySelector('input[name$="-DELETE"]')
+        if (del && del.checked) return false
+        return c.style.display !== 'none'
+      })
+    
+      cards.forEach((card, i) => {
+        const input = card.querySelector('input[name$="-ordre"]')
+        if (input) input.value = String(i + 1)
+      })
     }
-  });
-});
+    
+    // ===== AJOUT FAMILLE (AJAX) =====
+    function getCSRFToken() {
+      const csrfEl = document.querySelector('[name=csrfmiddlewaretoken]')
+      return csrfEl ? csrfEl.value : ''
+    }
+    
+    function openFamilleModal() {
+      const modal = document.getElementById('familleModal')
+      const input = document.getElementById('familleNameInput')
+      const err = document.getElementById('familleModalError')
+      if (err) {
+        err.style.display = 'none'
+        err.textContent = ''
+      }
+      if (input) input.value = ''
+      modal.style.display = 'block'
+      document.body.style.overflow = 'hidden'
+      setTimeout(() => input && input.focus(), 50)
+    }
+    
+    function closeFamilleModal() {
+      const modal = document.getElementById('familleModal')
+      modal.style.display = 'none'
+      document.body.style.overflow = 'auto'
+    }
+    
+    function showFamilleError(message) {
+      const err = document.getElementById('familleModalError')
+      if (!err) return
+      err.textContent = message
+      err.style.display = 'block'
+    }
+    
+    async function createFamille() {
+      const input = document.getElementById('familleNameInput')
+      const name = (input && input.value ? input.value : '').trim()
+      if (!name) {
+        showFamilleError('Veuillez saisir un nom.')
+        return
+      }
+    
+      const createBtn = document.getElementById('familleCreateBtn')
+      if (createBtn) createBtn.disabled = true
+    
+      try {
+        const response = await fetch('{% url "admin_produits:admin_famille_create_ajax" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({ name })
+        })
+    
+        const data = await response.json()
+        if (!response.ok) {
+          showFamilleError(data && data.error ? data.error : 'Erreur lors de la création.')
+          return
+        }
+    
+        const familleSelect = document.querySelector('select[name="famille"]')
+        if (!familleSelect) {
+          showFamilleError('Select famille introuvable.')
+          return
+        }
+    
+        const id = String(data.id)
+        const label = data.name
+        let option = familleSelect.querySelector(`option[value="${CSS.escape(id)}"]`)
+        if (!option) {
+          option = document.createElement('option')
+          option.value = id
+          option.textContent = label
+          familleSelect.appendChild(option)
+        } else {
+          option.textContent = label
+        }
+    
+        familleSelect.value = id
+        familleSelect.dispatchEvent(new Event('change', { bubbles: true }))
+        closeFamilleModal()
+      } catch (e) {
+        console.error(e)
+        showFamilleError('Erreur réseau.')
+      } finally {
+        if (createBtn) createBtn.disabled = false
+      }
+    }
+    
+    document.getElementById('addFamilleBtn')?.addEventListener('click', openFamilleModal)
+    document.getElementById('familleCancelBtn')?.addEventListener('click', closeFamilleModal)
+    document.getElementById('familleModalClose')?.addEventListener('click', closeFamilleModal)
+    
+    document.getElementById('familleModal')?.addEventListener('click', function (e) {
+      if (e.target === this) closeFamilleModal()
+    })
+    
+    document.getElementById('familleCreateBtn')?.addEventListener('click', createFamille)
+    
+    document.getElementById('familleNameInput')?.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        createFamille()
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeFamilleModal()
+      }
+    })
+    
+    document.addEventListener('keydown', function (e) {
+      const modal = document.getElementById('familleModal')
+      if (e.key === 'Escape' && modal && modal.style.display === 'block') {
+        closeFamilleModal()
+      }
+    })
+  </script>
 
-document.getElementById('addImageBtn').addEventListener('click', async function () {
-  const response = await fetch('{% url "admin_produits:admin_produit_image_form" %}?index=' + imageIndex);
-  const data = await response.json();
-  if (data.error) {
-    console.error(data.error);
-    return;
-  }
-  const grid = document.getElementById('imageGrid');
-  grid.insertAdjacentHTML('beforeend', data.html);
-  imageIndex++;
-  const totalFormsInput = document.querySelector('input[name="images-TOTAL_FORMS"]');
-  if (totalFormsInput) totalFormsInput.value = imageIndex;
-});
-
-/* UNE SEULE IMAGE DU MOMENT */
-document.addEventListener('change', function (e) {
-  // On ne limite qu'au formset des images (noms: images-0-is_produit_du_moment, ...)
-  // Le checkbox du produit (name="is_produit_du_moment") doit rester indépendant.
-  const isImageMomentCheckbox = (
-    e.target instanceof HTMLInputElement
-    && e.target.type === 'checkbox'
-    && typeof e.target.name === 'string'
-    && e.target.name.startsWith('images-')
-    && e.target.name.endsWith('is_produit_du_moment')
-  );
-
-  if (isImageMomentCheckbox && e.target.checked) {
-    document.querySelectorAll('input[type="checkbox"][name^="images-"][name$="is_produit_du_moment"]').forEach(cb => {
-      if (cb !== e.target) cb.checked = false;
-    });
-  }
-});
-
-function removeImage(btn) {
-  const card = btn.closest('.image-card');
-  const del = card.querySelector('input[name$="-DELETE"]');
-  if (del) {
-    del.checked = true;
-    card.style.display = 'none';
-  } else {
-    card.remove();
-  }
-}
-</script>
-
-<script src="{% static 'js/image_selector.js' %}"></script>
-
-</body>
-</html>
+  <script src="{% static 'js/image_selector.js' %}"></script>
+{% endblock %}

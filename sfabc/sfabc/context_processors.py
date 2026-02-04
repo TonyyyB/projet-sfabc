@@ -19,6 +19,8 @@ def style_processor(request):
         
     body_fg_rgb = str(tuple(int(body_fg.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)))[1:-1]
     style = ":root{\n"
+    style += f"\t--logo-size: 150px !important;\n"
+    style += f"\t--logo-size-mobile: 100px !important;\n"
     style += f"\t--bs-body-bg: {body_bg} !important;\n"
     style += f"\t--bs-dark-rgb: {body_fg_rgb} !important;\n"
     style += f'\t--bs-body-font-family: {police};\n'
