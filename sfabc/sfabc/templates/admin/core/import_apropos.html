@@ -1,0 +1,207 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Import CSV - À propos{% endblock %}
+
+{% block extra_head %}
+  <style>
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .table th, .table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+      vertical-align: top;
+    }
+    .table th {
+      text-align: left;
+      background: rgba(184, 166, 126, 0.18);
+      font-weight: 600;
+    }
+    .pill {
+      display: inline-block;
+      font-size: 0.85rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.06);
+    }
+    .pill.warn { background: rgba(176, 0, 32, 0.12); }
+    .img-slot {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .slot-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      font-weight: 600;
+    }
+    .hint { color: #666; font-size: 0.95rem; }
+    .image-selector-container { margin-top: 6px; }
+    .image-preview-container { display: none; margin-top: 8px; }
+  </style>
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Import CSV - À propos' %}
+{% endblock %}
+
+{% block content %}
+
+    {% if step == 'upload' %}
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">
+            <span class="material-symbols-outlined">upload_file</span>
+          </div>
+          <h2 class="section-title">Charger un CSV</h2>
+        </div>
+
+        <p class="hint">
+          Colonnes attendues : <span class="pill">Titre</span> <span class="pill">Description</span> <span class="pill">Photos</span>.
+          Le champ <span class="pill">Photos</span> contient jusqu'à 3 noms de fichiers séparés par <span class="pill">;</span>
+          (gauche ; centre ; droite).
+        </p>
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <input type="hidden" name="step" value="parse" />
+
+          <div class="form-group">
+            <label class="form-label">Fichier CSV</label>
+            <input type="file" name="csv_file" accept=".csv,text/csv" required />
+          </div>
+
+          <div class="actions" style="margin-top: 16px;">
+            <button type="submit" class="btn btn-primary">
+              <span class="material-symbols-outlined">arrow_forward</span>
+              Continuer
+            </button>
+          </div>
+        </form>
+      </div>
+    {% endif %}
+
+    {% if step == 'resolve' %}
+      <div class="section-card">
+        <div class="section-header">
+          <div class="section-icon">
+            <span class="material-symbols-outlined">fact_check</span>
+          </div>
+          <h2 class="section-title">Vérifier et associer les images</h2>
+        </div>
+
+        <p class="hint">
+          {% if missing_count and missing_count > 0 %}
+            <span class="pill warn">{{ missing_count }} image(s) introuvable(s)</span>
+            — sélectionner une image existante ou en importer une.
+          {% else %}
+            Toutes les images référencées ont été trouvées.
+          {% endif %}
+        </p>
+
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="step" value="import" />
+          <input type="hidden" name="rows_json" value='{{ rows_json|escape }}' />
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width: 28%">Titre</th>
+                <th style="width: 40%">Description</th>
+                <th style="width: 32%">Images (gauche / centre / droite)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in rows %}
+              <tr>
+                <td>
+                  <div style="font-weight: 600;">{{ row.titre }}</div>
+                </td>
+                <td>
+                  <div style="white-space: pre-wrap;">{{ row.description }}</div>
+                </td>
+                <td>
+                  <div class="img-slot">
+                    {% for photo in row.photos %}
+                      <div>
+                        <div class="slot-title">
+                          <span>
+                            {% if photo.position == 'left' %}Gauche{% elif photo.position == 'center' %}Centre{% else %}Droite{% endif %}
+                          </span>
+                          {% if photo.requested %}
+                            {% if photo.image %}
+                              <span class="pill">{{ photo.requested }}</span>
+                            {% else %}
+                              <span class="pill warn">Introuvable: {{ photo.requested }}</span>
+                            {% endif %}
+                          {% else %}
+                            <span class="pill">(vide)</span>
+                          {% endif %}
+                        </div>
+
+                        <div class="image-selector-container">
+                          <div class="image-select-container">
+                            <button type="button" class="image-select-btn" data-image-type="site">
+                              <span class="material-symbols-outlined">image</span>
+                              Choisir / importer
+                            </button>
+
+                            <select name="rows-{{ forloop.parentloop.counter0 }}-{{ photo.position }}-image" style="display:none;">
+                              <option value=""></option>
+                              {% if photo.image %}
+                                <option value="{{ photo.image.id }}" selected>{{ photo.image.name }}</option>
+                              {% endif %}
+                            </select>
+                          </div>
+
+                          <div class="image-preview-container" {% if photo.image %}style="display:block; margin-top: 8px;"{% endif %}>
+                            <div class="image-preview">
+                              {% if photo.image %}
+                                <img src="{{ photo.image.url }}" alt="{{ photo.image.name }}" height="80" />
+                              {% endif %}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+
+          <div class="actions" style="margin-top: 16px; justify-content: flex-end;">
+            <a href="{% url 'admin_core:admin_import_apropos' %}" class="btn btn-secondary">
+              Retour
+              Recommencer
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <span class="material-symbols-outlined">download</span>
+              Importer
+            </button>
+          </div>
+        </form>
+      </div>
+
+    {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+  {% if step == 'resolve' %}
+    <script src="{% static 'js/image_selector.js' %}"></script>
+  {% endif %}
+{% endblock %}

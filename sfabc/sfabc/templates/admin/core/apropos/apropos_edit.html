@@ -6,14 +6,14 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
   {% if page %}
-    {% include 'admin/header_admin.html' with page_title='Modifier une section' %}
+    {% include 'admin/header_admin.html' with page_title='Modifier une section à propos' %}
   {% else %}
-    {% include 'admin/header_admin.html' with page_title='Créer une section' %}
+    {% include 'admin/header_admin.html' with page_title='Créer une section à propos' %}
   {% endif %}
 {% endblock %}
 
@@ -27,21 +27,21 @@
         Contenu de la section
       </h2>
       <div class="form-group">
-        <label class="form-label">{{ form.groupe.label }}</label>
+        <label class="form-label">Groupe de la section</label>
         {{ form.groupe }}
         {% if form.groupe.errors %}
           <div class="form-error">{{ form.groupe.errors }}</div>
         {% endif %}
       </div>
       <div class="form-group">
-        <label class="form-label">{{ form.titre_ap.label }}</label>
+        <label class="form-label">Titre de la section</label>
         {{ form.titre_ap }}
         {% if form.titre_ap.errors %}
           <div class="form-error">{{ form.titre_ap.errors }}</div>
         {% endif %}
       </div>
       <div class="form-group">
-        <label class="form-label">{{ form.description_ap.label }}</label>
+        <label class="form-label">Description de la section</label>
         {{ form.description_ap }}
         {% if form.description_ap.errors %}
           <div class="form-error">{{ form.description_ap.errors }}</div>
@@ -95,7 +95,7 @@
                 <div class="form-error">{{ sf.image.errors }}</div>
               {% endif %}
             </div>
-            <label class="form-label">{{ sf.titre_image.label }}</label>
+            <label class="form-label">Titre de l'image</label>
             {{ sf.titre_image }}
             {% if sf.titre_image.errors %}
               <div class="form-error">{{ sf.titre_image.errors }}</div>

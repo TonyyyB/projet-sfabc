@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
@@ -22,7 +22,7 @@
         Informations du groupe
       </h2>
       <div class="form-group">
-        <label class="form-label">{{ form.titre_groupe.label }}</label>
+        <label class="form-label">Titre du groupe</label>
         {{ form.titre_groupe }}
         {% if form.titre_groupe.errors %}
           <div class="form-error">{{ form.titre_groupe.errors }}</div>
