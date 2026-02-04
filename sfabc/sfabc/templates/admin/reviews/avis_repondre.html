@@ -89,7 +89,7 @@
   }
   
   .avis-detail {
-    background: #f6f2e8;
+    background: var(--sfabc-page-background);
     border-radius: 8px;
     padding: 20px;
   }
@@ -99,7 +99,7 @@
     align-items: center;
     gap: 15px;
     padding: 10px 0;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid var(--sfabc-border-secondary);
   }
   
   .avis-detail-row:last-child {
@@ -112,27 +112,27 @@
   
   .detail-label {
     font-weight: 600;
-    color: #5a4328;
+    color: var(--sfabc-text-important);
     min-width: 100px;
   }
   
   .detail-value {
-    color: #333;
+    color: var(--sfabc-text-normal);
   }
   
   .detail-value.stars {
-    color: #b8a67e;
+    color: var(--sfabc-text-important);
     font-size: 1.3em;
     letter-spacing: 2px;
   }
   
   .message-content {
-    background: white;
+    background: var(--sfabc-card-bg);
     border-radius: 8px;
     padding: 15px;
     margin-top: 10px;
     line-height: 1.6;
-    color: #333;
+    color: var(--sfabc-text-normal);
   }
 </style>
 {% endblock %}

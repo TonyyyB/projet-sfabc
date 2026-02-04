@@ -90,6 +90,8 @@ DATABASES = {
         'OPTIONS': {
             # éviter certains blocages en cas de FS lent/chargé
             'timeout': 20,
+            # Configuration pour améliorer la compatibilité avec NFS
+            'init_command': 'PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;',
         },
     }
 }

@@ -29,7 +29,7 @@
     <h2>Produits de cette famille</h2>
 
     {% for produit in produits %}
-      <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" style="text-decoration: none; color: inherit;">
+      <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" style="text-decoration: none; color: var(--sfabc-text-normal);">
         <div class="list-item">
           <strong>{{ produit.nom_produit }}</strong>
           <span>{{ produit.prix_produit }} €</span>
