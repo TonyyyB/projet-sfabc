@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
@@ -18,7 +18,7 @@
     <form method="post" action="{% url 'admin_core:admin_apropos_group_add' %}" class="form-group" style="display:flex; gap: 0.75rem; align-items: end; flex-wrap: wrap;">
       {% csrf_token %}
       <div style="flex: 1; min-width: 260px;">
-        <label class="form-label">{{ group_form.titre_groupe.label }}</label>
+        <label class="form-label">Titre du groupe</label>
         {{ group_form.titre_groupe }}
       </div>
       <button type="submit" class="btn btn-primary">

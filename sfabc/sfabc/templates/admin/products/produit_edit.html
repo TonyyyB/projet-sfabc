@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block top_action %}
-  <a href="{% url 'admin_produits:admin_produit_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+  <a href="{% url 'admin_produits:admin_produit_list' %}" class="logout-btn">Retour</a>
 {% endblock %}
 
 {% block header %}
@@ -51,17 +51,17 @@
       <h2><span class="material-symbols-outlined">inventory_2</span> Informations</h2>
 
       <div class="form-group">
-        <label class="form-label">{{ form.nom_produit.label }}</label>
+        <label class="form-label">Nom du produit</label>
         {{ form.nom_produit }}
       </div>
 
       <div class="form-group">
-        <label class="form-label">{{ form.prix_produit.label }}</label>
+        <label class="form-label">Prix du produit</label>
         {{ form.prix_produit }}
       </div>
 
       <div class="form-group">
-        <label class="form-label">{{ form.famille.label }}</label>
+        <label class="form-label">Famille du produit</label>
         <div style="display:flex; align-items:center; gap:10px;">
           {{ form.famille }}
           <button type="button" id="addFamilleBtn" class="btn-submit" style="padding: 8px 10px; min-width: auto;" title="Ajouter une famille"><span class="material-symbols-outlined" style="font-size: 20px; line-height: 1;">add</span></button>
@@ -69,7 +69,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">{{ form.description_produit.label }}</label>
+        <label class="form-label">Description du produit</label>
         {{ form.description_produit }}
         {% if form.description_produit.help_text %}
           <div class="form-help">{{ form.description_produit.help_text }}</div>
