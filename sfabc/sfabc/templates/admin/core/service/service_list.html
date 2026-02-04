@@ -1,76 +1,66 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gérer les services</title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  </head>
-  <body>
-    <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% extends 'admin/base_admin.html' %}
 
-    <div class="container">
-      <header>
-        <h1>Services</h1>
-      </header>
+{% block title %}
+  Gérer les services
+{% endblock %}
 
-      {% if messages %}
-        <div class="section-card">
-          {% for message in messages %}
-            {{ message }}
-          {% endfor %}
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Services' %}
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'admin_core:admin_service_add' %}" class="btn btn-primary">
+    <span class="material-symbols-outlined">add</span>
+    Ajouter un service
+  </a>
+
+  {% for service in services %}
+    <div class="list-item">
+      <div class="list-header">
+        <div>
+          <h2>{{ service.titre_service }}</h2>
+          <p>{{ service.description_service|truncatewords:20 }}</p>
         </div>
-      {% endif %}
 
-      <a href="{% url 'admin_core:admin_service_add' %}" class="btn btn-primary">
-        <span class="material-symbols-outlined">add</span>
-        Ajouter un service
-      </a>
-
-      {% for service in services %}
-        <div class="list-item">
-          <div class="list-header">
-            <div>
-              <h2>{{ service.titre_service }}</h2>
-              <p>{{ service.description_service|truncatewords:20 }}</p>
-            </div>
-
-            <div class="arrows">
-              {% if not forloop.first %}
-              <a href="{% url 'admin_core:admin_service_move' service.pk 'up' %}"><span class="material-symbols-outlined">arrow_upward</span></a>
-              {% endif %}
-              {% if not forloop.last %}
-              <a href="{% url 'admin_core:admin_service_move' service.pk 'down' %}"><span class="material-symbols-outlined">arrow_downward</span></a>
-              {% endif %}
-            </div>
-          </div>
-
-          <div class="actions">
-            <a href="{% url 'admin_core:admin_service_edit' service.pk %}" class="btn btn-primary">
-              <span class="material-symbols-outlined">edit</span>
-              Modifier
-            </a>
-
-            <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
-              <span class="material-symbols-outlined">delete</span>
-              Supprimer
-            </a>
-          </div>
+        <div class="arrows">
+          {% if not forloop.first %}
+            <a href="{% url 'admin_core:admin_service_move' service.pk 'up' %}"><span class="material-symbols-outlined">arrow_upward</span></a>
+          {% endif %}
+          {% if not forloop.last %}
+            <a href="{% url 'admin_core:admin_service_move' service.pk 'down' %}"><span class="material-symbols-outlined">arrow_downward</span></a>
+          {% endif %}
         </div>
-      {% endfor %}
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_core:admin_service_edit' service.pk %}" class="btn btn-primary">
+          <span class="material-symbols-outlined">edit</span>
+          Modifier
+        </a>
+
+        <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer
+        </a>
+      </div>
     </div>
+  {% endfor %}
+{% endblock %}
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        document.querySelectorAll('[data-confirm]').forEach(function (el) {
-          el.addEventListener('click', function (e) {
-            if (!confirm(el.dataset.confirm)) {
-              e.preventDefault()
-            }
-          })
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('[data-confirm]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          if (!confirm(el.dataset.confirm)) {
+            e.preventDefault()
+          }
         })
       })
-    </script>
-  </body>
-</html>
+    })
+  </script>
+{% endblock %}

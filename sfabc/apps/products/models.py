@@ -1,4 +1,5 @@
-from django.db import models
+from django.db import models, transaction
+from django.db.models import Q
 
 # Create your models here.
 class Famille(models.Model):
@@ -29,8 +30,32 @@ class Image_Produit(models.Model):
     id_image = models.AutoField(primary_key=True)
     image = models.ImageField(upload_to="images/produits")
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images", null=True, blank=True)
-    is_produit_du_moment = models.BooleanField(default=False)
+    ordre = models.PositiveIntegerField(default=0)
+    is_image_du_moment = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["ordre", "id_image"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["produit"],
+                condition=Q(is_image_du_moment=True) & Q(produit__isnull=False),
+                name="unique_image_du_moment_par_produit",
+            ),
+        ]
+
+    def save(self, *args, **kwargs):
+        """Garantit qu'il n'y a qu'une seule image du moment par produit."""
+        with transaction.atomic():
+            if self.is_image_du_moment and self.produit_id:
+                (
+                    Image_Produit.objects.filter(produit_id=self.produit_id, is_image_du_moment=True)
+                    .exclude(pk=self.pk)
+                    .update(is_image_du_moment=False)
+                )
+            super().save(*args, **kwargs)
 
     def __str__(self):
         """Représentation lisible d'une image produit (nom de fichier)."""
+        if self.produit_id:
+            return f"Image {self.image.name} associée à {self.produit.nom_produit}"
         return f"Image {self.image.name}"

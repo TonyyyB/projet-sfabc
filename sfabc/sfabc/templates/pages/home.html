@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load text_format %}
 {% block content %}
 {% for prdt in produits_moment %}
     <div class="product-container">
@@ -6,7 +7,7 @@
         <div class="product-even">
             <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
                 <h3>{{ prdt.nom_produit }}</h3>
-                <p>{{ prdt.description_produit }}</p>
+                <p>{{ prdt.description_produit|mini_markdown }}</p>
             </a>
         </div>
         <div class="product-image-container product-even">
@@ -23,7 +24,7 @@
         <div class="product-odd">
             <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
                 <h3>{{ prdt.nom_produit }}</h3>
-                <p>{{ prdt.description_produit }}</p>
+                <p>{{ prdt.description_produit|mini_markdown }}</p>
             </a>
         </div>
         {% endif %}

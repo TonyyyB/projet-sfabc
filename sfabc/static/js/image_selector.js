@@ -12,6 +12,22 @@ class ImageSelector {
         this.filteredImages = [];
         this.currentImagePreview = null;
         this.newImagePreview = null;
+        this.uploadInput = null;
+
+        // Pagination / recherche côté serveur
+        this.page = 1;
+        this.pageSize = 60;
+        this.numPages = 1;
+        this.totalCount = 0;
+        this.query = '';
+        this.isLoading = false;
+        this.paginationEl = null;
+        this.prevBtn = null;
+        this.nextBtn = null;
+        this.pageInfoEl = null;
+        this.pageSizeSelect = null;
+        this._searchDebounceTimer = null;
+        this._abortController = null;
 
         this.init();
     }
@@ -38,6 +54,24 @@ class ImageSelector {
                         <input type="text" class="image-search-input" placeholder="Rechercher une image...">
                     </div>
 
+                    <div class="image-pagination" aria-label="Pagination images">
+                        <button type="button" class="image-page-btn" id="imagePrevPage" aria-label="Page précédente">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <div class="image-page-info" id="imagePageInfo">Page 1 / 1</div>
+                        <button type="button" class="image-page-btn" id="imageNextPage" aria-label="Page suivante">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                        <div class="image-page-size">
+                            <label for="imagePageSizeSelect">/ page</label>
+                            <select id="imagePageSizeSelect">
+                                <option value="30">30</option>
+                                <option value="60" selected>60</option>
+                                <option value="120">120</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="image-modal-body">
                         <div class="image-selection-grid" id="imageSelectionGrid">
                             <!-- Les images seront chargées ici -->
@@ -54,10 +88,6 @@ class ImageSelector {
                             <span class="material-symbols-outlined">cancel</span>
                             Annuler
                         </button>
-                        <button class="btn-submit" id="confirmImageSelection" disabled>
-                            <span class="material-symbols-outlined">check</span>
-                            Sélectionner
-                        </button>
                     </div>
                 </div>
             </div>
@@ -68,9 +98,16 @@ class ImageSelector {
         this.modal = document.getElementById('imageModal');
         this.searchInput = this.modal.querySelector('.image-search-input');
         this.grid = document.getElementById('imageSelectionGrid');
+        this.uploadInput = document.getElementById('imageUploadInput');
         this.previewComparison = document.getElementById('imagePreviewComparison');
         this.currentImagePreview = document.getElementById('currentImagePreview');
         this.newImagePreview = document.getElementById('newImagePreview');
+
+        this.paginationEl = this.modal.querySelector('.image-pagination');
+        this.prevBtn = document.getElementById('imagePrevPage');
+        this.nextBtn = document.getElementById('imageNextPage');
+        this.pageInfoEl = document.getElementById('imagePageInfo');
+        this.pageSizeSelect = document.getElementById('imagePageSizeSelect');
     }
 
     getCSRFToken() {
@@ -94,13 +131,26 @@ class ImageSelector {
             this.filterImages(e.target.value);
         });
 
-        // Confirmer la sélection
-        document.getElementById('confirmImageSelection').addEventListener('click', () => {
-            if (this.selectedImage && this.callback) {
-                console.log(this.selectedImage);
-                this.callback(this.selectedImage);
+        // Pagination
+        this.prevBtn?.addEventListener('click', () => {
+            if (this.page > 1 && !this.isLoading) {
+                this.page -= 1;
+                this.loadImages();
             }
-            this.close();
+        });
+        this.nextBtn?.addEventListener('click', () => {
+            if (this.page < this.numPages && !this.isLoading) {
+                this.page += 1;
+                this.loadImages();
+            }
+        });
+        this.pageSizeSelect?.addEventListener('change', () => {
+            const v = parseInt(this.pageSizeSelect.value, 10);
+            if (!Number.isNaN(v) && v > 0) {
+                this.pageSize = v;
+                this.page = 1;
+                this.loadImages();
+            }
         });
 
         // Échap pour fermer
@@ -111,13 +161,11 @@ class ImageSelector {
         });
 
         document.getElementById('uploadImageBtn').addEventListener('click', () => {
-            document.getElementById('imageUploadInput').click();
+            this.uploadInput?.click();
         });
 
-
-
-        document.getElementById('imageUploadInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
+        this.uploadInput?.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
             if (!file) return;
 
             const formData = new FormData();
@@ -125,43 +173,126 @@ class ImageSelector {
             formData.append('type', this.imageType);
             formData.append('product_id', this.productId || '');
 
-            const response = await fetch('/admin/images/upload/', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRFToken': this.getCSRFToken()
-                }
-            });
+            try {
+                const response = await fetch('/admin/images/upload/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': this.getCSRFToken()
+                    }
+                });
 
-            const data = await response.json();
-            this.images.unshift(data.image);
-            this.filteredImages = [...this.images];
-            this.renderImages();
+                if (!response.ok) {
+                    throw new Error("Erreur lors de l'upload de l'image");
+                }
+
+                const data = await response.json();
+                const uploadedImage = data?.image;
+                if (!uploadedImage) {
+                    throw new Error("Réponse d'upload invalide");
+                }
+
+                // Sélectionner immédiatement l'image uploadée et fermer le modal.
+                if (this.callback) {
+                    this.callback(uploadedImage);
+                }
+                this.close();
+            } catch (error) {
+                console.error("Erreur lors de l'upload:", error);
+            } finally {
+                // Permet de re-sélectionner le même fichier (sinon l'event change peut ne pas se déclencher)
+                if (this.uploadInput) {
+                    this.uploadInput.value = '';
+                }
+            }
         });
+    }
+
+    setLoading(isLoading) {
+        this.isLoading = isLoading;
+        if (this.prevBtn) this.prevBtn.disabled = isLoading || this.page <= 1;
+        if (this.nextBtn) this.nextBtn.disabled = isLoading || this.page >= this.numPages;
+        // Important: ne pas désactiver l'input de recherche, sinon le navigateur retire le focus.
+        if (this.pageSizeSelect) this.pageSizeSelect.disabled = isLoading;
+        if (this.grid) {
+            this.grid.classList.toggle('is-loading', isLoading);
+        }
+    }
+
+    updatePaginationUI() {
+        if (this.pageInfoEl) {
+            const countTxt = this.totalCount ? ` • ${this.totalCount} image(s)` : '';
+            this.pageInfoEl.textContent = `Page ${this.page} / ${this.numPages}${countTxt}`;
+        }
+        if (this.prevBtn) this.prevBtn.disabled = this.isLoading || this.page <= 1;
+        if (this.nextBtn) this.nextBtn.disabled = this.isLoading || this.page >= this.numPages;
+        if (this.pageSizeSelect) {
+            this.pageSizeSelect.value = String(this.pageSize);
+        }
     }
 
     async loadImages() {
         try {
-            // Récupérer les images depuis l'API Django ou une URL
-            const url = this.imageType === 'site' ? '/admin/images/api/' : '/admin/produits/images/api/';
-            console.log(url);
-            console.log(this.imageType);
-            const response = await fetch(url);
+            const keepSearchFocus = document.activeElement === this.searchInput;
+            this.setLoading(true);
+
+            // Annuler la requête précédente si nécessaire (utile quand on tape vite dans la recherche)
+            try {
+                this._abortController?.abort();
+            } catch (e) {
+                // ignore
+            }
+            this._abortController = new AbortController();
+
+            // Récupérer les images depuis l'API Django (pagination + recherche)
+            const baseUrl = this.imageType === 'site' ? '/admin/images/api/' : '/admin/produits/images/api/';
+            const params = new URLSearchParams();
+            params.set('page', String(this.page || 1));
+            params.set('page_size', String(this.pageSize || 60));
+            if (this.query) params.set('q', this.query);
+
+            const url = `${baseUrl}?${params.toString()}`;
+
+            const response = await fetch(url, { signal: this._abortController.signal });
             if (!response.ok) {
                 throw new Error('Erreur lors du chargement des images');
             }
             const data = await response.json();
             this.images = data.images || [];
             this.filteredImages = [...this.images];
-            this.renderImages();
-        } catch (error) {
-            console.error('Erreur lors du chargement des images:', error);
-            // Fallback: utiliser des données statiques si l'API n'est pas disponible
-            this.images = [
 
-            ];
-            this.filteredImages = [...this.images];
+            const p = data.pagination || {};
+            this.page = parseInt(p.page || this.page || 1, 10) || 1;
+            this.numPages = parseInt(p.num_pages || 1, 10) || 1;
+            this.totalCount = parseInt(p.count || 0, 10) || 0;
             this.renderImages();
+            this.updatePaginationUI();
+
+            // Restaurer le focus sur la recherche si elle l'avait avant le refresh.
+            if (keepSearchFocus && this.searchInput && this.modal?.style?.display === 'block') {
+                this.searchInput.focus({ preventScroll: true });
+                try {
+                    const len = this.searchInput.value.length;
+                    this.searchInput.setSelectionRange(len, len);
+                } catch (e) {
+                    // ignore
+                }
+            }
+        } catch (error) {
+            // Ignore les annulations (ex: utilisateur qui retape avant la fin)
+            if (error && (error.name === 'AbortError' || String(error).includes('AbortError'))) {
+                return;
+            }
+
+            console.error('Erreur lors du chargement des images:', error);
+            this.images = [];
+            this.filteredImages = [];
+            this.numPages = 1;
+            this.totalCount = 0;
+            this.renderImages();
+            this.updatePaginationUI();
+        } finally {
+            this.setLoading(false);
         }
     }
 
@@ -188,6 +319,19 @@ class ImageSelector {
         });
     }
 
+    filterImages(query) {
+        // Recherche côté serveur (debounce)
+        this.query = String(query || '').trim();
+        this.page = 1;
+
+        if (this._searchDebounceTimer) {
+            clearTimeout(this._searchDebounceTimer);
+        }
+        this._searchDebounceTimer = setTimeout(() => {
+            this.loadImages();
+        }, 250);
+    }
+
     selectImage(image, element) {
         // Désélectionner l'ancienne image
         const previouslySelected = this.modal.querySelector('.image-selection-item.selected');
@@ -199,14 +343,15 @@ class ImageSelector {
         element.classList.add('selected');
         this.selectedImage = image;
 
-        // Mettre à jour l'aperçu de la nouvelle image
-        //this.updateNewImagePreview(image);
-
-        // Activer le bouton de confirmation
-        document.getElementById('confirmImageSelection').disabled = false;
+        // Validation immédiate (plus de bouton "Sélectionner")
+        if (this.callback) {
+            this.callback(image);
+        }
+        this.close();
     }
 
     updateNewImagePreview(image) {
+        if (!this.newImagePreview) return;
         if (image && image.url) {
             this.newImagePreview.innerHTML = `<img src="${image.url}" alt="${image.name || 'Nouvelle image'}" style="max-width: 100%; max-height: 200px; object-fit: contain; border-radius: 8px;">`;
         } else {
@@ -221,20 +366,15 @@ class ImageSelector {
         this.currentImage = currentImage;
         this.selectedImage = null;
         this.searchInput.value = '';
-        this.filteredImages = [...this.images];
+        this.query = '';
+        this.page = 1;
+        this.filteredImages = [];
 
         // Mettre à jour l'aperçu de l'image actuelle
         //this.updateCurrentImagePreview(currentImage);
 
-        // Désactiver le bouton de confirmation
-        document.getElementById('confirmImageSelection').disabled = true;
-
-        // Charger les images si ce n'est pas déjà fait
-        if (this.images.length === 0) {
-            this.loadImages();
-        } else {
-            this.renderImages();
-        }
+        // Charger la première page (toujours serveur)
+        this.loadImages();
 
         // Afficher le modal
         this.modal.style.display = 'block';
@@ -267,18 +407,43 @@ function openImageSelector(callback, currentImage = null, imageType = 'site', pr
 
 // Attacher les événements aux boutons de sélection d'images
 document.addEventListener('DOMContentLoaded', function () {
+    const displayName = (name) => {
+        const s = String(name || '').trim();
+        if (!s) return '';
+        const parts = s.split('/');
+        return parts[parts.length - 1] || s;
+    };
+
+    const updateClosestPhotoPill = (buttonEl, newName) => {
+        try {
+            const photoItem = buttonEl?.closest?.('.photo-item');
+            if (!photoItem) return;
+            const pill = photoItem.querySelector('[data-role="photo-filename"]') || photoItem.querySelector('.photo-title .pill');
+            if (!pill) return;
+            pill.textContent = newName || pill.textContent;
+            pill.classList.remove('warn');
+            if (pill.getAttribute('data-missing') === '1') {
+                pill.setAttribute('data-missing', '0');
+            }
+        } catch (e) {
+            // ignore
+        }
+    };
+
     // Attacher aux boutons avec la classe image-select-btn
     document.addEventListener('click', function (e) {
         if (e.target.closest('.image-select-btn')) {
             e.preventDefault();
             const button = e.target.closest('.image-select-btn');
             const container = button.closest('.image-selector-container');
+            const card = button.closest('.image-card') || container;
             const imageType = button.dataset.imageType || 'site';
             const productId = button.dataset.productId || null;
             
             // Chercher le select de manière relative au conteneur
             // - services : ...-image
             // - produits : ...-image_existing
+            if (!container) return;
             const targetInput = container.querySelector('select[name$="-image"], select[name$="-image_existing"]');
             
             console.log(button.dataset);
@@ -290,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const selectedOption = targetInput.querySelector(`option[value="${targetInput.value}"]`);
                 if (selectedOption && selectedOption.textContent.trim()) {
                     // Essayer de récupérer l'URL de l'image depuis les données du bouton ou du formulaire
-                    const existingImage = container ? container.querySelector('img') : null;
+                    const existingImage = card ? card.querySelector('.image-preview-container img') : null;
                     if (existingImage) {
                         currentImage = {
                             id: targetInput.value,
@@ -303,6 +468,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             openImageSelector(function (selectedImage) {
                 if (targetInput) {
+                    const prettyName = displayName(selectedImage?.name);
                     let option = targetInput.querySelector(
                         `option[value="${selectedImage.id}"]`
                     );
@@ -312,19 +478,30 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (!option) {
                         option = document.createElement("option");
                         option.value = selectedImage.id;
-                        option.textContent = selectedImage.name;
+                        option.textContent = prettyName || selectedImage.name;
                         targetInput.appendChild(option);
+                    } else {
+                        // Keep text in sync (useful after upload)
+                        option.textContent = prettyName || selectedImage.name;
                     }
                     targetInput.value = selectedImage.id;
+                    try {
+                        targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (e) {
+                        // ignore
+                    }
+
+                    // Import produits page: update the filename pill immediately
+                    updateClosestPhotoPill(button, prettyName || selectedImage.name);
+
                     // Mettre à jour l'aperçu si disponible
-                    if (container) {
-                        const previewContainers = container.querySelectorAll('.image-preview-container');
-                        // Cibler le dernier conteneur d'aperçu (celui après le select)
+                    if (card) {
+                        const previewContainers = card.querySelectorAll('.image-preview-container');
                         const previewContainer = previewContainers[previewContainers.length - 1];
                         if (previewContainer) {
                             previewContainer.style.display = "block";
                             previewContainer.querySelector('.image-preview').innerHTML =
-                                `<img src="${selectedImage.url}" alt="${selectedImage.name}" height="80">`;
+                                `<img src="${selectedImage.url}" alt="${prettyName || selectedImage.name}" height="80">`;
                         }
                     }
                 }

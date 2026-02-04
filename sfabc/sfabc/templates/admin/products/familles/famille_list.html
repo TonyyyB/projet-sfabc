@@ -1,62 +1,56 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Familles de produits</title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  </head>
-  <body>
-    <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% extends 'admin/base_admin.html' %}
 
-    <div class="container">
-      <header>
-        <h1>Familles de produits</h1>
-      </header>
+{% block title %}
+  Familles de produits
+{% endblock %}
 
-      <a href="{% url 'admin_produits:admin_famille_add' %}" class="btn btn-primary">
-        <span class="material-symbols-outlined">add</span>
-        Ajouter une famille
-      </a>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-      {% for famille in familles %}
-        <div class="list-item">
-          <div class="list-header">
-            <h2>{{ famille.nom_famille }}</h2>
-            <span>{{ famille.nb_produits|default:famille.famille.count }} produit(s)</span>
-          </div>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Familles de produits' %}
+{% endblock %}
 
-          <div class="actions">
-            <a href="{% url 'admin_produits:admin_famille_edit' famille.pk %}" class="btn btn-primary">
-              <span class="material-symbols-outlined">edit</span>
-              Modifier
-            </a>
+{% block content %}
+  <a href="{% url 'admin_produits:admin_famille_add' %}" class="btn btn-primary">
+    <span class="material-symbols-outlined">add</span>
+    Ajouter une famille
+  </a>
 
-            {% if famille.nb_produits|default:famille.famille.count == 0 %}
-              <a
-                href="{% url 'admin_produits:admin_famille_delete' famille.pk %}"
-                class="btn btn-danger"
-                data-confirm="Supprimer la famille « {{ famille.nom_famille }} » ?"
-              >
-                <span class="material-symbols-outlined">delete</span>
-                Supprimer
-              </a>
-            {% endif %}
-          </div>
-        </div>
-      {% empty %}
-        <div class="section-card">Aucune famille créée.</div>
-      {% endfor %}
+  {% for famille in familles %}
+    <div class="list-item">
+      <div class="list-header">
+        <h2>{{ famille.nom_famille }}</h2>
+        <span>{{ famille.nb_produits|default:famille.famille.count }} produit(s)</span>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_produits:admin_famille_edit' famille.pk %}" class="btn btn-primary">
+          <span class="material-symbols-outlined">edit</span>
+          Modifier
+        </a>
+
+        {% if famille.nb_produits|default:famille.famille.count == 0 %}
+          <a href="{% url 'admin_produits:admin_famille_delete' famille.pk %}" class="btn btn-danger" data-confirm="Supprimer la famille « {{ famille.nom_famille }} » ?">
+            <span class="material-symbols-outlined">delete</span>
+            Supprimer
+          </a>
+        {% endif %}
+      </div>
     </div>
+  {% empty %}
+    <div class="section-card">Aucune famille créée.</div>
+  {% endfor %}
+{% endblock %}
 
-    <script>
-      document.querySelectorAll('[data-confirm]').forEach(el => {
-        el.addEventListener('click', e => {
-          const msg = el.dataset.confirm || "Supprimer cette famille ?";
-          if (!confirm(msg)) e.preventDefault();
-        })
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('[data-confirm]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        const msg = el.dataset.confirm || 'Supprimer cette famille ?'
+        if (!confirm(msg)) e.preventDefault()
       })
-    </script>
-  </body>
-</html>
+    })
+  </script>
+{% endblock %}

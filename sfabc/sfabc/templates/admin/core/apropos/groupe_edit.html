@@ -1,0 +1,44 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Éditer un groupe À propos
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Modifier le groupe' %}
+{% endblock %}
+
+{% block content %}
+  <form method="post" class="section-card">
+    {% csrf_token %}
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">category</span>
+        Informations du groupe
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.titre_groupe.label }}</label>
+        {{ form.titre_groupe }}
+        {% if form.titre_groupe.errors %}
+          <div class="form-error">{{ form.titre_groupe.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn-cancel">
+        <span class="material-symbols-outlined">cancel</span>
+        Annuler
+      </a>
+      <button type="submit" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer
+      </button>
+    </div>
+  </form>
+{% endblock %}
