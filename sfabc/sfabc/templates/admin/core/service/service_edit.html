@@ -1,195 +1,162 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>
-      {% if service %}
-        Modifier
-      {% else %}
-        Ajouter
-      {% endif %}un service
-    </title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  </head>
 
-  <body>
-    <a href="{% url 'admin_core:admin_service_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% block title %}
+  {% if service %}
+    Modifier
+  {% else %}
+    Ajouter
+  {% endif %}un service
+{% endblock %}
 
-    <div class="container">
-      <header>
-        <h1>
-          {% if service %}
-            Modifier
-          {% else %}
-            Ajouter
-          {% endif %}un service
-        </h1>
-      </header>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_service_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-      {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-              <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-              </span>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+{% block header %}
+  {% if service %}
+    {% include 'admin/header_admin.html' with page_title='Modifier un service' %}
+  {% else %}
+    {% include 'admin/header_admin.html' with page_title='Ajouter un service' %}
+  {% endif %}
+{% endblock %}
 
-      <form method="post" enctype="multipart/form-data" class="section-card">
-        {% csrf_token %}
+{% block content %}
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">build</span>
-            Informations du service
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ form.titre_service.label }}</label>
-            {{ form.titre_service }}
-            {% if form.titre_service.errors %}
-              <div class="form-error">{{ form.titre_service.errors }}</div>
-            {% endif %}
-          </div>
-          <div class="form-group">
-            <label class="form-label">{{ form.description_service.label }}</label>
-            {{ form.description_service }}
-            {% if form.description_service.errors %}
-              <div class="form-error">{{ form.description_service.errors }}</div>
-            {% endif %}
-          </div>
-          <div class="form-group">
-            <label class="form-label">{{ form.ordre_service.label }}</label>
-            {{ form.ordre_service }}
-            {% if form.ordre_service.errors %}
-              <div class="form-error">{{ form.ordre_service.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">image</span>
-            Images du service
-          </h2>
-
-          {{ formset.management_form }}
-
-          <div class="image-grid" id="imageGrid">
-            {% for f in formset %}
-              <div class="image-card">
-                {% for hidden in f.hidden_fields %}
-                  {{ hidden }}
-                {% endfor %}
-                {% if f.non_field_errors %}
-                  <div class="field-errors">
-                    {{ f.non_field_errors }}
-                  </div>
-                {% endif %}
-
-                <div class="image-card-toolbar">
-                  <button type="button" class="move-btn" onclick="moveImage(this, -1)" title="Déplacer à gauche">
-                    <span class="material-symbols-outlined">chevron_left</span>
-                  </button>
-                  <button type="button" class="move-btn" onclick="moveImage(this, 1)" title="Déplacer à droite">
-                    <span class="material-symbols-outlined">chevron_right</span>
-                  </button>
-                  <button type="button" class="delete-btn" onclick="removeImage(this)" title="Supprimer">
-                    <span class="material-symbols-outlined">close</span>
-                  </button>
-                </div>
-
-                <div class="form-group">
-                  <div class="image-selector-container">
-                  <div class="image-preview-container" style="display:none;">
-                    <label class="form-label">Image modifié</label>
-                    <div class="image-preview">
-                      <img src="{{ f.instance.image.image.url }}" height="80" alt="Image Modifier" />
-                    </div>
-                  </div>
-                  <div class="image-select-container">
-                    <button type="button" class="image-select-btn">
-                      <span class="material-symbols-outlined">image</span>
-                      {% if f.instance.image %}
-                        Modifier l'image sélectionnée
-                      {% else %}
-                        Sélectionner une image
-                      {% endif %}
-                    </button>
-                    {{ f.image }}
-                  </div>
-                </div>
-                  {% if f.image.errors %}
-                    <div class="form-error">{{ f.image.errors }}</div>
-                  {% endif %}
-                  <div class="image-preview-container" style="{% if not f.instance.image %}display: none;{% endif %} margin-top: 15px;">
-                    <div class="image-preview">
-                      {% if f.instance.image %}
-                        <img src="{{ f.instance.image.image.url }}" alt="{{ f.instance.image }}" height="80">
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Titre de l'image</label>
-                  {{ f.titre_image }}
-                  {% if f.titre_image.errors %}
-                    <div class="form-error">{{ f.titre_image.errors }}</div>
-                  {% endif %}
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Ordre</label>
-                  {{ f.ordre }}
-                  {% if f.ordre.errors %}
-                    <div class="form-error">{{ f.ordre.errors }}</div>
-                  {% endif %}
-                </div>
-
-                {% if service is not None %}
-                  <div style="display:none;">{{ f.DELETE }}</div>
-                {% endif %}
-              </div>
-            {% endfor %}
-          </div>
-
-          <div class="form-group">
-            <button type="button" class="btn-submit" id="addImageBtn">
-              <span class="material-symbols-outlined">add</span>
-              Ajouter une image
-            </button>
-          </div>
-        </div>
-
-        <div id="templateSlot" style="display:none;"></div>
-
-        <div class="form-actions">
-          {% if service %}
-            <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
-              <span class="material-symbols-outlined">delete</span>
-              Supprimer
-            </a>
-          {% endif %}
-          <a href="{% url 'admin_core:admin_service_list' %}" class="btn-cancel">
-            <span class="material-symbols-outlined">cancel</span>
-            Annuler
-          </a>
-          <button type="submit" class="btn-submit">
-            <span class="material-symbols-outlined">save</span>
-            Enregistrer
-          </button>
-        </div>
-      </form>
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">build</span>
+        Informations du service
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.titre_service.label }}</label>
+        {{ form.titre_service }}
+        {% if form.titre_service.errors %}
+          <div class="form-error">{{ form.titre_service.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.description_service.label }}</label>
+        {{ form.description_service }}
+        {% if form.description_service.errors %}
+          <div class="form-error">{{ form.description_service.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.ordre_service.label }}</label>
+        {{ form.ordre_service }}
+        {% if form.ordre_service.errors %}
+          <div class="form-error">{{ form.ordre_service.errors }}</div>
+        {% endif %}
+      </div>
     </div>
 
-    <script>
-    let imageIndex = {{ total_forms }};
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">image</span>
+        Images du service
+      </h2>
+
+      {{ formset.management_form }}
+
+      <div class="image-grid" id="imageGrid" data-total-forms="{{ total_forms|default:0 }}">
+        {% for f in formset %}
+          <div class="image-card">
+            {% for hidden in f.hidden_fields %}
+              {{ hidden }}
+            {% endfor %}
+            {% if f.non_field_errors %}
+              <div class="field-errors">{{ f.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="image-card-toolbar">
+              <button type="button" class="move-btn" onclick="moveImage(this, -1)" title="Déplacer à gauche"><span class="material-symbols-outlined">chevron_left</span></button>
+              <button type="button" class="move-btn" onclick="moveImage(this, 1)" title="Déplacer à droite"><span class="material-symbols-outlined">chevron_right</span></button>
+              <button type="button" class="delete-btn" onclick="removeImage(this)" title="Supprimer"><span class="material-symbols-outlined">close</span></button>
+            </div>
+
+            <div class="form-group">
+              <div class="image-selector-container">
+                <div class="image-preview-container" style="display:none;">
+                  <label class="form-label">Image modifié</label>
+                  <div class="image-preview">
+                    <img src="{{ f.instance.image.image.url }}" height="80" alt="Image Modifier" />
+                  </div>
+                </div>
+                <div class="image-select-container">
+                  <button type="button" class="image-select-btn">
+                    <span class="material-symbols-outlined">image</span>
+                    {% if f.instance.image %}
+                      Modifier l'image sélectionnée
+                    {% else %}
+                      Sélectionner une image
+                    {% endif %}
+                  </button>
+                  {{ f.image }}
+                </div>
+              </div>
+              {% if f.image.errors %}
+                <div class="form-error">{{ f.image.errors }}</div>
+              {% endif %}
+              <div class="image-preview-container" style="{% if not f.instance.image %}display: none;{% endif %} margin-top: 15px;">
+                <div class="image-preview">
+                  {% if f.instance.image %}
+                    <img src="{{ f.instance.image.image.url }}" alt="{{ f.instance.image }}" height="80" />
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Titre de l'image</label>
+              {{ f.titre_image }}
+              {% if f.titre_image.errors %}
+                <div class="form-error">{{ f.titre_image.errors }}</div>
+              {% endif %}
+            </div>
+            
+            {% if service is not None %}
+              <div style="display:none;">{{ f.DELETE }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group">
+        <button type="button" class="btn-submit" id="addImageBtn">
+          <span class="material-symbols-outlined">add</span>
+          Ajouter une image
+        </button>
+      </div>
+    </div>
+
+    <div id="templateSlot" style="display:none;"></div>
+
+    <div class="form-actions">
+      {% if service %}
+        <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer
+        </a>
+      {% endif %}
+      <a href="{% url 'admin_core:admin_service_list' %}" class="btn-cancel">
+        <span class="material-symbols-outlined">cancel</span>
+        Annuler
+      </a>
+      <button type="submit" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer
+      </button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    const imageGridEl = document.getElementById('imageGrid');
+    let imageIndex = parseInt(imageGridEl?.dataset.totalForms || '0', 10) || 0;
 
     document.addEventListener('DOMContentLoaded', function() {
       // Masquer la dernière carte vide en édition (extra=1)
@@ -313,5 +280,4 @@
     });
   </script>
   <script src="{% static 'js/image_selector.js' %}"></script>
-  </body>
-</html>
+{% endblock %}

@@ -1,61 +1,37 @@
+/**
+ * Carrousel custom simple avec transition slide
+ * Usage: Ajouter la classe 'custom-carousel' sur un conteneur
+ * avec des images à l'intérieur et des boutons avec data-carousel-prev/next
+ */
 document.addEventListener("DOMContentLoaded", () => {
-  const carousel = document.getElementById("carousel");
-  if (!carousel) return;
-
-  const carouselInner = carousel.querySelector(".carousel-inner");
-  const images = Array.from(carousel.querySelectorAll("img.carousel-img"));
-
-  if (!carouselInner || images.length === 0) return;
-
-  const computeMaxHeight = () => {
-    const width = carouselInner.clientWidth;
-    if (!width) return;
-
-    let maxHeight = 0;
-
-    for (const img of images) {
-      if (!img.naturalWidth || !img.naturalHeight) continue;
-
-      const scale = width / img.naturalWidth;
-      const scaledHeight = img.naturalHeight * scale;
-      if (scaledHeight > maxHeight) maxHeight = scaledHeight;
-    }
-
-    if (maxHeight > 0) {
-      carouselInner.style.height = `${Math.ceil(maxHeight)}px`;
-    }
-  };
-
-  const waitForImagesThenCompute = () => {
-    const unloaded = images.filter((img) => !img.complete || img.naturalWidth === 0);
-    if (unloaded.length === 0) {
-      computeMaxHeight();
-      return;
-    }
-
-    let remaining = unloaded.length;
-    const onDone = () => {
-      remaining -= 1;
-      if (remaining <= 0) {
-        computeMaxHeight();
-      }
+  document.querySelectorAll('.custom-carousel').forEach(carousel => {
+    const slidesContainer = carousel.querySelector('.carousel-slides');
+    const slides = Array.from(carousel.querySelectorAll('.carousel-slide'));
+    const prevBtn = carousel.querySelector('[data-carousel-prev]');
+    const nextBtn = carousel.querySelector('[data-carousel-next]');
+    
+    if (slides.length === 0 || !slidesContainer) return;
+    
+    let currentIndex = 0;
+    
+    const updateCarousel = () => {
+      slidesContainer.style.transform = `translateX(-${currentIndex * 100}%)`;
     };
-
-    for (const img of unloaded) {
-      img.addEventListener("load", onDone, { once: true });
-      img.addEventListener("error", onDone, { once: true });
+    
+    const goToSlide = (index) => {
+      currentIndex = (index + slides.length) % slides.length;
+      updateCarousel();
+    };
+    
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
     }
-  };
-
-  let resizeTimeout;
-  const onResize = () => {
-    window.clearTimeout(resizeTimeout);
-    resizeTimeout = window.setTimeout(computeMaxHeight, 100);
-  };
-
-  waitForImagesThenCompute();
-  window.addEventListener("resize", onResize);
-
-  // Recalcule après un slide (utile si scrollbar/largeur change, ou fonts/layout).
-  carousel.addEventListener("slid.bs.carousel", computeMaxHeight);
+    
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+    }
+    
+    // Initialisation
+    updateCarousel();
+  });
 });

@@ -1,106 +1,85 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Import - Images pour le site</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+{% block title %}
+  Import - Images pour le site
+{% endblock %}
+
+{% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/import_images_admin.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
+{% endblock %}
 
-<body>
-  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span
-      class="material-symbols-outlined">arrow_back</span></a>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  <div class="container">
-    <header>
-      <h1>Import - Images pour le site</h1>
-    </header>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Import - Images pour le site' %}
+{% endblock %}
 
-    {% if messages %}
-    <div class="messages">
-      {% for message in messages %}
-      <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-        <span class="material-symbols-outlined">
-          {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-        </span>
-        {{ message }}
+{% block content %}
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">
+        <span class="material-symbols-outlined">upload_file</span>
       </div>
-      {% endfor %}
+      <h2 class="section-title">Importer des images</h2>
     </div>
-    {% endif %}
 
-    <div class="section-card">
-      <div class="section-header">
-        <div class="section-icon">
-          <span class="material-symbols-outlined">upload_file</span>
-        </div>
-        <h2 class="section-title">Importer des images</h2>
+    <p class="hint">Déposez une ou plusieurs images, puis modifiez les noms directement dans la liste. La validation est bloquée en cas de doublon (déjà importé ou doublon dans la sélection). Vous pouvez aussi choisir un fichier ZIP : toutes les images (même dans des sous-dossiers) seront extraites.</p>
+
+    <form method="post" enctype="multipart/form-data" id="importForm">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label">Fichiers</label>
+        <input type="file" name="images" id="imagesInput" multiple accept="image/*" style="display:none;" />
+        <input type="file" name="zip_file" id="zipInput" accept=".zip,application/zip" style="display:none;" />
+        <input type="hidden" name="desired_names" id="desiredNamesInput" value="" />
       </div>
 
-      <p class="hint">
-        Déposez une ou plusieurs images, puis modifiez les noms directement dans la liste.
-        La validation est bloquée en cas de doublon (déjà importé ou doublon dans la sélection).
-        Vous pouvez aussi choisir un fichier ZIP : toutes les images (même dans des sous-dossiers) seront extraites.
-      </p>
-
-      <form method="post" enctype="multipart/form-data" id="importForm">
-        {% csrf_token %}
-
-        <div class="form-group">
-          <label class="form-label">Fichiers</label>
-          <input type="file" name="images" id="imagesInput" multiple accept="image/*" style="display:none;" />
-          <input type="file" name="zip_file" id="zipInput" accept=".zip,application/zip" style="display:none;" />
-          <input type="hidden" name="desired_names" id="desiredNamesInput" value="" />
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Déposer des images">
+        <div class="dropzone-title">
+          <span class="material-symbols-outlined">cloud_upload</span>
+          Déposer des images ici (ou cliquer)
         </div>
+        <p class="dropzone-hint">Glisser-déposer des images ou un ZIP (même avec des sous-dossiers).</p>
+      </div>
 
-        <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-label="Déposer des images">
-          <div class="dropzone-title">
-            <span class="material-symbols-outlined">cloud_upload</span>
-            Déposer des images ici (ou cliquer)
-          </div>
-          <p class="dropzone-hint">Glisser-déposer des images ou un ZIP (même avec des sous-dossiers).</p>
+      <div class="actions" style="margin-top: 12px;">
+        <button type="button" class="btn btn-secondary" id="zipPickBtn">
+          <span class="material-symbols-outlined">folder_zip</span>
+          Choisir un ZIP
+        </button>
+        <div id="zipStatus" class="hint" style="display:none; margin-left: 12px;"></div>
+      </div>
+
+      <div id="clientValidation" class="client-validation" style="display:none;"></div>
+
+      <div id="uploadProgress" class="upload-progress" style="display:none;" aria-live="polite">
+        <div class="upload-progress-bar">
+          <div id="uploadProgressBar"></div>
         </div>
+        <div id="uploadProgressText" class="upload-progress-text"></div>
+      </div>
 
-        <div class="actions" style="margin-top: 12px;">
-          <button type="button" class="btn btn-secondary" id="zipPickBtn">
-            <span class="material-symbols-outlined">folder_zip</span>
-            Choisir un ZIP
-          </button>
-          <div id="zipStatus" class="hint" style="display:none; margin-left: 12px;"></div>
-        </div>
+      <div id="selectedFiles" class="file-list" style="display:none;"></div>
 
-        <div id="clientValidation" class="client-validation" style="display:none;"></div>
-
-        <div id="uploadProgress" class="upload-progress" style="display:none;" aria-live="polite">
-          <div class="upload-progress-bar"><div id="uploadProgressBar"></div></div>
-          <div id="uploadProgressText" class="upload-progress-text"></div>
-        </div>
-
-        <div id="selectedFiles" class="file-list" style="display:none;"></div>
-
-        <div class="actions" style="margin-top: 16px;">
-          <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
-            <span class="material-symbols-outlined">download</span>
-            Importer
-          </button>
-          <div id="submitDisabledNote" class="submit-disabled-note">Corrigez les doublons/erreurs pour pouvoir importer.</div>
-          <a href="{% url 'admin_core:admin_image_library' %}" class="btn btn-secondary">
-            <span class="material-symbols-outlined">image</span>
-            Bibliothèque d'images
-          </a>
-        </div>
-      </form>
-    </div>
+      <div class="actions" style="margin-top: 16px;">
+        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+          <span class="material-symbols-outlined">download</span>
+          Importer
+        </button>
+        <div id="submitDisabledNote" class="submit-disabled-note">Corrigez les doublons/erreurs pour pouvoir importer.</div>
+        <a href="{% url 'admin_core:admin_image_library' %}" class="btn btn-secondary">
+          <span class="material-symbols-outlined">image</span>
+          Bibliothèque d'images
+        </a>
+      </div>
+    </form>
   </div>
+{% endblock %}
 
-  <script
-    src="{% static 'js/import_images_admin.js' %}"
-    defer
-    data-existing-names-url="{% url 'admin_core:admin_import_images_site_existing_names' %}"></script>
-</body>
-
-</html>
+{% block extra_js %}
+  <script src="{% static 'js/import_images_admin.js' %}" defer data-existing-names-url="{% url 'admin_core:admin_import_images_site_existing_names' %}"></script>
+{% endblock %}

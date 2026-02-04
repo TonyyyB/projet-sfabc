@@ -1,37 +1,19 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>Produits</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
-<body>
+{% extends 'admin/base_admin.html' %}
 
-<a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% block title %}
+  Produits
+{% endblock %}
 
-<div class="container">
-  <header>
-    <h1>Produits</h1>
-  </header>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-            <span class="material-symbols-outlined">
-              {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-            </span>
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Produits' %}
+{% endblock %}
 
-  <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">
-    + Ajouter un produit
-  </a>
+{% block content %}
+  <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">+ Ajouter un produit</a>
 
   {% for produit in produits %}
     <div class="list-item">
@@ -46,13 +28,14 @@
       </div>
     </div>
   {% endfor %}
-</div>
+{% endblock %}
 
-<script>
-document.querySelectorAll('[data-confirm]').forEach(el => {
-  el.onclick = e => { if (!confirm("Supprimer ce produit ?")) e.preventDefault(); }
-})
-</script>
-
-</body>
-</html>
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('[data-confirm]').forEach((el) => {
+      el.onclick = (e) => {
+        if (!confirm('Supprimer ce produit ?')) e.preventDefault()
+      }
+    })
+  </script>
+{% endblock %}

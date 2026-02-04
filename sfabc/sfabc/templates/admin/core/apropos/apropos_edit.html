@@ -1,144 +1,123 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Éditer À propos</title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  </head>
-  <body>
-    <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
 
-    <div class="container">
-      <header>
-        <h1>
-          {% if page %}
-            Modifier
-          {% else %}
-            Créer
-          {% endif %}une section
-        </h1>
-      </header>
+{% block title %}
+  Éditer À propos
+{% endblock %}
 
-      {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-              <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}
-                  check_circle
-                {% elif message.tags == 'error' %}
-                  error
-                {% elif message.tags == 'warning' %}
-                  warning
-                {% else %}
-                  info
-                {% endif %}
-              </span>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-      <form method="post" enctype="multipart/form-data" class="section-card">
-        {% csrf_token %}
+{% block header %}
+  {% if page %}
+    {% include 'admin/header_admin.html' with page_title='Modifier une section' %}
+  {% else %}
+    {% include 'admin/header_admin.html' with page_title='Créer une section' %}
+  {% endif %}
+{% endblock %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">description</span>
-            Contenu de la section
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ form.groupe.label }}</label>
-            {{ form.groupe }}
-            {% if form.groupe.errors %}
-              <div class="form-error">{{ form.groupe.errors }}</div>
-            {% endif %}
-          </div>
-          <div class="form-group">
-            <label class="form-label">{{ form.titre_ap.label }}</label>
-            {{ form.titre_ap }}
-            {% if form.titre_ap.errors %}
-              <div class="form-error">{{ form.titre_ap.errors }}</div>
-            {% endif %}
-          </div>
-          <div class="form-group">
-            <label class="form-label">{{ form.description_ap.label }}</label>
-            {{ form.description_ap }}
-            {% if form.description_ap.errors %}
-              <div class="form-error">{{ form.description_ap.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
+{% block content %}
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">image</span>
-            Images de la section
-          </h2>
-
-          <div class="image-grid">
-            {% for pos, sf in slot_forms %}
-              <div class="image-card">
-                <h3 class="image-name">{{ pos|capfirst }}</h3>
-
-                {% if sf.non_field_errors %}
-                  <div class="field-errors">{{ sf.non_field_errors }}</div>
-                {% endif %}
-
-                <div class="form-group"> 
-                  {{ sf.position }}
-                  <div class="image-selector-container"> 
-                    {% if sf.initial.image %} 
-                    <label class="form-label">Image actuel</label> 
-                    <div class="image-preview"> 
-                      <img src="{{ sf.initial.image.image.url }}" height="80" alt="Image actuel" /> 
-                    </div> 
-                    {% endif %} 
-                    <div class="image-preview-container" style="display:none;"> 
-                      <label class="form-label">Image modifié</label> 
-                      <div class="image-preview"> 
-                        <img src="{{ sf.initial.image.url }}" height="80" alt="Logo Modifier" /> 
-                      </div> 
-                    </div> 
-                    <div class="image-select-container">
-                      <button type="button" class="image-select-btn" data-target="{{ sf.image.id_for_label }}" data-image-type="site">
-                         <span class="material-symbols-outlined">image</span>
-                          {% if sf.initial.image %} Modifier l'image {% else %} Sélectionner une image {% endif %} </button>
-                          {{ sf.image }} 
-                        </div> 
-                      </div> 
-                      {% if sf.image.errors %} 
-                      <div class="form-error">
-                        {{ sf.image.errors }}
-                      </div> 
-                      {% endif %} 
-                    </div>
-                    <label class="form-label">{{ sf.titre_image.label }}</label> 
-                    {{ sf.titre_image }} 
-                    {% if sf.titre_image.errors %}
-                      <div class="form-error">{{ sf.titre_image.errors }}</div>
-                    {% endif %}
-                  </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn-cancel">
-            <span class="material-symbols-outlined">cancel</span>
-            Annuler
-          </a>
-          <button type="submit" class="btn-submit">
-            <span class="material-symbols-outlined">save</span>
-            Enregistrer
-          </button>
-        </div>
-      </form>
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">description</span>
+        Contenu de la section
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.groupe.label }}</label>
+        {{ form.groupe }}
+        {% if form.groupe.errors %}
+          <div class="form-error">{{ form.groupe.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.titre_ap.label }}</label>
+        {{ form.titre_ap }}
+        {% if form.titre_ap.errors %}
+          <div class="form-error">{{ form.titre_ap.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.description_ap.label }}</label>
+        {{ form.description_ap }}
+        {% if form.description_ap.errors %}
+          <div class="form-error">{{ form.description_ap.errors }}</div>
+        {% endif %}
+      </div>
     </div>
 
-    <script src="{% static 'js/image_selector.js' %}"></script>
-  </body>
-</html>
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">image</span>
+        Images de la section
+      </h2>
+
+      <div class="image-grid">
+        {% for pos, sf in slot_forms %}
+          <div class="image-card">
+            <h3 class="image-name">{{ pos|capfirst }}</h3>
+
+            {% if sf.non_field_errors %}
+              <div class="field-errors">{{ sf.non_field_errors }}</div>
+            {% endif %}
+
+            <div class="form-group">
+              {{ sf.position }}
+              <div class="image-selector-container">
+                {% if sf.initial.image %}
+                  <label class="form-label">Image actuel</label>
+                  <div class="image-preview">
+                    <img src="{{ sf.initial.image.image.url }}" height="80" alt="Image actuel" />
+                  </div>
+                {% endif %}
+                <div class="image-preview-container" style="display:none;">
+                  <label class="form-label">Image modifié</label>
+                  <div class="image-preview">
+                    <img src="{{ sf.initial.image.url }}" height="80" alt="Logo Modifier" />
+                  </div>
+                </div>
+                <div class="image-select-container">
+                  <button type="button" class="image-select-btn" data-target="{{ sf.image.id_for_label }}" data-image-type="site">
+                    <span class="material-symbols-outlined">image</span>
+                    {% if sf.initial.image %}
+                       Modifier l'image
+                    {% else %}
+                      Sélectionner une image
+                    {% endif %}
+                  </button>
+                  {{ sf.image }}
+                </div>
+              </div>
+              {% if sf.image.errors %}
+                <div class="form-error">{{ sf.image.errors }}</div>
+              {% endif %}
+            </div>
+            <label class="form-label">{{ sf.titre_image.label }}</label>
+            {{ sf.titre_image }}
+            {% if sf.titre_image.errors %}
+              <div class="form-error">{{ sf.titre_image.errors }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn-cancel">
+        <span class="material-symbols-outlined">cancel</span>
+        Annuler
+      </a>
+      <button type="submit" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer
+      </button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/image_selector.js' %}"></script>
+{% endblock %}
