@@ -31,6 +31,10 @@ def style_processor(request):
     style += ".title {\n"
     style += f"\tbottom: calc(160px + {hauteur_bandeau/2}px + 0.5em);\n"
     style += "}\n"
+    style += ".reponse {\n"
+    style += f"\tborder-left: 4px solid {body_fg}\n"
+    style += "}\n"
+
     
     menus = dict()
 
