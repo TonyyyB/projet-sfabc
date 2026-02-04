@@ -1,197 +1,177 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Apparence du site</title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-    {{ form.media }}
-  </head>
-  <body>
-    <a href="{% url 'core:admin_dashboard' %}" class="logout-btn">Retour</a>
 
-    <div class="container">
-      <header>
-        <h1>Apparence du site</h1>
-        <p class="subtitle">Configuration globale</p>
-      </header>
+{% block title %}
+  Apparence du site
+{% endblock %}
 
-      {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-              <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}
-                  check_circle
-                {% elif message.tags == 'error' %}
-                  error
-                {% elif message.tags == 'warning' %}
-                  warning
-                {% else %}
-                  info
-                {% endif %}
-              </span>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+{% block extra_head %}
+  {{ form.media }}
+{% endblock %}
 
-      <form method="post" enctype="multipart/form-data" class="section-card">
-        {% csrf_token %}
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
+{% endblock %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">palette</span>
-            Couleurs du site
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ form.background.label }}</label>
-            {{ form.background }}
-            {% if form.background.errors %}
-              <div class="form-error">{{ form.background.errors }}</div>
-            {% endif %}
-          </div>
-          <div class="form-group">
-            <label class="form-label">{{ form.foreground.label }}</label>
-            {{ form.foreground }}
-            {% if form.foreground.errors %}
-              <div class="form-error">{{ form.foreground.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Apparence du site' page_subtitle='Configuration globale' %}
+{% endblock %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">text_fields</span>
-            Typographie
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ form.police.label }}</label>
-            {{ form.police }}
-            {% if form.police.errors %}
-              <div class="form-error">{{ form.police.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
+{% block content %}
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">height</span>
-            Bandeau
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ form.bandeau_hauteur.label }}</label>
-            {{ form.bandeau_hauteur }}
-            {% if form.bandeau_hauteur.errors %}
-              <div class="form-error">{{ form.bandeau_hauteur.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">image</span>
-            Images du site
-          </h2>
-          <div class="form-group">
-            <div class="image-selector-container">
-              <label class="form-label">Logo actuel</label>
-              {% if site.logo %}
-                <div class="image-preview">
-                  <img src="{{ site.logo.image.url }}" height="80" alt="Logo actuel" />
-                </div>
-              {% endif %}
-              <div class="image-preview-container" style="display:none;">
-                <label class="form-label">Logo modifié</label>
-                <div class="image-preview">
-                  <img src="{{ site.logo.image.url }}" height="80" alt="Logo Modifier" />
-                </div>
-              </div>
-              <div class="image-select-container">
-                <button type="button" class="image-select-btn" data-target="{{ form.logo.id_for_label }}">
-                  <span class="material-symbols-outlined">image</span>
-                  {% if site.logo %}
-                    Modifier le logo
-                  {% else %}
-                    Sélectionner un logo
-                  {% endif %}
-                </button>
-                {{ form.logo }}
-              </div>
-            </div>
-
-            {% if form.logo.errors %}
-              <div class="form-error">{{ form.logo.errors }}</div>
-            {% endif %}
-          </div>
-
-          <div class="form-group">
-            <div class="image-selector-container">
-              <label class="form-label">Bandeau actuel</label>
-              {% if site.bandeau %}
-                <div class="image-preview">
-                  <img src="{{ site.bandeau.image.url }}" height="80" alt="Bandeau actuel" />
-                </div>
-              {% endif %}
-              <div class="image-preview-container" style="display:none;">
-                <label class="form-label">Bandeau modifié</label>
-                <div class="image-preview">
-                  <img src="{{ site.bandeau.image.url }}" height="80" alt="Bandeau Modifier" />
-                </div>
-              </div>
-              <div class="image-select-container">
-                <button type="button" class="image-select-btn" data-target="{{ form.bandeau.id_for_label }}">
-                  <span class="material-symbols-outlined">image</span>
-                  {% if site.bandeau %}
-                    Modifier le bandeau
-                  {% else %}
-                    Sélectionner un bandeau
-                  {% endif %}
-                </button>
-                {{ form.bandeau }}
-              </div>
-              {% if form.bandeau.errors %}
-                <div class="form-error">{{ form.bandeau.errors }}</div>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" name="save_site" class="btn-submit">
-            <span class="material-symbols-outlined">save</span>
-            Enregistrer les modifications
-          </button>
-        </div>
-      </form>
-
-      <form method="post" enctype="multipart/form-data" class="section-card">
-        {% csrf_token %}
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">add_photo_alternate</span>
-            Ajouter une nouvelle image
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ image_form.image.label }}</label>
-            {{ image_form.image }}
-            {% if image_form.image.errors %}
-              <div class="form-error">{{ image_form.image.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
-
-        <div class="form-actions">
-          <button type="submit" name="add_image" class="btn-submit">
-            <span class="material-symbols-outlined">upload</span>
-            Ajouter l'image
-          </button>
-        </div>
-      </form>
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">palette</span>
+        Couleurs du site
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.background.label }}</label>
+        {{ form.background }}
+        {% if form.background.errors %}
+          <div class="form-error">{{ form.background.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.foreground.label }}</label>
+        {{ form.foreground }}
+        {% if form.foreground.errors %}
+          <div class="form-error">{{ form.foreground.errors }}</div>
+        {% endif %}
+      </div>
     </div>
 
-    <script src="{% static 'js/image_selector.js' %}"></script>
-  </body>
-</html>
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">text_fields</span>
+        Typographie
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.police.label }}</label>
+        {{ form.police }}
+        {% if form.police.errors %}
+          <div class="form-error">{{ form.police.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">height</span>
+        Bandeau
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.bandeau_hauteur.label }}</label>
+        {{ form.bandeau_hauteur }}
+        {% if form.bandeau_hauteur.errors %}
+          <div class="form-error">{{ form.bandeau_hauteur.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">image</span>
+        Images du site
+      </h2>
+      <div class="form-group">
+        <div class="image-selector-container">
+          <label class="form-label">Logo actuel</label>
+          {% if site.logo %}
+            <div class="image-preview">
+              <img src="{{ site.logo.image.url }}" height="80" alt="Logo actuel" />
+            </div>
+          {% endif %}
+          <div class="image-preview-container" style="display:none;">
+            <label class="form-label">Logo modifié</label>
+            <div class="image-preview">
+              <img src="{{ site.logo.image.url }}" height="80" alt="Logo Modifier" />
+            </div>
+          </div>
+          <div class="image-select-container">
+            <button type="button" class="image-select-btn" data-target="{{ form.logo.id_for_label }}">
+              <span class="material-symbols-outlined">image</span>
+              {% if site.logo %}
+                Modifier le logo
+              {% else %}
+                Sélectionner un logo
+              {% endif %}
+            </button>
+            {{ form.logo }}
+          </div>
+        </div>
+
+        {% if form.logo.errors %}
+          <div class="form-error">{{ form.logo.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <div class="image-selector-container">
+          <label class="form-label">Bandeau actuel</label>
+          {% if site.bandeau %}
+            <div class="image-preview">
+              <img src="{{ site.bandeau.image.url }}" height="80" alt="Bandeau actuel" />
+            </div>
+          {% endif %}
+          <div class="image-preview-container" style="display:none;">
+            <label class="form-label">Bandeau modifié</label>
+            <div class="image-preview">
+              <img src="{{ site.bandeau.image.url }}" height="80" alt="Bandeau Modifier" />
+            </div>
+          </div>
+          <div class="image-select-container">
+            <button type="button" class="image-select-btn" data-target="{{ form.bandeau.id_for_label }}">
+              <span class="material-symbols-outlined">image</span>
+              {% if site.bandeau %}
+                Modifier le bandeau
+              {% else %}
+                Sélectionner un bandeau
+              {% endif %}
+            </button>
+            {{ form.bandeau }}
+          </div>
+          {% if form.bandeau.errors %}
+            <div class="form-error">{{ form.bandeau.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" name="save_site" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer les modifications
+      </button>
+    </div>
+  </form>
+
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">add_photo_alternate</span>
+        Ajouter une nouvelle image
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ image_form.image.label }}</label>
+        {{ image_form.image }}
+        {% if image_form.image.errors %}
+          <div class="form-error">{{ image_form.image.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" name="add_image" class="btn-submit">
+        <span class="material-symbols-outlined">upload</span>
+        Ajouter l'image
+      </button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/image_selector.js' %}"></script>
+{% endblock %}
