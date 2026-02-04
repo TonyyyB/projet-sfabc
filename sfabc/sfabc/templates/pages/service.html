@@ -1,30 +1,41 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block script %}
+  {{ block.super }}
+  <script src="{% static 'js/carousel.js' %}"></script>
+{% endblock %}
 {% block content %}
 
 {% for service in services %}
     <div class="d-flex justify-content-center">
-        <section class="service p-5  {% if not forloop.last %}border-bottom border-1 border-black {%endif%} d-flex w-75 " id="service-{{ service.id_service }}">
-        {% if service.service.count > 0 %}
-            <div id="carouselService-{{ service.id_service }}" class="carousel slide w-50" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    {% for img_service in service.service.all %}
-                        <div class="w-100  carousel-item {% if forloop.first %}active{% endif %}">
-                            <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}" loading="lazy">
-                            {% if img_service.titre_image %}
-                            <div>
-                                <p class="titre">{{ img_service.titre_image }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                {% if service.service.count > 1 %}
-                <button class="carousel-control-prev" type="button" data-bs-target="#carouselService-{{ service.id_service }}" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <section class="service p-5  {% if not forloop.last %}border-bottom border-1 border-theme {%endif%} d-flex w-75 " id="service-{{ service.id_service }}">
+        {% if service.service.all|length > 0 %}
+            <div class="custom-carousel w-50">
+                {% if service.service.all|length > 1 %}
+                <button class="nav-arrow" type="button" data-carousel-prev>
+                    <span class="material-symbols-outlined">arrow_back_ios_new</span>
                     <span class="visually-hidden">Previous</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#carouselService-{{ service.id_service }}" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                {% endif %}
+
+                <div class="carousel-track">
+                    <div class="carousel-slides">
+                        {% for img_service in service.service.all %}
+                            <div class="carousel-slide">
+                                <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}" loading="lazy">
+                                {% if img_service.titre_image %}
+                                <div>
+                                    <p class="titre">{{ img_service.titre_image }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if service.service.count > 1 %}
+                <button class="nav-arrow" type="button" data-carousel-next>
+                    <span class="material-symbols-outlined">arrow_forward_ios</span>
                     <span class="visually-hidden">Next</span>
                 </button>
                 {% endif %}

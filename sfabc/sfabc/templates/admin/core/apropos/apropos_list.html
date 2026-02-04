@@ -13,11 +13,6 @@
 {% endblock %}
 
 {% block content %}
-  <a href="{% url 'admin_core:admin_apropos_add' %}" class="btn btn-primary">
-    <span class="material-symbols-outlined">add</span>
-    Ajouter une section
-  </a>
-
   <div class="section-card" style="margin-top: 1rem;">
     <h2 style="margin-top: 0;">Groupes</h2>
     <form method="post" action="{% url 'admin_core:admin_apropos_group_add' %}" class="form-group" style="display:flex; gap: 0.75rem; align-items: end; flex-wrap: wrap;">
@@ -34,7 +29,7 @@
   </div>
 
   {% for group in groups %}
-    <div class="list-item" style="border-left: 4px solid #B8A67E;">
+    <div class="list-item" style="border-left: 4px solid var(--sfabc-border-primary);">
       <div class="list-header">
         <div>
           <h2 style="margin-bottom: 0.25rem;">{{ group.titre_groupe }}</h2>

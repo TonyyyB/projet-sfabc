@@ -204,24 +204,24 @@
   }
   
   .stat-box {
-    background: white;
+    background: var(--sfabc-card-bg);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    border-left: 4px solid #b8a67e;
+    box-shadow: 0 4px 15px rgba(var(--sfabc-shadow-rgb), 0.1);
+    border-left: 4px solid var(--sfabc-border-primary);
   }
   
   .stat-number {
     display: block;
     font-size: 2.5em;
     font-weight: bold;
-    color: #5a4328;
+    color: var(--sfabc-text-important);
   }
   
   .stat-text {
     display: block;
-    color: #6b5a45;
+    color: var(--sfabc-text-discreet);
     font-size: 0.95em;
     margin-top: 5px;
   }
@@ -269,7 +269,7 @@
   }
   
   .top-products-section h3 {
-    color: #5a4328;
+    color: var(--sfabc-text-important);
     margin-bottom: 15px;
     display: flex;
     align-items: center;
@@ -284,11 +284,11 @@
   }
   
   .top-product-item {
-    background: #f6f2e8;
+    background: var(--sfabc-page-background);
     border-radius: 8px;
     padding: 10px 15px;
     text-decoration: none;
-    color: #5a4328;
+    color: var(--sfabc-text-important);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -297,7 +297,7 @@
   }
   
   .top-product-item:hover {
-    border-color: #b8a67e;
+    border-color: var(--sfabc-border-primary);
     transform: translateY(-2px);
   }
   
@@ -306,8 +306,8 @@
   }
   
   .product-count {
-    background: linear-gradient(135deg, #b8a67e, #5a4328);
-    color: white;
+    background: linear-gradient(135deg, var(--sfabc-border-primary), var(--sfabc-border-secondary));
+    color: var(--sfabc-text-header);
     padding: 2px 8px;
     border-radius: 12px;
     font-size: 0.85em;
@@ -325,7 +325,7 @@
   }
   
   .avis-item.no-response {
-    border-left: 4px solid #b8a67e;
+    border-left: 4px solid var(--sfabc-border-primary);
   }
   
   .avis-header {
@@ -345,12 +345,12 @@
   
   .avis-product {
     font-weight: 600;
-    color: #5a4328;
+    color: var(--sfabc-text-important);
     font-size: 1.15em;
   }
   
   .avis-stars {
-    color: #b8a67e;
+    color: var(--sfabc-text-important);
     font-size: 1.2em;
     letter-spacing: 2px;
   }
@@ -359,7 +359,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
-    color: #6b5a45;
+    color: var(--sfabc-text-discreet);
     font-size: 0.9em;
   }
   
@@ -372,7 +372,7 @@
   }
   
   .avis-message {
-    background: #f6f2e8;
+    background: var(--sfabc-page-background);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
@@ -380,16 +380,16 @@
   
   .avis-message p {
     margin: 0;
-    color: #333;
+    color: var(--sfabc-text-normal);
     line-height: 1.6;
   }
   
   .avis-response {
-    background: #f6f2e8;
+    background: var(--sfabc-page-background);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
-    border-left: 4px solid #5a4328;
+    border-left: 4px solid var(--sfabc-border-secondary);
   }
   
   .response-header {
@@ -397,7 +397,7 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
-    color: #5a4328;
+    color: var(--sfabc-text-important);
     font-size: 0.9em;
   }
   
@@ -412,7 +412,7 @@
   
   .avis-response p {
     margin: 0;
-    color: #5a4328;
+    color: var(--sfabc-text-important);
     line-height: 1.6;
   }
   
@@ -422,7 +422,7 @@
     flex-wrap: wrap;
     justify-content: flex-end;
     padding-top: 15px;
-    border-top: 1px solid #e1e5e9;
+    border-top: 1px solid var(--sfabc-border-secondary);
   }
   
   .avis-actions .btn {
@@ -434,12 +434,12 @@
   }
   
   .btn-warning {
-    background: linear-gradient(135deg, #b8a67e, #a6946e);
-    color: white;
+    background: linear-gradient(135deg, var(--sfabc-border-primary), var(--sfabc-border-secondary));
+    color: var(--sfabc-text-header);
   }
   
   .btn-warning:hover {
-    background: linear-gradient(135deg, #a6946e, #96855c);
+    background: linear-gradient(135deg, var(--sfabc-border-secondary), var(--sfabc-border-primary));
     transform: translateY(-2px);
   }
   
@@ -447,7 +447,7 @@
   .empty-state {
     text-align: center;
     padding: 60px 20px;
-    color: #6b5a45;
+    color: var(--sfabc-text-discreet);
   }
   
   .empty-state .material-symbols-outlined {

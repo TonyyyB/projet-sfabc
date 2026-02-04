@@ -130,10 +130,22 @@ class Image_Service(models.Model):
 class Site(models.Model):
     """Configuration singleton du site (couleurs, police, logo, bandeau)."""
     id = models.AutoField(primary_key=True)
-    background = ColorField(default="#F6F2E8")
-    foreground = ColorField(default="#B8A67E")
-    police = models.CharField(max_length=200, default="Alata")
-    bandeau_hauteur = models.IntegerField(default=140)
+    page_foreground = ColorField(default="#B8A67E", verbose_name="Foreground de la page (header/footer)")
+    page_background = ColorField(default="#F6F2E8", verbose_name="Background de la page")
+    card_background = ColorField(default="#FFFFFF", verbose_name="Fond des cartes")
+    carousel_background = ColorField(default="#FFFFFF", verbose_name="Fond des caroussels")
+    border_primary = ColorField(default="#B8A67E", verbose_name="Bordure principale")
+    border_secondary = ColorField(default="#5A4328", verbose_name="Bordure secondaire")
+    text_title = ColorField(default="#EEE7D8", verbose_name="Titre des pages")
+    text_subtitle = ColorField(default="#B8A67E", verbose_name="Sous-titres")
+    text_normal = ColorField(default="#000000", verbose_name="Textes normaux")
+    text_important = ColorField(default="#B8A67E", verbose_name="Textes importants")
+    text_discreet = ColorField(default="#727272", verbose_name="Textes discrets")
+    text_link = ColorField(default="#5A4328", verbose_name="Textes des liens")
+    text_header = ColorField(default="#EEE7D8", verbose_name="Éléments du header")
+    shadow = ColorField(default="#000000", verbose_name="Couleur des ombres")
+    police = models.CharField(max_length=200, default="Alata", verbose_name="Police de caractères")
+    bandeau_hauteur = models.IntegerField(default=140, verbose_name="Hauteur du bandeau")
     logo = models.ForeignKey(
         Image_Site,
         on_delete=models.CASCADE,
@@ -165,4 +177,10 @@ class Site(models.Model):
 
     def __str__(self):
         """Représentation lisible de la configuration du site (couleurs/police)."""
-        return f"<Site background: {self.background}, foreground: {self.foreground}, police: {self.police}>"
+        return (
+            "<Site "
+            f"page_background: {self.page_background}, "
+            f"page_foreground: {self.page_foreground}, "
+            f"text_title: {self.text_title}, "
+            f"police: {self.police}>"
+        )
