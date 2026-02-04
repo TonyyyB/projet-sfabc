@@ -17,6 +17,13 @@
               {% if rev.reponse %}
                 <p>{{ rev.reponse.message }}</p>
                 <p class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.reponse.date }}</p>
+              {% elif user.is_superuser %}
+                <form method="post" action="{% url 'products:reviews:add_reply' produit.id_produit rev.id_note %}" class="reply-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.path }}{{ request.GET.urlencode }}">
+                  <textarea name="message" class="form-control" rows="2" placeholder="Votre réponse" required></textarea>
+                  <button type="submit" class="btn btn-contact mt-2">Répondre</button>
+                </form>
               {% endif %}
             </div>
         </div>
