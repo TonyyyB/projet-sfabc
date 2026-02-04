@@ -1,40 +1,25 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Import CSV - Produits</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+{% block title %}Import CSV - Produits{% endblock %}
+
+{% block extra_css %}
   <link rel="stylesheet" href="{% static 'css/import_produits_admin.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
+{% endblock %}
 
-<body>
+{% block top_action %}
   <a
     href="{% url 'admin_core:admin_dashboard' %}"
     class="logout-btn"
     onclick="return confirm('Attention : les modifications sur cette page ne seront pas enregistrées. Continuer ?');"
   ><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  <div class="container">
-    <header>
-      <h1>Import CSV - Produits</h1>
-    </header>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Import CSV - Produits' %}
+{% endblock %}
 
-    {% if messages %}
-      <div class="messages">
-        {% for message in messages %}
-          <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-            <span class="material-symbols-outlined">
-              {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-            </span>
-            {{ message }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
+{% block content %}
 
     {% if step == 'upload' %}
       <div class="section-card">
@@ -372,10 +357,12 @@
         </div>
       </form>
 
-      <script src="{% static 'js/image_selector.js' %}"></script>
-      <script src="{% static 'js/import_produits_admin.js' %}"></script>
     {% endif %}
-  </div>
-</body>
+{% endblock %}
 
-</html>
+{% block extra_js %}
+  {% if step == 'resolve' %}
+    <script src="{% static 'js/image_selector.js' %}"></script>
+    <script src="{% static 'js/import_produits_admin.js' %}"></script>
+  {% endif %}
+{% endblock %}

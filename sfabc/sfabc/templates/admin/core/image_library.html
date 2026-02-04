@@ -1,22 +1,17 @@
+{% extends 'admin/base_admin.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="fr">
 
-<head>
-  <meta charset="UTF-8" />
-  <title>Bibliothèque d'images</title>
-  <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-</head>
+{% block title %}Bibliothèque d'images{% endblock %}
 
-<body>
-  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span
-      class="material-symbols-outlined">arrow_back</span></a>
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-  <div class="container">
-    <header>
-      <h1>Bibliothèque d'images</h1>
-    </header>
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title="Bibliothèque d'images" %}
+{% endblock %}
+
+{% block content %}
 
     <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
       <a href="{% url 'admin_core:admin_import_images_site' %}" class="btn btn-primary">
@@ -24,19 +19,6 @@
         Importer des images
       </a>
     </div>
-
-    {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-              <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}
-              </span>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
 
     <form method="post" action="{% url 'admin_core:admin_image_bulk_delete' %}" id="bulkDeleteForm">
       {% csrf_token %}
@@ -100,9 +82,8 @@
     <div class="pagination-container">
       {% include 'includes/pagination.html' %}
     </div>
-  </div>
+{% endblock %}
 
+{% block extra_js %}
   <script src="{% static 'js/image_library_bulk.js' %}" defer></script>
-</body>
-
-</html>
+{% endblock %}

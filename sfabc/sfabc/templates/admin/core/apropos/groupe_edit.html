@@ -1,69 +1,44 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Éditer un groupe À propos</title>
-    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-  </head>
-  <body>
-    <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% extends 'admin/base_admin.html' %}
 
-    <div class="container">
-      <header>
-        <h1>Modifier le groupe</h1>
-      </header>
+{% block title %}
+  Éditer un groupe À propos
+{% endblock %}
 
-      {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
-              <span class="material-symbols-outlined">
-                {% if message.tags == 'success' %}
-                  check_circle
-                {% elif message.tags == 'error' %}
-                  error
-                {% elif message.tags == 'warning' %}
-                  warning
-                {% else %}
-                  info
-                {% endif %}
-              </span>
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_apropos_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
 
-      <form method="post" class="section-card">
-        {% csrf_token %}
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Modifier le groupe' %}
+{% endblock %}
 
-        <div class="form-section">
-          <h2>
-            <span class="material-symbols-outlined">category</span>
-            Informations du groupe
-          </h2>
-          <div class="form-group">
-            <label class="form-label">{{ form.titre_groupe.label }}</label>
-            {{ form.titre_groupe }}
-            {% if form.titre_groupe.errors %}
-              <div class="form-error">{{ form.titre_groupe.errors }}</div>
-            {% endif %}
-          </div>
-        </div>
+{% block content %}
+  <form method="post" class="section-card">
+    {% csrf_token %}
 
-        <div class="form-actions">
-          <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn-cancel">
-            <span class="material-symbols-outlined">cancel</span>
-            Annuler
-          </a>
-          <button type="submit" class="btn-submit">
-            <span class="material-symbols-outlined">save</span>
-            Enregistrer
-          </button>
-        </div>
-      </form>
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">category</span>
+        Informations du groupe
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.titre_groupe.label }}</label>
+        {{ form.titre_groupe }}
+        {% if form.titre_groupe.errors %}
+          <div class="form-error">{{ form.titre_groupe.errors }}</div>
+        {% endif %}
+      </div>
     </div>
-  </body>
-</html>
+
+    <div class="form-actions">
+      <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn-cancel">
+        <span class="material-symbols-outlined">cancel</span>
+        Annuler
+      </a>
+      <button type="submit" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer
+      </button>
+    </div>
+  </form>
+{% endblock %}
