@@ -350,7 +350,14 @@ hr {
   color: rgba(0, 0, 0, 0.75);
 }
 
-.reviews-sort-links {
+.reponse {
+  margin-top: 10px;
+  margin-left: 1em;
+  margin-bottom: 10px;
+  padding-left: 1em;
+}
+
+.reviews-sort-links, .sortable-links{
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
