@@ -175,6 +175,7 @@ main {
   flex-wrap: nowrap;
   justify-content: flex-end;
   margin-left: auto;
+  align-items: end;
 }
 
 .logo-container {
@@ -195,6 +196,10 @@ main {
   margin-left: auto;
   margin-right: auto;
   padding-left: 0.75rem;
+}
+
+.search-form .form-control {
+  background-color: var(--sfabc-card-bg) !important;
 }
 
 .navbar-nav {
@@ -224,7 +229,12 @@ main {
 
 .btn-contact {
   color: var(--sfabc-text-header);
-  background-color: var(--sfabc-border-secondary);
+  background-color: var(--sfabc-button);
+  transition: background-color 0.2s ease;
+}
+
+.btn-contact:hover {
+  background-color: var(--sfabc-button-hover);
 }
 
 .color-text-contact {
@@ -525,7 +535,7 @@ span.page-link {
 }
 
 .rev-direction {
-  color: var(--sfabc-text-normal);
+  color: var(--sfabc-text-link);
 }
 
 .stars-input {

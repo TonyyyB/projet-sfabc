@@ -144,6 +144,8 @@ class Site(models.Model):
     text_link = ColorField(default="#5A4328", verbose_name="Textes des liens")
     text_header = ColorField(default="#EEE7D8", verbose_name="Éléments du header")
     shadow = ColorField(default="#000000", verbose_name="Couleur des ombres")
+    button_color = ColorField(default="#5A4328", verbose_name="Couleur des boutons")
+    button_hover_color = ColorField(default="#B8A67E", verbose_name="Couleur des boutons survolés")
     police = models.CharField(max_length=200, default="Alata", verbose_name="Police de caractères")
     bandeau_hauteur = models.IntegerField(default=140, verbose_name="Hauteur du bandeau")
     logo = models.ForeignKey(

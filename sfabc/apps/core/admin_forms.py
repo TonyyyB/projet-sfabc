@@ -40,6 +40,8 @@ class SiteForm(forms.ModelForm):
             "text_link",
             "text_header",
             "shadow",
+            "button_color",
+            "button_hover_color",
             "police",
             "bandeau_hauteur",
             "logo",
@@ -60,6 +62,8 @@ class SiteForm(forms.ModelForm):
             "text_link": ColorWidget,
             "text_header": ColorWidget,
             "shadow": ColorWidget,
+            "button_color": ColorWidget,
+            "button_hover_color": ColorWidget,
             "police": forms.Select(choices=POLICES),
             "bandeau_hauteur": forms.NumberInput(attrs={"min": 50, "max": 400}),
         }
