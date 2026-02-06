@@ -34,7 +34,6 @@
       <div class="form-group">
         <label class="form-label">Fichiers</label>
         <input type="file" name="images" id="imagesInput" multiple accept="image/*" style="display:none;" />
-        <input type="file" name="zip_file" id="zipInput" accept=".zip,application/zip" style="display:none;" />
         <input type="hidden" name="desired_names" id="desiredNamesInput" value="" />
       </div>
 
@@ -43,15 +42,6 @@
           <span class="material-symbols-outlined">cloud_upload</span>
           Déposer des images ici (ou cliquer)
         </div>
-        <p class="dropzone-hint">Glisser-déposer des images ou un ZIP (même avec des sous-dossiers).</p>
-      </div>
-
-      <div class="actions" style="margin-top: 12px;">
-        <button type="button" class="btn btn-secondary" id="zipPickBtn">
-          <span class="material-symbols-outlined">folder_zip</span>
-          Choisir un ZIP
-        </button>
-        <div id="zipStatus" class="hint" style="display:none; margin-left: 12px;"></div>
       </div>
 
       <div id="clientValidation" class="client-validation" style="display:none;"></div>
