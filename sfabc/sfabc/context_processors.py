@@ -11,45 +11,36 @@ def style_processor(request):
         site = Site.objects.first()
     except OperationalError as e:
         logger.error(f"Database error in context processor: {e}")
+        print("Database error in context processor:", e)
         site = None
     
-    page_foreground = "#000000"
-    page_background = "#F6F2E8"
-    card_background = "#FFFFFF"
-    carousel_background = "#FFFFFF"
-    border_primary = "#B8A67E"
-    border_secondary = "#5A4328"
-    text_title = "#EEE7D8"
-    text_subtitle = "#B8A67E"
-    text_normal = "#000000"
-    text_important = "#B8A67E"
-    text_discreet = "#727272"
-    text_link = "#5A4328"
-    text_header = "#EEE7D8"
-    shadow = "#000000"
-    police = "Alata"
-    logo = static("images/logo.png")
-    bandeau = static("images/bois.jpg")
-    hauteur_bandeau = 140
-    if site is not None:
-        page_foreground = site.page_foreground
-        page_background = site.page_background
-        card_background = site.card_background
-        carousel_background = site.carousel_background
-        border_primary = site.border_primary
-        border_secondary = site.border_secondary
-        text_title = site.text_title
-        text_subtitle = site.text_subtitle
-        text_normal = site.text_normal
-        text_important = site.text_important
-        text_discreet = site.text_discreet
-        text_link = site.text_link
-        text_header = site.text_header
-        shadow = site.shadow
-        police = site.police
-        logo = site.logo.image.url if site.logo is not None else logo
-        bandeau = site.bandeau.image.url if site.bandeau is not None else bandeau
-        hauteur_bandeau = site.bandeau_hauteur
+    if site is None:
+        Site.objects.create()  # Crée une instance par défaut si la base de données est accessible mais vide
+        site = Site.objects.first()
+    if site.logo is None:
+        logo = static("images/logo.png")
+    if site.bandeau is None:
+        bandeau = static("images/bois.jpg")
+    page_foreground = site.page_foreground
+    page_background = site.page_background
+    card_background = site.card_background
+    carousel_background = site.carousel_background
+    border_primary = site.border_primary
+    border_secondary = site.border_secondary
+    text_title = site.text_title
+    text_subtitle = site.text_subtitle
+    text_normal = site.text_normal
+    text_important = site.text_important
+    text_discreet = site.text_discreet
+    text_link = site.text_link
+    text_header = site.text_header
+    shadow = site.shadow
+    button_color = site.button_color
+    button_hover_color = site.button_hover_color
+    police = site.police
+    logo = site.logo.image.url if site.logo is not None else logo
+    bandeau = site.bandeau.image.url if site.bandeau is not None else bandeau
+    hauteur_bandeau = site.bandeau_hauteur
         
     page_foreground_rgb = str(tuple(int(page_foreground.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)))[1:-1]
     shadow_rgb = str(tuple(int(shadow.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)))[1:-1]
@@ -72,6 +63,8 @@ def style_processor(request):
     style += f"\t--sfabc-text-header: {text_header};\n"
     style += f"\t--sfabc-shadow: {shadow};\n"
     style += f"\t--sfabc-shadow-rgb: {shadow_rgb};\n"
+    style += f"\t--sfabc-button: {button_color};\n"
+    style += f"\t--sfabc-button-hover: {button_hover_color};\n"
     style += f'\t--sfabc-font: {police};\n'
     style += f"\t--bs-body-bg: var(--sfabc-page-background);\n"
     style += f"\t--bs-body-color: var(--sfabc-text-normal);\n"

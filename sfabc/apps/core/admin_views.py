@@ -587,6 +587,8 @@ def edit_site(request):
         "text_link": Site._meta.get_field("text_link").default,
         "text_header": Site._meta.get_field("text_header").default,
         "shadow": Site._meta.get_field("shadow").default,
+        "button_color": Site._meta.get_field("button_color").default,
+        "button_hover_color": Site._meta.get_field("button_hover_color").default,
     }
 
     if request.method == "POST":
