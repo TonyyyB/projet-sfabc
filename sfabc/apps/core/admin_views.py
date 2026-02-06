@@ -572,6 +572,24 @@ def admin_dashboard(request):
 def edit_site(request):
     """Édite la configuration globale du site et permet l'ajout d'images dans la bibliothèque."""
     site = Site.load()
+    color_defaults = {
+        "page_foreground": Site._meta.get_field("page_foreground").default,
+        "page_background": Site._meta.get_field("page_background").default,
+        "card_background": Site._meta.get_field("card_background").default,
+        "carousel_background": Site._meta.get_field("carousel_background").default,
+        "border_primary": Site._meta.get_field("border_primary").default,
+        "border_secondary": Site._meta.get_field("border_secondary").default,
+        "text_title": Site._meta.get_field("text_title").default,
+        "text_subtitle": Site._meta.get_field("text_subtitle").default,
+        "text_normal": Site._meta.get_field("text_normal").default,
+        "text_important": Site._meta.get_field("text_important").default,
+        "text_discreet": Site._meta.get_field("text_discreet").default,
+        "text_link": Site._meta.get_field("text_link").default,
+        "text_header": Site._meta.get_field("text_header").default,
+        "shadow": Site._meta.get_field("shadow").default,
+        "button_color": Site._meta.get_field("button_color").default,
+        "button_hover_color": Site._meta.get_field("button_hover_color").default,
+    }
 
     if request.method == "POST":
         form = SiteForm(request.POST, request.FILES, instance=site)
@@ -594,6 +612,7 @@ def edit_site(request):
         "form": form,
         "image_form": image_form,
         "site": site,
+        "color_defaults": color_defaults,
     })
 
 EMPLACEMENT_AP = {

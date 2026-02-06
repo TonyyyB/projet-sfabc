@@ -1,8 +1,9 @@
 from django.shortcuts import get_object_or_404, redirect
+from django.http import HttpResponseForbidden
 from sortable_listview import SortableListView
 
 from apps.products.models import Produit
-from apps.reviews.models import Avis
+from apps.reviews.models import Avis, Reponse
 
 # Create your views here.
 class ReviewListView(SortableListView):
@@ -43,4 +44,27 @@ def add_review(request, pk):
             message=request.POST.get("message", ""),
         )
 
+    return redirect("products:detail_produit", pk=pk)
+
+
+def add_reply(request, pk, avis_id):
+    """Crée une réponse à un avis (réservé aux superusers)."""
+    if not request.user.is_authenticated or not request.user.is_superuser:
+        return HttpResponseForbidden("Accès refusé")
+    
+    if request.method == "POST":
+        avis = get_object_or_404(Avis, id_note=avis_id)
+        
+        # Vérifier que l'avis n'a pas déjà une réponse
+        if avis.reponse is None:
+            reponse = Reponse.objects.create(
+                message=request.POST.get("message", ""),
+            )
+            avis.reponse = reponse
+            avis.save()
+    
+    # Rediriger vers la page d'origine (détail produit ou liste avis)
+    next_url = request.POST.get("next", "")
+    if next_url:
+        return redirect(next_url)
     return redirect("products:detail_produit", pk=pk)
