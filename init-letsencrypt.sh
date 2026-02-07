@@ -7,82 +7,92 @@
 #    chmod +x init-letsencrypt.sh
 #    sudo ./init-letsencrypt.sh
 #
-#     À exécuter UNE SEULE FOIS lors du premier déploiement.
-#     Le renouvellement est ensuite automatique via le conteneur
-#     certbot dans docker-compose.yml.
+#  A executer UNE SEULE FOIS lors du premier deploiement.
+#  Le renouvellement est ensuite automatique via le conteneur
+#  certbot dans docker-compose.yml.
 # ================================================================
 set -e
 
-# Charger les variables du .env
+# Charger les variables du .env (sans interpréter les $)
 if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+    set -a
+    source .env
+    set +a
 fi
 
 if [ -z "$DOMAIN" ]; then
-    echo "La variable DOMAIN n'est pas définie dans .env"
+    echo "ERREUR : La variable DOMAIN n'est pas definie dans .env"
     exit 1
 fi
 
 if [ -z "$CERTBOT_EMAIL" ]; then
-    echo "La variable CERTBOT_EMAIL n'est pas définie dans .env"
+    echo "ERREUR : La variable CERTBOT_EMAIL n'est pas definie dans .env"
     exit 1
 fi
 
-echo "Obtention du certificat SSL pour : $DOMAIN"
+echo "=== Obtention du certificat SSL pour : $DOMAIN ==="
 
-# 1. Créer un fichier nginx temporaire (HTTP uniquement, pour le challenge)
-cat > nginx/nginx-init.conf <<EOF
-server {
-    listen 80;
-    server_name $DOMAIN;
+# ---------------------------------------------------------------
+# Etape 1 : Creer un certificat auto-signe temporaire
+#   Permet a nginx de demarrer avec la config SSL complete
+#   (il a besoin de fichiers cert pour demarrer, meme invalides)
+# ---------------------------------------------------------------
+echo ""
+echo "[1/5] Creation d'un certificat temporaire auto-signe..."
+docker compose run --rm --entrypoint "" certbot sh -c "\
+    mkdir -p /etc/letsencrypt/live/$DOMAIN && \
+    openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+        -keyout /etc/letsencrypt/live/$DOMAIN/privkey.pem \
+        -out /etc/letsencrypt/live/$DOMAIN/fullchain.pem \
+        -subj '/CN=$DOMAIN' 2>/dev/null"
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
+# ---------------------------------------------------------------
+# Etape 2 : Demarrer tous les services
+#   nginx utilise le cert temporaire pour demarrer sans erreur
+# ---------------------------------------------------------------
+echo ""
+echo "[2/5] Demarrage de tous les services..."
+docker compose up -d --force-recreate
+echo "    Attente du demarrage de nginx (10s)..."
+sleep 10
 
-    location / {
-        return 200 'Waiting for SSL certificate...';
-        add_header Content-Type text/plain;
-    }
-}
-EOF
+# ---------------------------------------------------------------
+# Etape 3 : Supprimer le certificat temporaire
+# ---------------------------------------------------------------
+echo ""
+echo "[3/5] Suppression du certificat temporaire..."
+docker compose run --rm --entrypoint "" certbot sh -c "\
+    rm -rf /etc/letsencrypt/live/$DOMAIN && \
+    rm -rf /etc/letsencrypt/archive/$DOMAIN && \
+    rm -rf /etc/letsencrypt/renewal/$DOMAIN.conf"
 
-# 2. Démarrer nginx avec la config temporaire + certbot volumes
-docker compose down || true
-
-# Remplacer temporairement le template nginx
-ORIG_TEMPLATE="nginx/nginx.conf.template"
-BACKUP_TEMPLATE="nginx/nginx.conf.template.bak"
-cp "$ORIG_TEMPLATE" "$BACKUP_TEMPLATE"
-cp nginx/nginx-init.conf "$ORIG_TEMPLATE"
-
-# Démarrer seulement nginx (sans la partie SSL)
-# On surcharge la variable DOMAIN pour envsubst
-DOMAIN=$DOMAIN docker compose up -d nginx
-
-echo "Attente du démarrage de nginx..."
-sleep 5
-
-# 3. Lancer certbot pour obtenir le certificat
-docker compose run --rm certbot certonly \
-    --webroot \
+# ---------------------------------------------------------------
+# Etape 4 : Demander le vrai certificat Let's Encrypt
+#   --entrypoint "" bypasse la boucle de renouvellement
+#   pour executer directement certbot certonly
+# ---------------------------------------------------------------
+echo ""
+echo "[4/5] Demande du certificat Let's Encrypt..."
+docker compose run --rm --entrypoint "" certbot \
+    certbot certonly --webroot \
     --webroot-path=/var/www/certbot \
     --email "$CERTBOT_EMAIL" \
     --agree-tos \
     --no-eff-email \
     -d "$DOMAIN"
 
-# 4. Restaurer la vraie config nginx (avec SSL)
-mv "$BACKUP_TEMPLATE" "$ORIG_TEMPLATE"
-rm -f nginx/nginx-init.conf
-
-# 5. Redémarrer tout avec la config SSL complète
-echo "Redémarrage avec la configuration HTTPS..."
-docker compose down
-docker compose up -d
+# ---------------------------------------------------------------
+# Etape 5 : Recharger nginx avec le vrai certificat
+# ---------------------------------------------------------------
+echo ""
+echo "[5/5] Rechargement de nginx avec le vrai certificat..."
+docker compose exec nginx nginx -s reload
 
 echo ""
-echo "Certificat SSL obtenu et configuré !"
-echo "   → https://$DOMAIN"
+echo "=========================================="
+echo "  Certificat SSL obtenu et configure !"
+echo "  --> https://$DOMAIN"
 echo ""
-echo "   Le renouvellement automatique est assuré par le conteneur certbot."
+echo "  Le renouvellement automatique est assure"
+echo "  par le conteneur certbot."
+echo "=========================================="
