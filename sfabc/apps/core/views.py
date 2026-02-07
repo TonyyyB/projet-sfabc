@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.generic import FormView, ListView, TemplateView
 
-from apps.core.models import A_Propos, Groupe_A_Propos, Image_A_Propos, Image_Service, Service
+from apps.core.models import A_Propos, Groupe_A_Propos, Image_A_Propos, Image_Service, Service, Site
 from apps.products.models import Image_Produit, Produit
 
 from .forms import ContactForm
@@ -79,12 +79,16 @@ class ContactView(FormView):
 
         subject = f"{name} vous contacte pour : {subject_text}"
 
+        # Récupérer les couleurs du site
+        site = Site.load()
+
         # Contexte pour le template email
         email_context = {
             'name': name,
             'email': sender_email,
             'subject': subject_text,
             'message': message_text,
+            'site': site,
         }
 
         # Rendu du template HTML

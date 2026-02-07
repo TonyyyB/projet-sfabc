@@ -54,35 +54,3 @@
 </div>
 
 {% endblock %}
-        <div class="mb-5">
-            
-            <input type="text" name="name" placeholder="Vos nom et prénom*"  value="{{ form.name.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-placeholder-contact">
-
-        </div>
-        <div class="my-5">
-            
-            <input type="email" name="email" placeholder="Votre adresse email*" value="{{ form.email.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-placeholder-contact">
- 
-        </div>
-        <div class="my-5">
-            
-            <input type="text" name="subject" placeholder="Sujet*"  value="{{ form.subject.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-placeholder-contact">
-
-        </div>
-        <div class="my-5">
-            
-            <textarea name="message" rows="5" class="form-control border border-3 color-border-contact  color-placeholder-contact" placeholder="Votre message" value="{{ form.subject.value|default_if_none:'' }}"></textarea>
-
-        </div>
-
-        <div class="my-5  d-flex align-items-center justify-content-center">
-
-            <button type="submit" class="btn btn-contact w-50">Envoyer</button> 
-        </div>
-        
-            </form>
-        </div>
-    </div>
-</div>
-
-{% endblock %}
