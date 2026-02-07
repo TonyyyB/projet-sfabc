@@ -37,7 +37,7 @@ server {
     # --- HSTS (force HTTPS pendant 1 an) ---
     add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
-    client_max_body_size 20M;
+    client_max_body_size 200M;
 
     # Fichiers statiques (collectstatic)
     location /static/ {
