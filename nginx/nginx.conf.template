@@ -5,6 +5,7 @@ upstream django {
 # --- Redirection HTTP → HTTPS + challenge Let's Encrypt ---
 server {
     listen 80;
+    listen [::]:80;
     server_name ${DOMAIN};
 
     # Endpoint utilisé par Certbot pour valider le domaine
@@ -21,6 +22,7 @@ server {
 # --- Serveur HTTPS principal ---
 server {
     listen 443 ssl;
+    listen [::]:443 ssl;
     server_name ${DOMAIN};
 
     # --- Certificats Let's Encrypt ---
