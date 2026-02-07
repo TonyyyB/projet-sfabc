@@ -59,7 +59,9 @@ services:
 
 volumes:
   postgres_data:
-  static_files:
+    external: true
   media_files:
+    external: true
+  static_files:
   certbot_www:
   certbot_conf:
