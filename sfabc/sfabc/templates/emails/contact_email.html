@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f4f7; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f4f4f7; padding: 40px 0;">
+<body style="margin: 0; padding: 0; background-color: {{ site.page_background }}; font-family: '{{ site.police }}', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: {{ site.page_background }}; padding: 40px 0;">
         <tr>
             <td align="center">
-                <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: {{ site.card_background }}; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
 
                     <!-- En-tête -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #2c3e50, #3498db); padding: 30px 40px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">
+                        <td style="background-color: {{ site.page_foreground }}; padding: 30px 40px; text-align: center;">
+                            <h1 style="color: {{ site.text_header }}; margin: 0; font-size: 24px; font-weight: 600;">
                                 ✉️ Nouveau message de contact
                             </h1>
                         </td>
@@ -22,17 +22,17 @@
                     <!-- Informations de l'expéditeur -->
                     <tr>
                         <td style="padding: 30px 40px 10px;">
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #3498db;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: {{ site.page_background }}; border-radius: 8px; border-left: 4px solid {{ site.border_primary }};">
                                 <tr>
                                     <td style="padding: 20px;">
-                                        <p style="margin: 0 0 8px; font-size: 14px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                        <p style="margin: 0 0 8px; font-size: 14px; color: {{ site.text_discreet }}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
                                             Expéditeur
                                         </p>
-                                        <p style="margin: 0 0 4px; font-size: 18px; color: #2c3e50; font-weight: 600;">
+                                        <p style="margin: 0 0 4px; font-size: 18px; color: {{ site.text_normal }}; font-weight: 600;">
                                             {{ name }}
                                         </p>
                                         <p style="margin: 0; font-size: 15px;">
-                                            <a href="mailto:{{ email }}" style="color: #3498db; text-decoration: none;">{{ email }}</a>
+                                            <a href="mailto:{{ email }}" style="color: {{ site.text_link }}; text-decoration: none;">{{ email }}</a>
                                         </p>
                                     </td>
                                 </tr>
@@ -43,13 +43,13 @@
                     <!-- Sujet -->
                     <tr>
                         <td style="padding: 15px 40px 10px;">
-                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #e67e22;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: {{ site.page_background }}; border-radius: 8px; border-left: 4px solid {{ site.border_secondary }};">
                                 <tr>
                                     <td style="padding: 20px;">
-                                        <p style="margin: 0 0 8px; font-size: 14px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                                        <p style="margin: 0 0 8px; font-size: 14px; color: {{ site.text_discreet }}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
                                             Sujet
                                         </p>
-                                        <p style="margin: 0; font-size: 16px; color: #2c3e50; font-weight: 500;">
+                                        <p style="margin: 0; font-size: 16px; color: {{ site.text_normal }}; font-weight: 500;">
                                             {{ subject }}
                                         </p>
                                     </td>
@@ -61,10 +61,10 @@
                     <!-- Message -->
                     <tr>
                         <td style="padding: 15px 40px 30px;">
-                            <p style="margin: 0 0 12px; font-size: 14px; color: #6c757d; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
+                            <p style="margin: 0 0 12px; font-size: 14px; color: {{ site.text_discreet }}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">
                                 Message
                             </p>
-                            <div style="background-color: #ffffff; border: 1px solid #e9ecef; border-radius: 8px; padding: 20px; line-height: 1.7; font-size: 15px; color: #495057;">
+                            <div style="background-color: {{ site.card_background }}; border: 1px solid {{ site.border_primary }}; border-radius: 8px; padding: 20px; line-height: 1.7; font-size: 15px; color: {{ site.text_normal }};">
                                 {{ message|linebreaksbr }}
                             </div>
                         </td>
@@ -74,7 +74,7 @@
                     <tr>
                         <td style="padding: 0 40px 30px; text-align: center;">
                             <a href="mailto:{{ email }}?subject=Re: {{ subject }}"
-                               style="display: inline-block; background: linear-gradient(135deg, #3498db, #2980b9); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 15px; font-weight: 600; letter-spacing: 0.5px;">
+                               style="display: inline-block; background-color: {{ site.button_color }}; color: {{ site.text_title }}; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 15px; font-weight: 600; letter-spacing: 0.5px;">
                                 ↩️ Répondre à {{ name }}
                             </a>
                         </td>
@@ -82,8 +82,8 @@
 
                     <!-- Pied de page -->
                     <tr>
-                        <td style="background-color: #f8f9fa; padding: 20px 40px; text-align: center; border-top: 1px solid #e9ecef;">
-                            <p style="margin: 0; font-size: 13px; color: #adb5bd;">
+                        <td style="background-color: {{ site.page_foreground }}; padding: 20px 40px; text-align: center;">
+                            <p style="margin: 0; font-size: 13px; color: {{ site.text_header }};">
                                 Ce message a été envoyé depuis le formulaire de contact du site SFABC.
                             </p>
                         </td>
