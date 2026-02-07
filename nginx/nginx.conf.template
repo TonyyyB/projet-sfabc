@@ -1,0 +1,60 @@
+upstream django {
+    server web:8000;
+}
+
+# --- Redirection HTTP → HTTPS + challenge Let's Encrypt ---
+server {
+    listen 80;
+    server_name ${DOMAIN};
+
+    # Endpoint utilisé par Certbot pour valider le domaine
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    # Tout le reste redirige vers HTTPS
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# --- Serveur HTTPS principal ---
+server {
+    listen 443 ssl;
+    server_name ${DOMAIN};
+
+    # --- Certificats Let's Encrypt ---
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+
+    # --- Paramètres SSL recommandés ---
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+
+    # --- HSTS (force HTTPS pendant 1 an) ---
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    client_max_body_size 20M;
+
+    # Fichiers statiques (collectstatic)
+    location /static/ {
+        alias /app/staticfiles/;
+    }
+
+    # Fichiers média (uploads)
+    location /media/ {
+        alias /app/media/;
+    }
+
+    # Tout le reste → Gunicorn
+    location / {
+        proxy_pass http://django;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

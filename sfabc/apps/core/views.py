@@ -1,4 +1,5 @@
-from django.core.mail import send_mail
+from django.conf import settings as django_settings
+from django.core.mail import EmailMessage
 from django.db.models import Prefetch
 from django.views.generic import FormView, ListView
 
@@ -49,13 +50,14 @@ class ContactView(FormView):
         subject = (
             f"{form.cleaned_data['Nom']} vous contacte pour : {form.cleaned_data['Sujet']}"
         )
-        send_mail(
+        email = EmailMessage(
             subject=subject,
-            message=form.cleaned_data['Message'],
-            from_email=form.cleaned_data['Email'],
-            recipient_list=[""],  # <-- Add your email here
-            fail_silently=False,
+            body=form.cleaned_data['Message'],
+            from_email=django_settings.DEFAULT_FROM_EMAIL,
+            to=[django_settings.CONTACT_RECIPIENT_EMAIL],
+            reply_to=[form.cleaned_data['Email']],
         )
+        email.send(fail_silently=False)
         return super().form_valid(form)
 
 class AProposView(ListView):
