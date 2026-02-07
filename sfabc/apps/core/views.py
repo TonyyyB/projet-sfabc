@@ -1,7 +1,9 @@
 from django.conf import settings as django_settings
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.db.models import Prefetch
-from django.views.generic import FormView, ListView
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.views.generic import FormView, ListView, TemplateView
 
 from apps.core.models import A_Propos, Groupe_A_Propos, Image_A_Propos, Image_Service, Service
 from apps.products.models import Image_Produit, Produit
@@ -37,28 +39,82 @@ class ContactView(FormView):
     """Vue formulaire de contact (envoi d'email à la validation)."""
     template_name = 'pages/contact.html'
     form_class = ContactForm
-    success_url = '/email-sent/'
+    success_url = '/contact/confirmation/'
+
+    def dispatch(self, request, *args, **kwargs):
+        """Vérifie le rate limit avant de traiter la requête."""
+        last_sent = request.session.get('last_contact_email')
+        if last_sent:
+            last_sent_time = timezone.datetime.fromisoformat(last_sent)
+            cooldown = timezone.timedelta(hours=1)
+            if timezone.now() < last_sent_time + cooldown:
+                remaining = (last_sent_time + cooldown) - timezone.now()
+                minutes = int(remaining.total_seconds() // 60)
+                self.cooldown_remaining = minutes
+            else:
+                self.cooldown_remaining = None
+        else:
+            self.cooldown_remaining = None
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        """Ajoute un titre au contexte du formulaire de contact."""
+        """Ajoute un titre et l'état du cooldown au contexte."""
         context = super().get_context_data(**kwargs)
         context["title"] = "Contactez-moi !"
+        context["cooldown_active"] = self.cooldown_remaining is not None
+        context["cooldown_minutes"] = self.cooldown_remaining
         return context
 
     def form_valid(self, form):
-        """Envoie un email à partir des champs validés puis redirige vers la success_url."""
-        subject = (
-            f"{form.cleaned_data['Nom']} vous contacte pour : {form.cleaned_data['Sujet']}"
-        )
-        email = EmailMessage(
+        """Envoie un email à partir des champs validés puis redirige vers la page de confirmation."""
+        # Vérifier le rate limit
+        if self.cooldown_remaining is not None:
+            form.add_error(None, "Vous avez déjà envoyé un message récemment. Veuillez réessayer plus tard.")
+            return self.form_invalid(form)
+
+        name = form.cleaned_data['name']
+        sender_email = form.cleaned_data['email']
+        subject_text = form.cleaned_data['subject']
+        message_text = form.cleaned_data['message']
+
+        subject = f"{name} vous contacte pour : {subject_text}"
+
+        # Contexte pour le template email
+        email_context = {
+            'name': name,
+            'email': sender_email,
+            'subject': subject_text,
+            'message': message_text,
+        }
+
+        # Rendu du template HTML
+        html_content = render_to_string('emails/contact_email.html', email_context)
+        text_content = f"De : {name} ({sender_email})\nSujet : {subject_text}\n\n{message_text}"
+
+        email = EmailMultiAlternatives(
             subject=subject,
-            body=form.cleaned_data['Message'],
+            body=text_content,
             from_email=django_settings.DEFAULT_FROM_EMAIL,
             to=[django_settings.CONTACT_RECIPIENT_EMAIL],
-            reply_to=[form.cleaned_data['Email']],
+            reply_to=[sender_email],
         )
+        email.attach_alternative(html_content, "text/html")
         email.send(fail_silently=False)
+
+        # Enregistrer le timestamp en session
+        self.request.session['last_contact_email'] = timezone.now().isoformat()
+
         return super().form_valid(form)
+
+
+class ContactConfirmationView(TemplateView):
+    """Page de confirmation après envoi du formulaire de contact."""
+    template_name = 'pages/contact_confirmation.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "Message envoyé"
+        return context
 
 class AProposView(ListView):
     """Vue listant les groupes "À propos" et leurs sections (avec images par emplacement)."""
