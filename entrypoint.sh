@@ -16,6 +16,9 @@ except Exception:
 done
 echo "PostgreSQL is ready!"
 
+echo "Generating migrations..."
+python manage.py makemigrations --noinput
+
 echo "Applying migrations..."
 python manage.py migrate --noinput
 
