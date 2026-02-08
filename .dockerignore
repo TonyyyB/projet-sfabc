@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.egg-info
+.eggs
+
+# Environnements virtuels
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Fichiers dev
+sfabc/db.sqlite3
+.env
+.env.*
+!.env.example
+
+# Docker
+Dockerfile
+docker-compose*.yml
+
+# Tests
+csv_test/
+htmlcov/
+.coverage
+.pytest_cache
+
+# OS
+Thumbs.db
+.DS_Store

@@ -28,7 +28,7 @@ class Produit(models.Model):
 class Image_Produit(models.Model):
     """Modèle d'image associable à un produit (ou image "du moment")."""
     id_image = models.AutoField(primary_key=True)
-    image = models.ImageField(upload_to="images/produits")
+    image = models.ImageField(upload_to="images/produits", max_length=255)
     produit = models.ForeignKey(Produit, on_delete=models.CASCADE, related_name="images", null=True, blank=True)
     ordre = models.PositiveIntegerField(default=0)
     is_image_du_moment = models.BooleanField(default=False)
