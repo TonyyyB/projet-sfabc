@@ -64,7 +64,7 @@ class Service(models.Model):
 class Image_Site(models.Model):
     """Modèle d'image générique utilisée sur le site (logo, bandeau, pages, etc.)."""
     id_image = models.AutoField(primary_key=True)
-    image = models.ImageField(upload_to="images/site")
+    image = models.ImageField(upload_to="images/site", max_length=255)
 
     def image_tag(self):
         """Retourne un snippet HTML (img) pour l'admin afin de prévisualiser l'image."""
