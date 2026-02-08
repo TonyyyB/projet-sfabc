@@ -1,0 +1,86 @@
+{% load static %}
+{% block header %}
+  <header>
+    <nav class="navbar navbar-dark border-bottom" style="background-color: var(--sfabc-page-foreground);">
+      <div class="container-fluid p-0">
+        <div class="empty-top-section"></div>
+        <!-- Top section -->
+        <div class="top-section">
+          <!-- Barre de recherche -->
+          <form id="headerSearch" class="search-form" role="search" method="get" name="search" action="{% url 'products:liste_produits' %}">
+            <div class="input-group">
+              <input class="form-control bg-body" type="search" placeholder="Rechercher..." aria-label="Search" name="search" />
+              <button class="btn btn-outline-light" type="submit"><i class="bi bi-search"></i></button>
+            </div>
+          </form>
+          </div>
+
+        <!-- Bottom section -->
+        <div class="bottom-section">
+          <!-- Liens -->
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="{%url 'products:liste_produits' %}">Produits</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{%url 'core:services' %}">Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{%url 'core:a_propos' %}">À propos</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{%url 'core:contact' %}">Contact</a>
+            </li>
+          </ul>
+          <!-- Bouton hamburger -->
+          <button class="btn nav-link" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu" aria-controls="offcanvasMenu"><span class="material-symbols-outlined">menu</span></button>
+        </div>
+      </div>
+    </nav>
+    <!-- Logo -->
+    <div class="logo-container">
+      <a href="{% url 'core:home' %}"><img src="{{ site_logo }}" alt="Logo" class="logo-img" /></a>
+    </div>
+    <img src="{{ site_bandeau }}" alt="Background" class="background-img" />
+    <h1 class="title">{{ title }}</h1>
+  </header>
+
+  <!-- Menu Offcanvas -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel" style="background-color: var(--bs-body-bg); border-left: 5px solid rgb(var(--bs-dark-rgb));">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasMenuLabel">Menu</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+      <div class="mb-3 offcanvas-primary-links">
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:home' %}">Accueil</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'products:liste_produits' %}">Produits</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:services' %}">Services</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:a_propos' %}">À propos</a>
+        <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'core:contact' %}">Contact</a>
+        <hr />
+      </div>
+      <a class="btn w-100 d-flex justify-content-between align-items-center text-start" href="{% url 'products:liste_produits' %}">Tous les produits</a>
+      {% for menu, submenus in menus.items %}
+        <div class="mb-2">
+          <!-- Bouton des menus avec fleche -->
+          <button class="btn w-100 d-flex justify-content-between align-items-center text-start" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ forloop.counter }}" aria-expanded="false">
+            {{ menu }}
+            <i class="bi bi-chevron-right"></i>
+          </button>
+
+          <!-- Sous-menus -->
+          <div class="collapse mt-1" id="collapse-{{ forloop.counter }}">
+            <ul class="list-group list-group-flush">
+              {% for sub, url_name in submenus.items %}
+                <li class="list-group-item ms-3" style="background-color: var(--bs-body-bg); border: none;">
+                  <a href="{%url 'products:detail_produit' url_name %}" class="text-decoration-none" style="color: var(--bs-dark);">{{ sub }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

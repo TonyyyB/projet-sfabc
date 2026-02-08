@@ -1,0 +1,90 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}Bibliothèque d'images produits{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title="Bibliothèque d'images (produits)" %}
+{% endblock %}
+
+{% block content %}
+
+    <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
+      <a href="{% url 'admin_produits:admin_import_images_produits' %}" class="btn btn-primary">
+        <span class="material-symbols-outlined">upload_file</span>
+        Importer des images
+      </a>
+    </div>
+
+    <form method="post" action="{% url 'admin_produits:admin_produit_image_bulk_delete' %}" id="bulkDeleteForm">
+      {% csrf_token %}
+
+      <input type="hidden" name="select_all_unused" id="selectAllUnusedFlag" value="0" />
+
+      <div class="actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 14px;">
+        <button type="button" class="btn btn-secondary" id="selectAllUnusedBtn">
+          <span class="material-symbols-outlined">select_all</span>
+          Sélectionner toutes les images non utilisées
+        </button>
+      </div>
+
+      <div class="actions" id="bulkActions" style="display: none; justify-content: flex-end; margin-bottom: 14px;">
+        <button type="submit" class="btn btn-danger" id="bulkDeleteBtn">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer la sélection
+        </button>
+      </div>
+
+      <div class="image-grid" id="imageGrid">
+        {% for data in image_data %}
+        <div class="image-card">
+          <img src="{{ data.image.image.url }}" alt="{{ data.image }}">
+          <div class="image-name">{{ data.image }}</div>
+          <div class="usages">
+            {% if data.usages %}
+              Utilisée dans :<br>
+              {% for usage in data.usages %}
+                <a href="{{ usage.url }}" class="usage-link">{{ usage.text }}</a><br>
+              {% endfor %}
+            {% else %}
+              Non utilisée
+            {% endif %}
+          </div>
+          <div class="actions">
+            <a href="{% url 'admin_produits:admin_produit_image_rename' data.image.id_image %}" class="btn btn-secondary">
+              <span class="material-symbols-outlined">edit</span>
+              Renommer
+            </a>
+            {% if not data.is_used %}
+            <label class="btn btn-danger"
+                   style="display: inline-flex; gap: 8px; align-items: center; cursor: pointer;"
+                   title="Sélectionner pour suppression">
+              <input
+                type="checkbox"
+                class="image-select"
+                name="selected_images"
+                value="{{ data.image.id_image }}"
+                {% if data.is_used %}disabled{% endif %}
+                style="margin: 0; width: 1.05em; height: 1.05em;"
+              />
+              Sélectionner
+            </label>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </form>
+
+    <div class="pagination-container">
+      {% include 'includes/pagination.html' %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/image_library_bulk.js' %}" defer></script>
+{% endblock %}

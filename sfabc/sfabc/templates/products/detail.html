@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load text_format %}
+{% block script %}
+  {{ block.super }}
+  <script src="{% static 'js/carousel.js' %}"></script>
+{% endblock %}
+{% block content %}
+  <div class="product-detail">
+    <div class="custom-carousel">
+      {% if images|length > 1 %}
+        <button class="nav-arrow" type="button" data-carousel-prev>
+          <span class="material-symbols-outlined">arrow_back_ios_new</span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+      {% endif %}
+
+      <div class="carousel-track">
+        <div class="carousel-slides">
+          {% for image in images %}
+            <div class="carousel-slide">
+              <img src="{{ image.image.url }}" alt="Image de {{ produit.nom_produit }}" />
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if images|length > 1 %}
+        <button class="nav-arrow" type="button" data-carousel-next>
+          <span class="material-symbols-outlined">arrow_forward_ios</span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      {% endif %}
+    </div>
+    <div class="product-details">
+      <div class="product-caracteristics">
+        <h3>Caractéristiques:</h3>
+        <p>{{ produit.description_produit|mini_markdown }}</p>
+      </div>
+      <div class="product-price">
+        {% if produit.prix_produit %}
+          <h4>Prix: {{ produit.prix_produit }}€</h4>
+        {% endif %}
+        <div class="stars-container">
+          {% for masque in etoiles %}
+            <div class="star-wrapper">
+              <svg class="star-empty" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              <svg class="star-filled" viewBox="0 0 24 24" style="clip-path: inset(0 {{ masque }}% 0 0);">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+            </div>
+          {% endfor %}
+          {% if moyenne_avis %}
+            <p>- {{ moyenne_avis }}</p>
+          {% else %}
+            <p>- Aucun avis pour le moment </p>
+          {% endif %}
+          {% if avis %}
+            <a href="{% url 'products:reviews:liste_avis' produit.id_produit %}" class='rev-direction'>Voir les avis ({{ nombre_avis }})</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="product-reviews">
+    <div class="card product-reviews-form">
+      <form method="post" action="{% url 'products:reviews:add_review' produit.id_produit %}">
+        {% csrf_token %}
+
+        <div class="card-header d-flex justify-content-between align-items-center rev-header">
+          <input 
+            type="text" 
+            name="pseudonyme" 
+            class="form-control me-2" 
+            placeholder="Votre pseudo" 
+            required
+          />
+
+          <div class="rev-stars stars-input">
+            {% for i in "54321" %}
+              <input type="radio" id="star{{ i }}" name="stars" value="{{ i }}" required>
+              <label for="star{{ i }}" class="star-label"></label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card-body rev-content">
+          <textarea
+            name="message" 
+            class="form-control" 
+            rows="3" 
+            placeholder="Votre avis (facultatif)" 
+          ></textarea>
+        </div>
+
+        <div class="card-footer text-body-secondary rev-footer d-flex justify-content-end">
+          <button type="submit" class="btn btn-contact">Envoyer</button>
+        </div>
+      </form>
+    </div>
+    {% for rev in avis|slice:":5" %}
+        <div class="card review">
+            <div class="card-header d-flex justify-content-between align-items-center rev-header">
+                <p class="rev-title">{{ rev.pseudonyme }}</p>
+                <p class="rev-stars">{{ rev.stars }}</p>
+            </div>
+            {% if rev.message %}
+                <div class="card-body rev-content">{{ rev.message }}</div>
+            {% endif %}
+            <div class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.date }}</div>
+            <div class="reponse">
+              {% if rev.reponse %}
+                <p>{{ rev.reponse.message }}</p>
+                <p class="card-footer text-body-secondary rev-footer">Publié le : {{ rev.reponse.date }}</p>
+              {% elif user.is_superuser %}
+                <form method="post" action="{% url 'products:reviews:add_reply' produit.id_produit rev.id_note %}" class="reply-form">
+                  {% csrf_token %}
+                  <input type="hidden" name="next" value="{{ request.path }}">
+                  <textarea name="message" class="form-control" rows="2" placeholder="Votre réponse" required></textarea>
+                  <button type="submit" class="btn btn-contact mt-2">Répondre</button>
+                </form>
+              {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+  </div>
+{% endblock %}

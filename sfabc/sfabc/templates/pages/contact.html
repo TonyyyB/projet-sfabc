@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-4">
+
+            {% if cooldown_active %}
+            <div class="alert alert-warning text-center my-4" role="alert">
+                <strong>⏳ Veuillez patienter.</strong><br>
+                Vous pourrez envoyer un nouveau message dans environ <strong>{{ cooldown_minutes }} minute{{ cooldown_minutes|pluralize }}</strong>.
+            </div>
+            {% endif %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger my-4" role="alert">
+                {% for error in form.non_field_errors %}
+                <p class="mb-0">{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <form method="post" action="" class="w-100">
+        {% csrf_token %}
+        <p class="text-center color-text-contact mb-5">Les champs marqués d'un * sont obligatoires.</p>
+        <div class="mb-5">
+            
+            <input type="text" name="name" placeholder="Vos nom et prénom*"  value="{{ form.name.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-placeholder-contact" {% if cooldown_active %}disabled{% endif %}>
+
+        </div>
+        <div class="my-5">
+            
+            <input type="email" name="email" placeholder="Votre adresse email*" value="{{ form.email.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-placeholder-contact" {% if cooldown_active %}disabled{% endif %}>
+ 
+        </div>
+        <div class="my-5">
+            
+            <input type="text" name="subject" placeholder="Sujet*"  value="{{ form.subject.value|default_if_none:'' }}" class="form-control border border-3 color-border-contact  color-placeholder-contact" {% if cooldown_active %}disabled{% endif %}>
+
+        </div>
+        <div class="my-5">
+            
+            <textarea name="message" rows="5" class="form-control border border-3 color-border-contact  color-placeholder-contact" placeholder="Votre message" {% if cooldown_active %}disabled{% endif %}>{{ form.message.value|default_if_none:'' }}</textarea>
+
+        </div>
+
+        <div class="my-5  d-flex align-items-center justify-content-center">
+
+            <button type="submit" class="btn btn-contact w-50" {% if cooldown_active %}disabled{% endif %}>Envoyer</button> 
+        </div>
+        
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

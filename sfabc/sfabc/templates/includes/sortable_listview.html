@@ -1,0 +1,23 @@
+{% load i18n %}
+
+<div class="sortable-links reviews-sort-header">
+	{% if nom_produit %}
+		<h2 class="reviews-sort-title">{{ nom_produit }}</h2>
+	{% endif %}
+	<div class="sort-revs reviews-sort-controls" aria-label="Tri">
+		<p class="sortable-label">{% trans 'Trier par' %}</p>
+		<div class="reviews-sort-links" role="list">
+			{% for sort_link in sort_link_list %}
+				<span class="sort-link {{ sort_link.attrs }}" role="listitem">
+					<a class="btn btn-sm sort-btn-box" href="{{ sort_link.path }}">
+						<span class="{{ sort_link.indicator }} sort-btn">
+							{{ sort_link.title }}
+							{% if sort_link.indicator == 'sort-asc' %}▲{% endif %}
+							{% if sort_link.indicator == 'sort-desc' %}▼{% endif %}
+						</span>
+					</a>
+				</span>
+			{% endfor %}
+		</div>
+	</div>
+</div>

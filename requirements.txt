@@ -1,6 +1,15 @@
 asgiref==3.9.1
 Django==5.2.5
 sqlparse==0.5.3
-pytest
+unittest2
 flake8
 pytest-cov
+Pillow
+django_bootstrap5
+django-cleanup
+django-colorfield
+django_bootstrap5
+django_sortable_listview
+psycopg2-binary
+gunicorn
+

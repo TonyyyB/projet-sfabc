@@ -1,0 +1,51 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Renommer l'image
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_produits:admin_produit_image_library' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title="Renommer l'image" %}
+{% endblock %}
+
+{% block content %}
+  <form method="post" class="section-card">
+    {% csrf_token %}
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">image</span>
+        Aperçu de l'image
+      </h2>
+      <div class="image-preview image-preview-centered">
+        <img src="{{ image.image.url }}" alt="{{ image }}" />
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">edit</span>
+        Renommer l'image
+      </h2>
+      <div class="form-group">
+        <label class="form-label" for="id_new_name">Nouveau nom (sans extension)</label>
+        <input type="text" name="new_name" id="id_new_name" class="form-control" value="{{ current_name }}" required />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="{% url 'admin_produits:admin_produit_image_library' %}" class="btn-cancel">
+        <span class="material-symbols-outlined">cancel</span>
+        Annuler
+      </a>
+      <button type="submit" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Renommer
+      </button>
+    </div>
+  </form>
+{% endblock %}

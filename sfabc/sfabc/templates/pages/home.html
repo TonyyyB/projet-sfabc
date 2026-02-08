@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load text_format %}
+{% block content %}
+{% for prdt in produits_moment %}
+    <div class="product-container">
+        {% if forloop.counter|divisibleby:2 %}
+        <div class="product-even">
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <h3>{{ prdt.nom_produit }}</h3>
+                <p>{{ prdt.description_produit|mini_markdown }}</p>
+            </a>
+        </div>
+        <div class="product-image-container product-even">
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
+            </a>
+        </div>
+        {% else %}
+        <div class="product-image-container product-odd">
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <img src="{{ prdt.images_list.0.image.url }}" class="product-image">
+            </a>
+        </div>
+        <div class="product-odd">
+            <a class="lien-produit" href="{%url 'products:detail_produit' prdt.id_produit %}">
+                <h3>{{ prdt.nom_produit }}</h3>
+                <p>{{ prdt.description_produit|mini_markdown }}</p>
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% if not forloop.last %}
+    <div class="sep">
+    <hr/>
+    </div>
+    {% endif %}
+{% endfor %}      
+{% endblock %}

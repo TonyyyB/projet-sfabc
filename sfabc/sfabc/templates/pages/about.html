@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="about-page">
+  {% for group in groups %}
+    <div class="container-fluid">
+      <div class="apropos-group-title">{{ group.titre_groupe }}</div>
+    </div>
+
+    {% for section_ap in group.sections_list %}
+      <div class="container-fluid">
+          <div class="row">
+              {% if section_ap.images_left|length > 0 %}
+              <div class="col-md-3 d-flex flex-column about-left">
+                  {% for img_ap in section_ap.images_left %}
+                      <img src="{{ img_ap.image.image.url }}" class="img-fluid mb-3" alt="{{ img_ap.titre_image }}">
+                      {% if img_ap.titre_image|length > 0 %}
+                          <p class="about-titre mb-2">{{ img_ap.titre_image }}</p>
+                      {% endif %}
+                  {% endfor %}
+              </div>
+              {% endif %}
+
+              <div class="{% if section_ap.images_left|length == 0 and section_ap.images_right|length == 0 %}col-md-12{% elif section_ap.images_left|length == 0 or section_ap.images_right|length == 0 %}col-md-9{% else %}col-md-6{% endif %} d-flex flex-column about-center">
+                  {% if section_ap.titre_ap|length > 0 %}
+                      <h2 class="about-titre mb-3">{{ section_ap.titre_ap }}</h2>
+                  {% endif %}
+                  {% if section_ap.description_ap|length > 0 %}
+                      <p class="mb-4">{{ section_ap.description_ap | linebreaks }}</p>
+                  {% endif %}
+                  {% if section_ap.images_center|length > 0 %}
+                      {% for img_ap in section_ap.images_center %}
+                          <img src="{{ img_ap.image.image.url }}" class="img-fluid mb-3" alt="{{ img_ap.titre_image }}">
+                          {% if img_ap.titre_image|length > 0 %}
+                              <p class="about-titre mb-2">{{ img_ap.titre_image }}</p>
+                          {% endif %}
+                      {% endfor %}
+                  {% endif %}
+              </div>
+
+              {% if section_ap.images_right|length > 0 %}
+              <div class="col-md-3 d-flex flex-column about-right">
+                  {% for img_ap in section_ap.images_right %}
+                      <img src="{{ img_ap.image.image.url }}" class="img-fluid mb-3" alt="{{ img_ap.titre_image }}">
+                      {% if img_ap.titre_image|length > 0 %}
+                          <p class="about-titre mb-2">{{ img_ap.titre_image }}</p>
+                      {% endif %}
+                  {% endfor %}
+              </div>
+              {% endif %}
+          </div>
+      </div>
+
+      {% if not forloop.last %}
+        <div class="sep"><hr/></div>
+      {% endif %}
+    {% endfor %}
+  {% endfor %}
+</div>
+
+{% endblock %}
