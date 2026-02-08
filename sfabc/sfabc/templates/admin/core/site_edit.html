@@ -1,0 +1,313 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+
+{% block title %}
+  Apparence du site
+{% endblock %}
+
+{% block extra_head %}
+  {{ form.media }}
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Apparence du site' page_subtitle='Configuration globale' %}
+{% endblock %}
+
+{% block content %}
+  <form method="post" enctype="multipart/form-data" class="section-card">
+    {% csrf_token %}
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">palette</span>
+        Couleurs du site
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.page_foreground.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.page_foreground }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.page_foreground.id_for_label }}" data-default="{{ color_defaults.page_foreground }}">Réinitialiser</button>
+        </div>
+        {% if form.page_foreground.errors %}
+          <div class="form-error">{{ form.page_foreground.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.page_background.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.page_background }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.page_background.id_for_label }}" data-default="{{ color_defaults.page_background }}">Réinitialiser</button>
+        </div>
+        {% if form.page_background.errors %}
+          <div class="form-error">{{ form.page_background.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.card_background.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.card_background }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.card_background.id_for_label }}" data-default="{{ color_defaults.card_background }}">Réinitialiser</button>
+        </div>
+        {% if form.card_background.errors %}
+          <div class="form-error">{{ form.card_background.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.carousel_background.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.carousel_background }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.carousel_background.id_for_label }}" data-default="{{ color_defaults.carousel_background }}">Réinitialiser</button>
+        </div>
+        {% if form.carousel_background.errors %}
+          <div class="form-error">{{ form.carousel_background.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.border_primary.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.border_primary }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.border_primary.id_for_label }}" data-default="{{ color_defaults.border_primary }}">Réinitialiser</button>
+        </div>
+        {% if form.border_primary.errors %}
+          <div class="form-error">{{ form.border_primary.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.border_secondary.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.border_secondary }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.border_secondary.id_for_label }}" data-default="{{ color_defaults.border_secondary }}">Réinitialiser</button>
+        </div>
+        {% if form.border_secondary.errors %}
+          <div class="form-error">{{ form.border_secondary.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_title.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_title }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_title.id_for_label }}" data-default="{{ color_defaults.text_title }}">Réinitialiser</button>
+        </div>
+        {% if form.text_title.errors %}
+          <div class="form-error">{{ form.text_title.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_subtitle.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_subtitle }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_subtitle.id_for_label }}" data-default="{{ color_defaults.text_subtitle }}">Réinitialiser</button>
+        </div>
+        {% if form.text_subtitle.errors %}
+          <div class="form-error">{{ form.text_subtitle.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_normal.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_normal }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_normal.id_for_label }}" data-default="{{ color_defaults.text_normal }}">Réinitialiser</button>
+        </div>
+        {% if form.text_normal.errors %}
+          <div class="form-error">{{ form.text_normal.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_important.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_important }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_important.id_for_label }}" data-default="{{ color_defaults.text_important }}">Réinitialiser</button>
+        </div>
+        {% if form.text_important.errors %}
+          <div class="form-error">{{ form.text_important.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_discreet.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_discreet }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_discreet.id_for_label }}" data-default="{{ color_defaults.text_discreet }}">Réinitialiser</button>
+        </div>
+        {% if form.text_discreet.errors %}
+          <div class="form-error">{{ form.text_discreet.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_link.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_link }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_link.id_for_label }}" data-default="{{ color_defaults.text_link }}">Réinitialiser</button>
+        </div>
+        {% if form.text_link.errors %}
+          <div class="form-error">{{ form.text_link.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.text_header.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.text_header }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.text_header.id_for_label }}" data-default="{{ color_defaults.text_header }}">Réinitialiser</button>
+        </div>
+        {% if form.text_header.errors %}
+          <div class="form-error">{{ form.text_header.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.shadow.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.shadow }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.shadow.id_for_label }}" data-default="{{ color_defaults.shadow }}">Réinitialiser</button>
+        </div>
+        {% if form.shadow.errors %}
+          <div class="form-error">{{ form.shadow.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.button_color.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.button_color }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.button_color.id_for_label }}" data-default="{{ color_defaults.button_color }}">Réinitialiser</button>
+        </div>
+        {% if form.button_color.errors %}
+          <div class="form-error">{{ form.button_color.errors }}</div>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.button_hover_color.label }}</label>
+        <div style="display:flex; gap: 0.5rem; align-items: center;">
+          {{ form.button_hover_color }}
+          <button type="button" class="btn btn-secondary" data-reset-color data-target="{{ form.button_hover_color.id_for_label }}" data-default="{{ color_defaults.button_hover_color }}">Réinitialiser</button>
+        </div>
+        {% if form.button_hover_color.errors %}
+          <div class="form-error">{{ form.button_hover_color.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">text_fields</span>
+        Typographie
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.police.label }}</label>
+        {{ form.police }}
+        {% if form.police.errors %}
+          <div class="form-error">{{ form.police.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">height</span>
+        Bandeau
+      </h2>
+      <div class="form-group">
+        <label class="form-label">{{ form.bandeau_hauteur.label }}</label>
+        {{ form.bandeau_hauteur }}
+        {% if form.bandeau_hauteur.errors %}
+          <div class="form-error">{{ form.bandeau_hauteur.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>
+        <span class="material-symbols-outlined">image</span>
+        Images du site
+      </h2>
+      <div class="form-group">
+        <div class="image-selector-container">
+          <label class="form-label">Logo actuel</label>
+          {% if site.logo %}
+            <div class="image-preview">
+              <img src="{{ site.logo.image.url }}" height="80" alt="Logo actuel" />
+            </div>
+          {% endif %}
+          <div class="image-preview-container" style="display:none;">
+            <label class="form-label">Logo modifié</label>
+            <div class="image-preview">
+              <img src="{{ site.logo.image.url }}" height="80" alt="Logo modifié" />
+            </div>
+          </div>
+          <div class="image-select-container">
+            <button type="button" class="image-select-btn" data-target="{{ form.logo.id_for_label }}">
+              <span class="material-symbols-outlined">image</span>
+              {% if site.logo %}
+                Modifier le logo
+              {% else %}
+                Sélectionner un logo
+              {% endif %}
+            </button>
+            {{ form.logo }}
+          </div>
+        </div>
+
+        {% if form.logo.errors %}
+          <div class="form-error">{{ form.logo.errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <div class="image-selector-container">
+          <label class="form-label">Bandeau actuel</label>
+          {% if site.bandeau %}
+            <div class="image-preview">
+              <img src="{{ site.bandeau.image.url }}" height="80" alt="Bandeau actuel" />
+            </div>
+          {% endif %}
+          <div class="image-preview-container" style="display:none;">
+            <label class="form-label">Bandeau modifié</label>
+            <div class="image-preview">
+              <img src="{{ site.bandeau.image.url }}" height="80" alt="Bandeau modifié" />
+            </div>
+          </div>
+          <div class="image-select-container">
+            <button type="button" class="image-select-btn" data-target="{{ form.bandeau.id_for_label }}">
+              <span class="material-symbols-outlined">image</span>
+              {% if site.bandeau %}
+                Modifier le bandeau
+              {% else %}
+                Sélectionner un bandeau
+              {% endif %}
+            </button>
+            {{ form.bandeau }}
+          </div>
+          {% if form.bandeau.errors %}
+            <div class="form-error">{{ form.bandeau.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" name="save_site" class="btn-submit">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer les modifications
+      </button>
+    </div>
+  </form>
+{% endblock %}
+
+{% block extra_js %}
+  <script src="{% static 'js/image_selector.js' %}"></script>
+  <script>
+    document.querySelectorAll('[data-reset-color]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-target');
+        const defaultValue = btn.getAttribute('data-default');
+        const input = document.getElementById(targetId);
+        if (input && defaultValue) {
+          input.value = defaultValue;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      });
+    });
+  </script>
+{% endblock %}

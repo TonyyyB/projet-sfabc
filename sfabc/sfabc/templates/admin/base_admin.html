@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>
+      {% block title %}
+        Administration
+      {% endblock %}
+    </title>
+
+    <link rel="stylesheet" href="{% static 'css/admin.css' %}" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+    {% block extra_css %}
+
+    {% endblock %}
+    {% block extra_head %}
+
+    {% endblock %}
+  </head>
+
+  <body>
+    {% block top_action %}
+
+    {% endblock %}
+
+    {% block main %}
+      <div class="container">
+        {% block header %}
+          {% include 'admin/header_admin.html' %}
+        {% endblock %}
+
+        {% block content %}
+
+        {% endblock %}
+      </div>
+    {% endblock %}
+
+    {% block extra_js %}
+
+    {% endblock %}
+  </body>
+</html>

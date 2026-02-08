@@ -1,0 +1,26 @@
+[MASTER]
+load-plugins=pylint_django
+ignore-patterns=.*[\\/]migrations[\\/].*,.*[\\/]tests[\\/].*
+
+[MESSAGES CONTROL]
+# Django projects frequently use these patterns; keep the signal-to-noise reasonable.
+disable=
+    missing-module-docstring,
+    invalid-name,
+    too-few-public-methods,
+    too-many-ancestors,
+    duplicate-code,
+    fixme,
+
+[FORMAT]
+max-line-length=120
+
+[BASIC]
+# Allow common Django naming patterns (model fields, form fields, etc.).
+attr-rgx=[a-zA-Z_][a-zA-Z0-9_]*
+
+[DESIGN]
+max-args=10
+max-locals=20
+max-branches=15
+max-statements=60

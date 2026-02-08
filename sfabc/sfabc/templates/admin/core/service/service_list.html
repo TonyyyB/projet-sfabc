@@ -1,0 +1,66 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Gérer les services
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Services' %}
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'admin_core:admin_service_add' %}" class="btn btn-primary">
+    <span class="material-symbols-outlined">add</span>
+    Ajouter un service
+  </a>
+
+  {% for service in services %}
+    <div class="list-item">
+      <div class="list-header">
+        <div>
+          <h2>{{ service.titre_service }}</h2>
+          <p>{{ service.description_service|truncatewords:20 }}</p>
+        </div>
+
+        <div class="arrows">
+          {% if not forloop.first %}
+            <a href="{% url 'admin_core:admin_service_move' service.pk 'up' %}"><span class="material-symbols-outlined">arrow_upward</span></a>
+          {% endif %}
+          {% if not forloop.last %}
+            <a href="{% url 'admin_core:admin_service_move' service.pk 'down' %}"><span class="material-symbols-outlined">arrow_downward</span></a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_core:admin_service_edit' service.pk %}" class="btn btn-primary">
+          <span class="material-symbols-outlined">edit</span>
+          Modifier
+        </a>
+
+        <a href="{% url 'admin_core:admin_service_delete' service.pk %}" class="btn btn-danger" data-confirm="Êtes-vous sûr de vouloir supprimer ce service ? Cette action est irréversible.">
+          <span class="material-symbols-outlined">delete</span>
+          Supprimer
+        </a>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('[data-confirm]').forEach(function (el) {
+        el.addEventListener('click', function (e) {
+          if (!confirm(el.dataset.confirm)) {
+            e.preventDefault()
+          }
+        })
+      })
+    })
+  </script>
+{% endblock %}

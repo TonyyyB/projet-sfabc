@@ -295,3 +295,9 @@ pip-selfcheck.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,django,virtualenv,python
+.vscode/settings.json
+
+# Ignore everything inside any Django migrations/ folder,
+# but keep migrations/__init__.py tracked.
+**/migrations/*
+!**/migrations/__init__.py

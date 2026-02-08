@@ -1,0 +1,45 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Admin — Connexion
+{% endblock %}
+
+{% block main %}
+  <div class="container" style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px;">
+    <div class="section-card" style="max-width:480px; width:100%;">
+      <header>
+        <h1>Connexion administration</h1>
+        <p class="subtitle">Veuillez vous authentifier pour accéder au panneau d'administration</p>
+      </header>
+
+      {% if form.errors %}
+        <div class="message error" style="margin-top:18px;">Identifiants incorrects — veuillez réessayer.</div>
+      {% endif %}
+
+      <form method="post" action="{% url 'admin_core:admin_login' %}" style="margin-top:20px;">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label" for="id_username">Nom d'utilisateur</label>
+          <input class="form-control" type="text" name="username" id="id_username" required autofocus />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="id_password">Mot de passe</label>
+          <input class="form-control" type="password" name="password" id="id_password" required />
+        </div>
+
+        <div class="form-actions">
+          <button class="btn-submit" type="submit">Se connecter</button>
+          <a class="btn-cancel" href="{% url 'core:home' %}">Retour au site</a>
+        </div>
+
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}" />
+        {% endif %}
+      </form>
+
+      <div style="margin-top:18px; color: var(--sfabc-text-discreet); font-size:0.95em;">Contactez l'administrateur si vous n'avez pas de compte.</div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Modifier famille
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_produits:admin_famille_list' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title=famille.nom_famille page_subtitle='Famille de produits' %}
+{% endblock %}
+
+{% block content %}
+  <div class="section-card">
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+
+      <button type="submit" class="btn btn-primary">
+        <span class="material-symbols-outlined">save</span>
+        Enregistrer
+      </button>
+    </form>
+  </div>
+
+  <div class="section-card">
+    <h2>Produits dans cette famille</h2>
+
+    {% for produit in produits %}
+      <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" style="text-decoration: none; color: var(--sfabc-text-normal);">
+        <div class="list-item">
+          <strong>{{ produit.nom_produit }}</strong>
+          <span>{{ produit.prix_produit }} €</span>
+        </div>
+      </a>
+    {% empty %}
+      <p>Aucun produit dans cette famille.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

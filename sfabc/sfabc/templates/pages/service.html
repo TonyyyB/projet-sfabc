@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block script %}
+  {{ block.super }}
+  <script src="{% static 'js/carousel.js' %}"></script>
+{% endblock %}
+{% block content %}
+
+{% for service in services %}
+    <div class="d-flex justify-content-center">
+        <section class="service p-5  {% if not forloop.last %}border-bottom border-1 border-theme {%endif%} d-flex w-75 " id="service-{{ service.id_service }}">
+        {% if service.service.all|length > 0 %}
+            <div class="custom-carousel w-50">
+                {% if service.service.all|length > 1 %}
+                <button class="nav-arrow" type="button" data-carousel-prev>
+                    <span class="material-symbols-outlined">arrow_back_ios_new</span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                {% endif %}
+
+                <div class="carousel-track">
+                    <div class="carousel-slides">
+                        {% for img_service in service.service.all %}
+                            <div class="carousel-slide">
+                                <img class="img-fluid" src="{{ img_service.image.image.url }}" alt="{{ img_service.titre_image }}" loading="lazy">
+                                {% if img_service.titre_image %}
+                                <div>
+                                    <p class="titre">{{ img_service.titre_image }}</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {% if service.service.count > 1 %}
+                <button class="nav-arrow" type="button" data-carousel-next>
+                    <span class="material-symbols-outlined">arrow_forward_ios</span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+                {% endif %}
+            </div>
+        {% endif %}
+
+
+        <div class="w-50 p-5">
+            <h2 class="titre">{{ service.titre_service }}</h2>
+            <p>{{ service.description_service | linebreaks }}</p>
+        </div>
+        
+    </section>
+    </div>
+    
+{% endfor %}
+
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Répondre à l'avis - {{ avis.pseudonyme }}
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_reviews:admin_avis_list' %}" class="logout-btn"><span class="material-symbols-outlined">arrow_back</span></a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Répondre à un avis' %}
+{% endblock %}
+
+{% block content %}
+  <div class="form-container">
+    <!-- Détails de l'avis -->
+    <div class="section-card">
+      <div class="form-section">
+        <h3><span class="material-symbols-outlined">rate_review</span> Avis de {{ avis.pseudonyme }}</h3>
+        
+        <div class="avis-detail">
+          <div class="avis-detail-row">
+            <span class="detail-label">Produit :</span>
+            <span class="detail-value">{{ avis.produit.nom_produit }}</span>
+          </div>
+          <div class="avis-detail-row">
+            <span class="detail-label">Note :</span>
+            <span class="detail-value stars">{{ avis.stars }}</span>
+          </div>
+          <div class="avis-detail-row">
+            <span class="detail-label">Date :</span>
+            <span class="detail-value">{{ avis.date|date:"d/m/Y" }}</span>
+          </div>
+          {% if avis.message %}
+            <div class="avis-detail-message">
+              <span class="detail-label">Message :</span>
+              <p class="message-content">{{ avis.message }}</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Formulaire de réponse -->
+    <div class="section-card">
+      <div class="form-section">
+        <h3>
+          <span class="material-symbols-outlined">reply</span>
+          {% if avis.reponse %}Modifier la réponse{% else %}Rédiger une réponse{% endif %}
+        </h3>
+        
+        <form method="post" action="{% url 'admin_reviews:admin_avis_repondre' avis.pk %}">
+          {% csrf_token %}
+          
+          <div class="form-group">
+            <label for="message" class="form-label">Votre réponse</label>
+            <textarea 
+              name="message" 
+              id="message" 
+              class="form-control" 
+              rows="5" 
+              placeholder="Rédigez votre réponse à cet avis..."
+              required
+            >{% if avis.reponse %}{{ avis.reponse.message }}{% endif %}</textarea>
+            <p class="form-help">Cette réponse sera visible publiquement sous l'avis du client.</p>
+          </div>
+          
+          <div class="form-actions">
+            <a href="{% url 'admin_reviews:admin_avis_list' %}" class="btn-cancel">Annuler</a>
+            <button type="submit" class="btn-submit">
+              <span class="material-symbols-outlined">send</span>
+              {% if avis.reponse %}Modifier{% else %}Envoyer{% endif %} la réponse
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .form-container {
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .avis-detail {
+    background: var(--sfabc-page-background);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  
+  .avis-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--sfabc-border-secondary);
+  }
+  
+  .avis-detail-row:last-child {
+    border-bottom: none;
+  }
+  
+  .avis-detail-message {
+    padding-top: 15px;
+  }
+  
+  .detail-label {
+    font-weight: 600;
+    color: var(--sfabc-text-important);
+    min-width: 100px;
+  }
+  
+  .detail-value {
+    color: var(--sfabc-text-normal);
+  }
+  
+  .detail-value.stars {
+    color: var(--sfabc-text-important);
+    font-size: 1.3em;
+    letter-spacing: 2px;
+  }
+  
+  .message-content {
+    background: var(--sfabc-card-bg);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    line-height: 1.6;
+    color: var(--sfabc-text-normal);
+  }
+</style>
+{% endblock %}

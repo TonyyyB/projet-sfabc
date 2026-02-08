@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 text-center">
+
+            <div class="mb-4">
+                <span style="font-size: 4rem;">✅</span>
+            </div>
+
+            <h2 class="mb-3" style="color: var(--sfabc-text-title);">Message envoyé !</h2>
+
+            <p class="mb-4" style="color: var(--sfabc-text-normal); font-size: 1.1rem; line-height: 1.7;">
+                Votre message a bien été envoyé. Je vous répondrai dans les plus brefs délais.
+            </p>
+
+            <a href="{% url 'core:home' %}" class="btn btn-contact">
+                Retour à l'accueil
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

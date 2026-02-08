@@ -1,0 +1,41 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Produits
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_dashboard' %}" class="logout-btn">Retour</a>
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Produits' %}
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'admin_produits:admin_produit_add' %}" class="btn btn-primary">+ Ajouter un produit</a>
+
+  {% for produit in produits %}
+    <div class="list-item">
+      <div>
+        <h2>{{ produit.nom_produit }}</h2>
+        <p>{{ produit.famille.nom_famille }} – {{ produit.prix_produit }} €</p>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_produits:admin_produit_edit' produit.pk %}" class="btn btn-primary">Modifier</a>
+        <a href="{% url 'admin_produits:admin_produit_delete' produit.pk %}" class="btn btn-danger" data-confirm>Supprimer</a>
+      </div>
+    </div>
+  {% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    document.querySelectorAll('[data-confirm]').forEach((el) => {
+      el.onclick = (e) => {
+        if (!confirm('Supprimer ce produit ?')) e.preventDefault()
+      }
+    })
+  </script>
+{% endblock %}

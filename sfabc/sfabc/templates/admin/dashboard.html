@@ -1,0 +1,143 @@
+{% extends 'admin/base_admin.html' %}
+
+{% block title %}
+  Administration - Tableau de bord
+{% endblock %}
+
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Administration - Tableau de bord' %}
+{% endblock %}
+
+{% block top_action %}
+  <a href="{% url 'admin_core:admin_logout' %}" class="logout-btn">Déconnexion</a>
+{% endblock %}
+
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Sections "À propos"</span>
+              <span class="stat-value">{{ nb_pages_apropos }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Services</span>
+              <span class="stat-value">{{ nb_services }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Images du site</span>
+              <span class="stat-value">{{ nb_images_site }}</span>
+            </div>
+          </div>
+
+{% block content %}
+  <div class="sections">
+    <!-- Section CORE -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <span class="material-symbols-outlined">web</span>
+        </div>
+        <h2 class="section-title">Site Internet</h2>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Pages "À propos"</span>
+          <span class="stat-value">{{ nb_pages_apropos }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Services</span>
+          <span class="stat-value">{{ nb_services }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Images du site</span>
+          <span class="stat-value">{{ nb_images_site }}</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_core:admin_site_edit' %}" class="btn btn-primary"><span class="material-symbols-outlined">settings</span> Apparence du site</a>
+        <a href="{% url 'admin_core:admin_apropos_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">description</span> Gérer "À propos"</a>
+        <a href="{% url 'admin_core:admin_service_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">build</span> Gérer les services</a>
+        <a href="{% url 'admin_core:admin_image_library' %}" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Images du site</a>
+      </div>
+    </div>
+
+    <!-- Section PRODUCTS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <span class="material-symbols-outlined">shelves</span>
+        </div>
+        <h2 class="section-title">Produits</h2>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Familles de produits</span>
+          <span class="stat-value">{{ nb_familles }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Produits</span>
+          <span class="stat-value">{{ nb_produits }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Produits du moment</span>
+          <span class="stat-value">{{ nb_produits_du_moment }}</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_produits:admin_famille_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">folder</span> Gérer les familles</a>
+        <a href="{% url 'admin_produits:admin_produit_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">label</span> Gérer les produits</a>
+        <a href="{% url 'admin_produits:admin_produit_image_library' %}" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Images des produits</a>
+      </div>
+    </div>
+
+    <!-- Section REVIEWS -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <span class="material-symbols-outlined">star_half</span>
+        </div>
+        <h2 class="section-title">Avis</h2>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Total des avis</span>
+          <span class="stat-value">{{ nb_avis }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Avis récents</span>
+          <span class="stat-value">{{ nb_avis_recents }}</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_reviews:admin_avis_list' %}" class="btn btn-primary"><span class="material-symbols-outlined">star_shine</span> Gérer les avis</a>
+      </div>
+    </div>
+
+    <!-- Section IMPORTS (placeholders) -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">
+          <span class="material-symbols-outlined">upload_file</span>
+        </div>
+        <h2 class="section-title">Imports CSV</h2>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Importer des données</span>
+          <span class="stat-value">CSV</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a href="{% url 'admin_produits:admin_import_produits' %}" class="btn btn-primary"><span class="material-symbols-outlined">inventory_2</span> Importer des produits</a>
+        <a href="{% url 'admin_core:admin_import_images_site' %}" class="btn btn-secondary"><span class="material-symbols-outlined">image</span> Images pour le site</a>
+        <a href="{% url 'admin_produits:admin_import_images_produits' %}" class="btn btn-secondary"><span class="material-symbols-outlined">photo_library</span> Images pour les produits</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}
