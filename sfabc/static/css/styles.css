@@ -1,3 +1,7 @@
+*:not(input):not(textarea):not(select) {
+  caret-color: transparent;
+}
+
 html,
 body {
   height: 100%;
@@ -248,10 +252,6 @@ main {
 
 .color-border-contact {
   border-color: var(--sfabc-border-primary) !important;
-}
-
-*:not(input) {
-  caret-color: transparent;
 }
 
 .product-image-container {

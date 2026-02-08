@@ -39,7 +39,7 @@ class A_Propos(models.Model):
         return self.titre_ap
 
     class Meta:
-        verbose_name_plural = "A propos"
+        verbose_name_plural = "À propos"
         ordering = ["groupe__ordre_groupe", "ordre_ap", "pk"]
         constraints = [
             models.UniqueConstraint(
@@ -133,7 +133,7 @@ class Site(models.Model):
     page_foreground = ColorField(default="#B8A67E", verbose_name="Foreground de la page (header/footer)")
     page_background = ColorField(default="#F6F2E8", verbose_name="Background de la page")
     card_background = ColorField(default="#FFFFFF", verbose_name="Fond des cartes")
-    carousel_background = ColorField(default="#FFFFFF", verbose_name="Fond des caroussels")
+    carousel_background = ColorField(default="#FFFFFF", verbose_name="Fond des carrousels")
     border_primary = ColorField(default="#B8A67E", verbose_name="Bordure principale")
     border_secondary = ColorField(default="#5A4328", verbose_name="Bordure secondaire")
     text_title = ColorField(default="#EEE7D8", verbose_name="Titre des pages")
