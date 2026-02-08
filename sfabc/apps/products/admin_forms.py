@@ -23,7 +23,7 @@ class ProduitForm(forms.ModelForm):
 
         if "description_produit" in self.fields:
             self.fields["description_produit"].help_text = (
-                "Mise en forme: retours à la ligne supportés."
+                "Mise en forme: retours à la ligne supportés. "
                 "Utilisez *italique* et **gras**."
             )
 

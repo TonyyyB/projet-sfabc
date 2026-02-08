@@ -4,6 +4,10 @@
   Administration - Tableau de bord
 {% endblock %}
 
+{% block header %}
+  {% include 'admin/header_admin.html' with page_title='Administration - Tableau de bord' %}
+{% endblock %}
+
 {% block top_action %}
   <a href="{% url 'admin_core:admin_logout' %}" class="logout-btn">Déconnexion</a>
 {% endblock %}
