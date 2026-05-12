@@ -1,3 +1,4 @@
+import os
 from django.db import models, transaction
 from django.db.models import Q
 
@@ -56,6 +57,4 @@ class Image_Produit(models.Model):
 
     def __str__(self):
         """Représentation lisible d'une image produit (nom de fichier)."""
-        if self.produit_id:
-            return f"Image {self.image.name} associée à {self.produit.nom_produit}"
-        return f"Image {self.image.name}"
+        return os.path.basename(self.image.name)

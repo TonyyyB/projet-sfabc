@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load text_format %}
 {% block content %}
 <div class="about-page">
   {% for group in groups %}
@@ -22,10 +23,10 @@
 
               <div class="{% if section_ap.images_left|length == 0 and section_ap.images_right|length == 0 %}col-md-12{% elif section_ap.images_left|length == 0 or section_ap.images_right|length == 0 %}col-md-9{% else %}col-md-6{% endif %} d-flex flex-column about-center">
                   {% if section_ap.titre_ap|length > 0 %}
-                      <h2 class="about-titre mb-3">{{ section_ap.titre_ap }}</h2>
+                      <h2 class="about-titre mb-3">{{ section_ap.titre_ap|mini_markdown }}</h2>
                   {% endif %}
                   {% if section_ap.description_ap|length > 0 %}
-                      <p class="mb-4">{{ section_ap.description_ap | linebreaks }}</p>
+                      <p class="mb-4">{{ section_ap.description_ap|mini_markdown }}</p>
                   {% endif %}
                   {% if section_ap.images_center|length > 0 %}
                       {% for img_ap in section_ap.images_center %}

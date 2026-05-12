@@ -95,9 +95,11 @@ def style_processor(request):
     except OperationalError as e:
         logger.error(f"Database error loading products in context processor: {e}")
 
+    sorted_menus = [(menu, sorted(submenus.items())) for menu, submenus in sorted(menus.items())]
+
     return {
         "site_style": style,
         "site_logo": logo,
         "site_bandeau": bandeau,
-        "menus": menus
+        "menus": sorted_menus
     }
